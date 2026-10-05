@@ -83,7 +83,7 @@ The app adds any new database tables/columns it needs automatically on first req
 A built-in admin page handles everything — no PythonAnywhere file editing, no code:
 
 1. Go to `https://<your-username>.pythonanywhere.com/admin`.
-2. Sign in with the password set in `app.py` (`ADMIN_PASSWORD`, currently `REMOVED` — **change this** before sharing the link with anyone, and change `app.secret_key` too).
+2. Sign in with the admin password. It is set as `ADMIN_PASSWORD` (together with `SECRET_KEY`) via `os.environ[...]` in the PythonAnywhere WSGI file — never in the code. If it isn't set, admin login is disabled.
 3. From there you can:
    - **Set the USD rate** — prices are entered in AMD; the site shows a USD price too (switchable by visitors via an AMD/USD toggle above the catalog), automatically converted using this rate. Update it whenever the rate changes — there's no live/automatic lookup, since that would depend on external services PythonAnywhere's free tier can't reliably reach.
    - **Rename a catalog section** (e.g. "Corsets" → something else) — the new name appears everywhere on the site immediately.

@@ -15,10 +15,11 @@ ALLOWED_EXT = {"jpg", "jpeg", "png", "webp"}
 MAX_PHOTOS = 10
 MODES = ("Sale", "Rent", "Both", "Custom")
 
-ADMIN_PASSWORD = "REMOVED"  # change before sharing the /admin link widely
+# Set in the PythonAnywhere WSGI file (never commit them). Empty ADMIN_PASSWORD disables admin login.
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "")
 
 app = Flask(__name__)
-app.secret_key = "REMOVED"  # change before sharing the /admin link widely
+app.secret_key = os.environ.get("SECRET_KEY") or os.urandom(32)
 
 
 # ---------------------------------------------------------------------------
@@ -264,7 +265,8 @@ def admin_logged_in():
 @app.route("/admin/login", methods=["GET", "POST"])
 def admin_login():
     if request.method == "POST":
-        if request.form.get("password") == ADMIN_PASSWORD:
+        given = request.form.get("password") or ""
+        if ADMIN_PASSWORD and hmac.compare_digest(given.encode(), ADMIN_PASSWORD.encode()):
             session["admin_ok"] = True
             return redirect(url_for("admin"))
         flash("Incorrect password.", "error")
