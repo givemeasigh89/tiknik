@@ -1,12 +1,15 @@
+import hmac
 import os
 import sqlite3
+import subprocess
 
-from flask import Flask, g, jsonify, redirect, render_template, request, session, url_for, flash
+from flask import Flask, abort, g, jsonify, redirect, render_template, request, session, url_for, flash
 from werkzeug.utils import secure_filename
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "tiknik.db")
 PRODUCTS_DIR = os.path.join(BASE_DIR, "static", "img", "products")
+WSGI_FILE = "/var/www/tiknik_pythonanywhere_com_wsgi.py"
 
 ALLOWED_EXT = {"jpg", "jpeg", "png", "webp"}
 MAX_PHOTOS = 10
@@ -502,6 +505,29 @@ def admin_settings():
     db.commit()
     flash(f"Rates updated — {usd_rate} ֏ per $1, {rub_rate} ֏ per ₽1.", "ok")
     return redirect(url_for("admin"))
+
+
+# ---------------------------------------------------------------------------
+# Auto-deploy (called by GitHub Actions on push to main)
+# ---------------------------------------------------------------------------
+
+@app.route("/deploy", methods=["POST"])
+def deploy():
+    secret = os.environ.get("DEPLOY_SECRET", "")
+    given = request.headers.get("X-Deploy-Secret", "")
+    if not secret or not hmac.compare_digest(given.encode(), secret.encode()):
+        abort(404)
+
+    result = subprocess.run(
+        ["git", "pull", "--ff-only"],
+        cwd=BASE_DIR, capture_output=True, text=True, timeout=120,
+    )
+    output = result.stdout + result.stderr
+    if result.returncode != 0:
+        return output, 500, {"Content-Type": "text/plain; charset=utf-8"}
+
+    os.utime(WSGI_FILE)  # touching the WSGI file makes PythonAnywhere reload the app
+    return output + "\nReloaded.", 200, {"Content-Type": "text/plain; charset=utf-8"}
 
 
 init_db()
