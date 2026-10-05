@@ -7,172 +7,441 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
   tailwind.config = {
-    theme: { extend: { colors: {
-      cream: '#EFEEEA', 'cream-dark': '#E4E1D8', charcoal: '#2E2C29', ink: '#3A3A3A', line: '#C9C3B4', gold: '#A48F66',
-    } } }
+    theme: { extend: {
+      colors: {
+        cream: '#EFEEEA', 'cream-dark': '#E4E1D8', charcoal: '#2E2C29', ink: '#3A3A3A', line: '#C9C3B4', gold: '#A48F66',
+      },
+      fontFamily: { serif: ['"Cormorant Garamond"', 'serif'], sans: ['Jost', 'sans-serif'] },
+    } }
   };
 </script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  body { font-family: 'Jost', sans-serif; }
+  html { scroll-behavior: smooth; scroll-padding-top: 5rem; }
+
+  .field { border: 1px solid rgba(46,44,41,.18); background: rgba(255,255,255,.55); padding: .55rem .75rem;
+           font-size: .875rem; border-radius: .5rem; transition: border-color .15s, background .15s, box-shadow .15s; }
+  .field:focus { outline: none; border-color: #2E2C29; background: #fff; box-shadow: 0 0 0 3px rgba(164,143,102,.18); }
+
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; font-size: .8rem;
+         letter-spacing: .03em; padding: .55rem 1rem; border-radius: .5rem; transition: all .15s; cursor: pointer; white-space: nowrap; }
+  .btn-dark { background: #2E2C29; color: #EFEEEA; }
+  .btn-dark:hover { background: #45423d; }
+  .btn-ghost { color: #3A3A3A; border: 1px solid rgba(46,44,41,.18); background: transparent; }
+  .btn-ghost:hover { border-color: #2E2C29; background: rgba(255,255,255,.6); }
+  .btn-danger { color: #9b2c2c; border: 1px solid rgba(155,44,44,.25); background: transparent; }
+  .btn-danger:hover { background: #9b2c2c; color: #fff; border-color: #9b2c2c; }
+  .icon-btn { width: 2rem; height: 2rem; display: inline-flex; align-items: center; justify-content: center;
+              border-radius: .45rem; color: rgba(58,58,58,.55); transition: all .15s; }
+  .icon-btn:hover:not(:disabled) { background: rgba(46,44,41,.07); color: #2E2C29; }
+  .icon-btn:disabled { opacity: .25; cursor: default; }
+  .icon-btn.danger:hover { background: rgba(155,44,44,.09); color: #9b2c2c; }
+
+  .card { background: rgba(255,255,255,.45); border: 1px solid rgba(46,44,41,.10); border-radius: 1rem; }
+
+  details.item > summary { list-style: none; cursor: pointer; }
+  details.item > summary::-webkit-details-marker { display: none; }
+  details.item .chev { transition: transform .2s ease; }
+  details.item[open] .chev { transform: rotate(180deg); }
+  details.item[open] { background: rgba(255,255,255,.75); box-shadow: 0 6px 24px -12px rgba(46,44,41,.25); }
+  details.item[open] > .item-body { animation: open .25s ease both; }
+  @keyframes open { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+  details.item.flash { box-shadow: 0 0 0 2px #A48F66; }
+
+  .toast { animation: toastIn .3s ease both; }
+  .toast.hide { animation: toastOut .3s ease both; }
+  @keyframes toastIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  @keyframes toastOut { to { opacity: 0; transform: translateY(8px); } }
+
+  dialog { border: none; border-radius: 1rem; padding: 0; max-width: 26rem; width: calc(100% - 2rem);
+           box-shadow: 0 24px 60px -20px rgba(46,44,41,.45); background: #F7F6F3; color: #3A3A3A; }
+  dialog[open] { animation: toastIn .2s ease both; }
+  dialog::backdrop { background: rgba(46,44,41,.35); backdrop-filter: blur(2px); }
+</style>
 </head>
-<body class="bg-cream text-ink">
-  <header class="flex items-center justify-between px-5 py-4 border-b border-line/60 sticky top-0 bg-cream z-10">
-    <h1 class="text-xl text-charcoal">Tiknik — Catalog</h1>
-    <div class="flex items-center gap-4 text-sm">
-      <a href="/" target="_blank" class="underline hover:text-charcoal">View site</a>
-      <a href="{{ url_for('admin_logout') }}" class="text-ink/60 hover:text-charcoal">Sign out</a>
+<body class="bg-cream text-ink min-h-screen">
+
+  <!-- ===================== Header ===================== -->
+  <header class="sticky top-0 z-20 bg-cream/85 backdrop-blur border-b border-charcoal/10">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+      <div class="flex items-baseline gap-2">
+        <span class="font-serif text-2xl text-charcoal">Tiknik</span>
+        <span class="text-[11px] uppercase tracking-[.2em] text-gold">Admin</span>
+      </div>
+      <nav class="hidden md:flex items-center gap-6 text-sm text-ink/70">
+        <a href="#sections" class="hover:text-charcoal">Sections</a>
+        <a href="#add-item" class="hover:text-charcoal">Add item</a>
+        <a href="#items" class="hover:text-charcoal">Items</a>
+        <a href="#rates" class="hover:text-charcoal">Rates</a>
+      </nav>
+      <div class="flex items-center gap-1 text-sm">
+        <a href="/" target="_blank" class="btn btn-ghost !py-1.5">View site ↗</a>
+        <a href="{{ url_for('admin_logout') }}" class="btn !py-1.5 text-ink/60 hover:text-charcoal">Sign out</a>
+      </div>
     </div>
   </header>
 
-  <div class="max-w-5xl mx-auto px-5 py-8">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        <div class="mb-6">
-          {% for category, msg in messages %}
-            <p class="text-sm {{ 'text-green-800' if category == 'ok' else 'text-red-700' }}">{{ msg }}</p>
-          {% endfor %}
-        </div>
-      {% endif %}
-    {% endwith %}
-
-    <!-- ===================== Settings: exchange rates ===================== -->
-    <div class="border border-charcoal/15 bg-white/40 p-5 mb-6">
-      <p class="text-xs uppercase tracking-widest text-ink/50 mb-2">Currency</p>
-      <p class="text-sm text-ink/60 mb-3 max-w-xl">
-        All prices are entered in AMD (֏). The site shows USD and RUB too (visitors pick with a toggle,
-        USD by default), converted automatically from these rates and rounded to a clean number — no
-        odd cents or kopecks, the way other clothing sites show prices. Update the rates here whenever
-        you want (e.g. to match the current bank rate).
-      </p>
-      <form method="POST" action="{{ url_for('admin_settings') }}" class="flex items-center gap-4 flex-wrap">
-        <div class="flex items-center gap-2">
-          <span class="text-sm">1 USD =</span>
-          <input name="usd_rate" type="number" step="0.01" min="0.01" value="{{ usd_rate }}" required
-            class="border border-charcoal/25 bg-transparent px-3 py-2 text-sm focus:outline-none focus:border-charcoal w-28">
-          <span class="text-sm">AMD</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <span class="text-sm">1 RUB =</span>
-          <input name="rub_rate" type="number" step="0.01" min="0.01" value="{{ rub_rate }}" required
-            class="border border-charcoal/25 bg-transparent px-3 py-2 text-sm focus:outline-none focus:border-charcoal w-28">
-          <span class="text-sm">AMD</span>
-        </div>
-        <button type="submit" class="bg-charcoal text-cream text-xs px-3 py-2 hover:bg-charcoal/90 transition">
-          Save Rates
-        </button>
-      </form>
-    </div>
-
-    <!-- ===================== Settings: category names ===================== -->
-    <div class="border border-charcoal/15 bg-white/40 p-5 mb-10">
-      <p class="text-xs uppercase tracking-widest text-ink/50 mb-2">Catalog Sections</p>
-      <p class="text-sm text-ink/60 mb-3 max-w-xl">
-        Rename a section — the new name appears everywhere on the site immediately. To move an item into
-        a different section, use the "Section" dropdown on that item below.
-      </p>
-      <div class="flex flex-col gap-2">
-        {% for cat in categories %}
-          <form method="POST" action="{{ url_for('admin_update_category', slug=cat.slug) }}" class="flex items-center gap-2">
-            <input name="name" value="{{ cat.name }}" required
-              class="border border-charcoal/25 bg-transparent px-3 py-2 text-sm focus:outline-none focus:border-charcoal w-64">
-            <button type="submit" class="bg-charcoal text-cream text-xs px-3 py-2 hover:bg-charcoal/90 transition">
-              Save
-            </button>
-          </form>
+  <!-- ===================== Toasts ===================== -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div id="toasts" class="fixed bottom-5 right-5 left-5 sm:left-auto z-50 flex flex-col gap-2 sm:w-96">
+        {% for category, msg in messages %}
+          <div class="toast flex items-start gap-3 rounded-xl px-4 py-3 text-sm shadow-lg
+                      {{ 'bg-charcoal text-cream' if category == 'ok' else 'bg-[#9b2c2c] text-white' }}">
+            <span class="mt-px">{{ '✓' if category == 'ok' else '!' }}</span>
+            <span class="flex-1">{{ msg }}</span>
+          </div>
         {% endfor %}
       </div>
-    </div>
+    {% endif %}
+  {% endwith %}
 
-    <p class="text-sm text-ink/60 mb-8 max-w-2xl">
-      Up to {{ max_photos }} photos per item (JPG, PNG or WEBP). Drag a thumbnail to reorder — the first
-      one is the catalog thumbnail and the main photo on the product page. You can also edit the name,
-      description, price, section and Sale/Rent status of each item here.
-    </p>
+  <main class="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-10 flex flex-col gap-8">
 
-    {% for cat in categories %}
-      {% set cat_items = items|selectattr('category', 'equalto', cat.slug)|list %}
-      {% if cat_items %}
-        <h2 class="text-lg text-charcoal mb-4 mt-10 first:mt-0">{{ cat.name }}</h2>
-        <div class="flex flex-col gap-4">
-          {% for item in cat_items %}
-            <div class="border border-charcoal/15 bg-white/40 p-5 grid md:grid-cols-[1fr_1.2fr] gap-6">
+    <!-- ===================== Sections ===================== -->
+    <section id="sections" class="card p-5 sm:p-7">
+      <div class="mb-5">
+        <h2 class="font-serif text-3xl text-charcoal">Sections</h2>
+        <p class="text-sm text-ink/55 mt-1">The catalog tabs on the site, in this order. Click a name to rename it.</p>
+      </div>
+
+      <ul class="flex flex-col divide-y divide-charcoal/10 border-y border-charcoal/10">
+        {% for cat in categories %}
+          <li class="flex items-center gap-2 py-2">
+            <div class="flex shrink-0">
+              <form method="POST" action="{{ url_for('admin_move_category', slug=cat.slug, direction='up') }}">
+                <button class="icon-btn" title="Move up" {{ 'disabled' if loop.first }}>
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 15l6-6 6 6"/></svg>
+                </button>
+              </form>
+              <form method="POST" action="{{ url_for('admin_move_category', slug=cat.slug, direction='down') }}">
+                <button class="icon-btn" title="Move down" {{ 'disabled' if loop.last }}>
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 9l6 6 6-6"/></svg>
+                </button>
+              </form>
+            </div>
+            <form method="POST" action="{{ url_for('admin_update_category', slug=cat.slug) }}" class="rename-form flex-1 flex items-center gap-2 min-w-0">
+              <input name="name" value="{{ cat.name }}" data-original="{{ cat.name }}" required
+                     class="flex-1 min-w-0 bg-transparent px-2 py-1.5 rounded-md text-[15px] text-charcoal border border-transparent hover:border-charcoal/15 focus:outline-none focus:border-charcoal focus:bg-white transition">
+              <button type="submit" class="save-btn btn btn-dark !py-1.5 hidden">Save</button>
+            </form>
+            <span class="text-xs text-ink/45 w-16 text-right shrink-0">{{ counts[cat.slug] }} item{{ '' if counts[cat.slug] == 1 else 's' }}</span>
+            <button type="button" class="icon-btn danger js-delete-section" title="Delete section"
+                    data-slug="{{ cat.slug }}" data-name="{{ cat.name }}" data-count="{{ counts[cat.slug] }}"
+                    data-action="{{ url_for('admin_delete_category', slug=cat.slug) }}"
+                    {{ 'disabled' if categories|length == 1 }}>
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 7h16M10 11v6M14 11v6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg>
+            </button>
+          </li>
+        {% endfor %}
+      </ul>
+
+      <form method="POST" action="{{ url_for('admin_add_category') }}" class="flex gap-2 mt-5">
+        <input name="name" required placeholder="New section name, e.g. Bridal Shoes" class="field flex-1 min-w-0">
+        <button type="submit" class="btn btn-dark">+ Add section</button>
+      </form>
+    </section>
+
+    <!-- ===================== Add item ===================== -->
+    <section id="add-item" class="card p-5 sm:p-7">
+      <h2 class="font-serif text-3xl text-charcoal">Add item</h2>
+      <p class="text-sm text-ink/55 mt-1 mb-5">Create the item first — you'll upload its photos right after.</p>
+      <form method="POST" action="{{ url_for('admin_add_item') }}" class="grid sm:grid-cols-2 gap-3">
+        <input name="name" required placeholder="Name" class="field sm:col-span-2">
+        <select name="category" required class="field">
+          {% for cat in categories %}
+            <option value="{{ cat.slug }}">{{ cat.name }}</option>
+          {% endfor %}
+        </select>
+        <div class="flex gap-3">
+          <select name="mode" class="field flex-1 min-w-0">
+            {% for m in modes %}<option value="{{ m }}">{{ m }}</option>{% endfor %}
+          </select>
+          <input name="price" type="number" min="0" placeholder="Price ֏" class="field w-32">
+        </div>
+        <textarea name="description" rows="3" placeholder="Description (optional)" class="field sm:col-span-2 leading-relaxed"></textarea>
+        <div class="sm:col-span-2">
+          <button type="submit" class="btn btn-dark">+ Create item</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- ===================== Items ===================== -->
+    <section id="items">
+      <div class="flex items-end justify-between gap-4 mb-4 flex-wrap">
+        <div>
+          <h2 class="font-serif text-3xl text-charcoal">Items <span class="text-ink/35 text-2xl">{{ items|length }}</span></h2>
+          <p class="text-sm text-ink/55 mt-1">Click an item to edit its photos and details.</p>
+        </div>
+        <input id="item-search" type="search" placeholder="Search items…" class="field w-full sm:w-64">
+      </div>
+
+      {% macro item_card(item) %}
+        <details class="item card !rounded-xl transition" id="item-{{ item.id }}" data-name="{{ item.name|lower }}">
+          <summary class="flex items-center gap-4 p-3 pr-4">
+            <div class="w-12 h-14 shrink-0 rounded-md overflow-hidden bg-cream-dark flex items-center justify-center">
+              {% if item.photos %}
+                <img src="{{ url_for('static', filename='img/products/' ~ item.photos[0].filename) }}" class="w-full h-full object-cover" alt="" loading="lazy">
+              {% else %}
+                <svg class="w-5 h-5 text-ink/25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.5"/><path d="M21 16l-5-5-8 8"/></svg>
+              {% endif %}
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-[15px] text-charcoal truncate">{{ item.name }}</p>
+              <p class="text-xs text-ink/50 mt-0.5 flex items-center gap-2">
+                <span class="uppercase tracking-wider text-[10px] text-gold">{{ item.mode }}</span>
+                <span>·</span>
+                <span>{{ ('{:,}'.format(item.price)).replace(',', ' ') ~ ' ֏' if item.price is not none else 'Price on request' }}</span>
+                <span>·</span>
+                <span>{{ item.photos|length }} photo{{ '' if item.photos|length == 1 else 's' }}</span>
+              </p>
+            </div>
+            <svg class="chev w-4 h-4 text-ink/40 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 9l6 6 6-6"/></svg>
+          </summary>
+
+          <div class="item-body px-4 pb-5 pt-2 border-t border-charcoal/10 mx-3">
+            <div class="grid md:grid-cols-[1fr_1.25fr] gap-6 mt-3">
 
               <!-- Photos -->
               <div>
-                <p class="text-xs uppercase tracking-widest text-ink/50 mb-2">
-                  Photos ({{ item.photos|length }}/{{ max_photos }}) — drag to reorder, first = main
+                <p class="text-[11px] uppercase tracking-widest text-ink/45 mb-2">
+                  Photos {{ item.photos|length }}/{{ max_photos }} · drag to reorder
                 </p>
                 <div class="photo-list flex flex-wrap gap-2 mb-3" data-item-id="{{ item.id }}">
                   {% for photo in item.photos %}
-                    <div class="photo-thumb relative w-16 h-20 shrink-0 bg-cream-dark overflow-hidden group cursor-grab"
+                    <div class="photo-thumb relative w-[4.5rem] h-[5.5rem] shrink-0 rounded-lg bg-cream-dark overflow-hidden group cursor-grab"
                          draggable="true" data-photo-id="{{ photo.id }}">
-                      <img src="{{ url_for('static', filename='img/products/' ~ photo.filename) }}" class="w-full h-full object-cover pointer-events-none" alt="">
+                      <img src="{{ url_for('static', filename='img/products/' ~ photo.filename) }}" class="w-full h-full object-cover pointer-events-none" alt="" loading="lazy">
                       {% if loop.first %}
-                        <span class="main-badge absolute top-0 left-0 bg-charcoal/85 text-cream text-[8px] uppercase tracking-wide px-1 py-0.5">Main</span>
+                        <span class="main-badge absolute top-1 left-1 rounded bg-charcoal/85 text-cream text-[8px] uppercase tracking-wide px-1 py-0.5">Main</span>
                       {% endif %}
                       <form method="POST" action="{{ url_for('admin_remove_photo', photo_id=photo.id) }}"
-                            class="absolute inset-0 bg-charcoal/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                        <button type="submit" class="text-cream text-[10px] uppercase tracking-wide">Remove</button>
+                            class="absolute inset-0 bg-charcoal/55 opacity-0 group-hover:opacity-100 transition flex items-end justify-center pb-1.5">
+                        <button type="submit" class="text-cream text-[10px] uppercase tracking-wide hover:underline">Remove</button>
                       </form>
                     </div>
                   {% endfor %}
-                  {% if not item.photos %}
-                    <div class="w-16 h-20 shrink-0 bg-cream-dark flex items-center justify-center text-[9px] text-ink/40 text-center px-1">
-                      No photos yet
-                    </div>
-                  {% endif %}
                 </div>
                 {% if item.photos|length < max_photos %}
-                  <form method="POST" action="{{ url_for('admin_upload', item_id=item.id) }}" enctype="multipart/form-data" class="flex flex-col gap-2">
-                    <input type="file" name="photos" accept=".jpg,.jpeg,.png,.webp" multiple class="text-xs">
-                    <button type="submit" class="bg-charcoal text-cream text-xs px-3 py-2 hover:bg-charcoal/90 transition w-fit">
-                      Upload
-                    </button>
+                  <form method="POST" action="{{ url_for('admin_upload', item_id=item.id) }}" enctype="multipart/form-data">
+                    <label class="btn btn-ghost">
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 16V4M7 9l5-5 5 5M4 20h16"/></svg>
+                      <span class="upload-label">Add photos</span>
+                      <input type="file" name="photos" accept=".jpg,.jpeg,.png,.webp" multiple class="hidden js-autoupload">
+                    </label>
+                    <p class="text-[11px] text-ink/40 mt-1.5">JPG, PNG or WEBP. The first photo is the main one.</p>
                   </form>
                 {% else %}
-                  <p class="text-xs text-ink/40">Limit reached — remove a photo to add another.</p>
+                  <p class="text-xs text-ink/45">Limit reached — remove a photo to add another.</p>
                 {% endif %}
               </div>
 
               <!-- Details -->
-              <div>
-                <p class="text-xs uppercase tracking-widest text-ink/50 mb-2">Details</p>
-                <form method="POST" action="{{ url_for('admin_update_item', item_id=item.id) }}" class="flex flex-col gap-2">
-                  <input name="name" value="{{ item.name }}" required placeholder="Name"
-                    class="border border-charcoal/25 bg-transparent px-3 py-2 text-sm focus:outline-none focus:border-charcoal">
-                  <textarea name="description" rows="5" placeholder="Description"
-                    class="border border-charcoal/25 bg-transparent px-3 py-2 text-sm leading-relaxed focus:outline-none focus:border-charcoal">{{ item.description or '' }}</textarea>
-                  <p class="text-[11px] text-ink/40 -mt-1">Line breaks you type here are kept on the site, exactly as written.</p>
-                  <div class="flex gap-2 flex-wrap">
-                    <select name="mode" class="border border-charcoal/25 bg-transparent px-3 py-2 text-sm focus:outline-none focus:border-charcoal flex-1 min-w-[110px]">
-                      {% for m in modes %}
-                        <option value="{{ m }}" {{ 'selected' if item.mode == m }}>{{ m }}</option>
-                      {% endfor %}
-                    </select>
-                    <select name="category" class="border border-charcoal/25 bg-transparent px-3 py-2 text-sm focus:outline-none focus:border-charcoal flex-1 min-w-[140px]">
-                      {% for cat2 in categories %}
-                        <option value="{{ cat2.slug }}" {{ 'selected' if item.category == cat2.slug }}>{{ cat2.name }}</option>
-                      {% endfor %}
-                    </select>
-                    <input name="price" type="number" value="{{ item.price if item.price is not none else '' }}" placeholder="Price (֏)"
-                      class="border border-charcoal/25 bg-transparent px-3 py-2 text-sm focus:outline-none focus:border-charcoal w-36">
-                  </div>
-                  <button type="submit" class="bg-charcoal text-cream text-xs px-3 py-2 hover:bg-charcoal/90 transition w-fit mt-1">
-                    Save Details
+              <form method="POST" action="{{ url_for('admin_update_item', item_id=item.id) }}" class="flex flex-col gap-2.5">
+                <input name="name" value="{{ item.name }}" required placeholder="Name" class="field">
+                <textarea name="description" rows="5" placeholder="Description" class="field leading-relaxed">{{ item.description or '' }}</textarea>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                  <select name="category" class="field col-span-2 sm:col-span-1">
+                    {% for cat2 in categories %}
+                      <option value="{{ cat2.slug }}" {{ 'selected' if item.category == cat2.slug }}>{{ cat2.name }}</option>
+                    {% endfor %}
+                  </select>
+                  <select name="mode" class="field">
+                    {% for m in modes %}
+                      <option value="{{ m }}" {{ 'selected' if item.mode == m }}>{{ m }}</option>
+                    {% endfor %}
+                  </select>
+                  <input name="price" type="number" min="0" value="{{ item.price if item.price is not none else '' }}" placeholder="Price ֏" class="field">
+                </div>
+                <div class="flex items-center justify-between gap-2 mt-1">
+                  <button type="submit" class="btn btn-dark">Save changes</button>
+                  <button type="button" class="btn btn-danger js-delete-item"
+                          data-name="{{ item.name }}" data-action="{{ url_for('admin_delete_item', item_id=item.id) }}">
+                    Delete item
                   </button>
-                </form>
-              </div>
+                </div>
+              </form>
 
             </div>
-          {% endfor %}
-        </div>
-      {% endif %}
-    {% endfor %}
-  </div>
+          </div>
+        </details>
+      {% endmacro %}
+
+      <div class="flex flex-col gap-8">
+        {% for cat in categories %}
+          {% set cat_items = items|selectattr('category', 'equalto', cat.slug)|list %}
+          <div class="item-group">
+            <h3 class="text-[11px] uppercase tracking-[.2em] text-ink/50 mb-2.5 px-1">
+              {{ cat.name }} <span class="text-ink/30">· {{ cat_items|length }}</span>
+            </h3>
+            <div class="flex flex-col gap-2">
+              {% for item in cat_items %}{{ item_card(item) }}{% endfor %}
+              {% if not cat_items %}
+                <p class="text-sm text-ink/40 px-1 py-2">No items yet — add one above.</p>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+
+        {% if unsorted %}
+          <div class="item-group">
+            <h3 class="text-[11px] uppercase tracking-[.2em] text-[#9b2c2c] mb-2.5 px-1">
+              Without a section · {{ unsorted|length }} — pick a section for these, they don't show on the site's tabs
+            </h3>
+            <div class="flex flex-col gap-2">
+              {% for item in unsorted %}{{ item_card(item) }}{% endfor %}
+            </div>
+          </div>
+        {% endif %}
+      </div>
+      <p id="search-empty" class="hidden text-sm text-ink/45 py-6 text-center">Nothing matches your search.</p>
+    </section>
+
+    <!-- ===================== Rates ===================== -->
+    <section id="rates" class="card p-5 sm:p-7">
+      <h2 class="font-serif text-3xl text-charcoal">Currency rates</h2>
+      <p class="text-sm text-ink/55 mt-1 mb-5 max-w-xl">
+        Prices are entered in AMD. Visitors can switch to USD or RUB — converted with these rates and rounded to clean numbers.
+      </p>
+      <form method="POST" action="{{ url_for('admin_settings') }}" class="flex items-center gap-3 flex-wrap">
+        <label class="flex items-center gap-2 text-sm">1 USD =
+          <input name="usd_rate" type="number" step="0.01" min="0.01" value="{{ usd_rate }}" required class="field w-28"> ֏
+        </label>
+        <label class="flex items-center gap-2 text-sm">1 RUB =
+          <input name="rub_rate" type="number" step="0.01" min="0.01" value="{{ rub_rate }}" required class="field w-28"> ֏
+        </label>
+        <button type="submit" class="btn btn-dark">Save rates</button>
+      </form>
+    </section>
+  </main>
+
+  <!-- ===================== Dialogs ===================== -->
+  <dialog id="dlg-item">
+    <form method="POST" class="p-6">
+      <h3 class="font-serif text-2xl text-charcoal mb-2">Delete item?</h3>
+      <p class="text-sm text-ink/65 mb-6">“<span class="js-name"></span>” and all its photos will be removed from the site. This can't be undone.</p>
+      <div class="flex justify-end gap-2">
+        <button type="button" class="btn btn-ghost js-cancel">Cancel</button>
+        <button type="submit" class="btn btn-danger !bg-[#9b2c2c] !text-white">Delete</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="dlg-section">
+    <form method="POST" class="p-6">
+      <h3 class="font-serif text-2xl text-charcoal mb-2">Delete section “<span class="js-name"></span>”?</h3>
+      <p class="js-empty text-sm text-ink/65 mb-6">It has no items, so nothing else changes.</p>
+      <div class="js-has-items mb-6">
+        <p class="text-sm text-ink/65 mb-3">It has <span class="js-count"></span>. What should happen to them?</p>
+        <select name="items_to" class="field w-full js-target"></select>
+      </div>
+      <div class="flex justify-end gap-2">
+        <button type="button" class="btn btn-ghost js-cancel">Cancel</button>
+        <button type="submit" class="btn btn-danger !bg-[#9b2c2c] !text-white">Delete section</button>
+      </div>
+    </form>
+  </dialog>
 
   <script>
-    // ------------------------------------------------------------------
-    // Drag-to-reorder photos. Pure mouse/HTML5 drag-and-drop; saves the
-    // new order to the server as soon as a drag ends.
-    // ------------------------------------------------------------------
+    window.SECTIONS = {{ categories|tojson }};
+
+    // ---- Toasts fade away on their own ----
+    document.querySelectorAll(".toast").forEach(function (t, i) {
+      setTimeout(function () { t.classList.add("hide"); setTimeout(function () { t.remove(); }, 300); }, 3500 + i * 400);
+    });
+
+    // ---- Open (and highlight) the item named in the URL, e.g. after saving it ----
+    (function () {
+      var el = location.hash && document.querySelector(location.hash);
+      if (el && el.tagName === "DETAILS") {
+        el.open = true;
+        el.classList.add("flash");
+        setTimeout(function () { el.classList.remove("flash"); }, 1600);
+        setTimeout(function () { el.scrollIntoView({ block: "start" }); }, 50);
+      }
+    })();
+
+    // ---- Section rename: show "Save" only once the name actually changed ----
+    document.querySelectorAll(".rename-form").forEach(function (f) {
+      var input = f.querySelector("input"), btn = f.querySelector(".save-btn");
+      input.addEventListener("input", function () {
+        btn.classList.toggle("hidden", input.value.trim() === input.getAttribute("data-original"));
+      });
+      input.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") { input.value = input.getAttribute("data-original"); btn.classList.add("hidden"); input.blur(); }
+      });
+    });
+
+    // ---- Upload as soon as files are picked ----
+    document.querySelectorAll(".js-autoupload").forEach(function (input) {
+      input.addEventListener("change", function () {
+        if (!input.files.length) return;
+        input.closest("label").querySelector(".upload-label").textContent = "Uploading " + input.files.length + "…";
+        input.form.submit();
+      });
+    });
+
+    // ---- Search ----
+    var search = document.getElementById("item-search");
+    search.addEventListener("input", function () {
+      var q = search.value.trim().toLowerCase(), any = false;
+      document.querySelectorAll(".item-group").forEach(function (g) {
+        var shown = 0;
+        g.querySelectorAll("details.item").forEach(function (d) {
+          var hit = !q || d.getAttribute("data-name").indexOf(q) !== -1;
+          d.classList.toggle("hidden", !hit);
+          if (hit) shown++;
+        });
+        g.classList.toggle("hidden", !!q && shown === 0);
+        if (shown) any = true;
+      });
+      document.getElementById("search-empty").classList.toggle("hidden", !q || any);
+    });
+
+    // ---- Confirm dialogs ----
+    function wireDialog(dlg) {
+      dlg.querySelector(".js-cancel").addEventListener("click", function () { dlg.close(); });
+      dlg.addEventListener("click", function (e) { if (e.target === dlg) dlg.close(); });
+    }
+    var dlgItem = document.getElementById("dlg-item"), dlgSection = document.getElementById("dlg-section");
+    wireDialog(dlgItem); wireDialog(dlgSection);
+
+    document.querySelectorAll(".js-delete-item").forEach(function (b) {
+      b.addEventListener("click", function () {
+        dlgItem.querySelector("form").action = b.getAttribute("data-action");
+        dlgItem.querySelector(".js-name").textContent = b.getAttribute("data-name");
+        dlgItem.showModal();
+      });
+    });
+
+    document.querySelectorAll(".js-delete-section").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var slug = b.getAttribute("data-slug"), count = parseInt(b.getAttribute("data-count"), 10);
+        var form = dlgSection.querySelector("form"), select = dlgSection.querySelector(".js-target");
+        form.action = b.getAttribute("data-action");
+        dlgSection.querySelector(".js-name").textContent = b.getAttribute("data-name");
+        dlgSection.querySelector(".js-count").textContent = count + (count === 1 ? " item" : " items");
+        dlgSection.querySelector(".js-empty").classList.toggle("hidden", count > 0);
+        dlgSection.querySelector(".js-has-items").classList.toggle("hidden", count === 0);
+        select.disabled = count === 0;
+        select.innerHTML = "";
+        window.SECTIONS.forEach(function (s) {
+          if (s.slug === slug) return;
+          var o = document.createElement("option");
+          o.value = s.slug; o.textContent = "Move them to “" + s.name + "”";
+          select.appendChild(o);
+        });
+        var del = document.createElement("option");
+        del.value = "__delete__"; del.textContent = "Delete them too (with photos)";
+        select.appendChild(del);
+        dlgSection.showModal();
+      });
+    });
+
+    // ---- Drag-to-reorder photos; saves as soon as a drag ends ----
     document.querySelectorAll(".photo-list").forEach(function (list) {
       var itemId = list.getAttribute("data-item-id");
       var dragged = null;
@@ -213,7 +482,7 @@
           var existingBadge = t.querySelector(".main-badge");
           if (i === 0 && !existingBadge) {
             var badge = document.createElement("span");
-            badge.className = "main-badge absolute top-0 left-0 bg-charcoal/85 text-cream text-[8px] uppercase tracking-wide px-1 py-0.5";
+            badge.className = "main-badge absolute top-1 left-1 rounded bg-charcoal/85 text-cream text-[8px] uppercase tracking-wide px-1 py-0.5";
             badge.textContent = "Main";
             t.appendChild(badge);
           } else if (i !== 0 && existingBadge) {

@@ -86,7 +86,8 @@ A built-in admin page handles everything — no PythonAnywhere file editing, no 
 2. Sign in with the admin password. It is set as `ADMIN_PASSWORD` (together with `SECRET_KEY`) via `os.environ[...]` in the PythonAnywhere WSGI file — never in the code. If it isn't set, admin login is disabled.
 3. From there you can:
    - **Set the USD rate** — prices are entered in AMD; the site shows a USD price too (switchable by visitors via an AMD/USD toggle above the catalog), automatically converted using this rate. Update it whenever the rate changes — there's no live/automatic lookup, since that would depend on external services PythonAnywhere's free tier can't reliably reach.
-   - **Rename a catalog section** (e.g. "Corsets" → something else) — the new name appears everywhere on the site immediately.
+   - **Manage catalog sections** — add, rename, reorder (↑/↓) or delete them; changes appear on the site's tabs immediately. Deleting a section that still has items asks whether to move them to another section or delete them too.
+   - **Add or delete items** — "Add item" creates one (then upload its photos on its card); "Delete item" removes it together with its photos.
    - For each item:
      - **Photos** — up to 10 per item (JPG/PNG/WEBP). Upload several at once. **Drag a thumbnail to reorder** — the first photo is the catalog thumbnail and the main photo on the product page; the order saves automatically as soon as you drop it. Hover a thumbnail and click **Remove** to delete one.
      - **Details** — name, description (line breaks you type are preserved exactly on the site), price, Sale/Rent/Both/Custom status, and **section** — move an item to a different catalog section right from its own dropdown, no need to delete/recreate it.

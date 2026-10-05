@@ -1,5 +1,6 @@
 import hmac
 import os
+import re
 import sqlite3
 import subprocess
 
@@ -190,6 +191,38 @@ def get_setting(db, key, default=None):
     return row["value"] if row else default
 
 
+def make_category_slug(db, name):
+    # "all" is the frontend's built-in "show everything" tab, so never use it as a slug.
+    base = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-") or "section"
+    slug, n = base, 2
+    while slug == "all" or db.execute("SELECT 1 FROM categories WHERE slug = ?", (slug,)).fetchone():
+        slug = f"{base}-{n}"
+        n += 1
+    return slug
+
+
+def parse_price(raw):
+    raw = (raw or "").strip()
+    if not raw:
+        return None
+    try:
+        return int(float(raw))
+    except ValueError:
+        return None
+
+
+def delete_item_photos(db, item_id):
+    for photo in db.execute("SELECT filename FROM item_photos WHERE item_id = ?", (item_id,)).fetchall():
+        path = os.path.join(PRODUCTS_DIR, photo["filename"])
+        if os.path.exists(path):
+            os.remove(path)
+    db.execute("DELETE FROM item_photos WHERE item_id = ?", (item_id,))
+
+
+def back_to_admin(anchor=None):
+    return redirect(url_for("admin") + (f"#{anchor}" if anchor else ""))
+
+
 # ---------------------------------------------------------------------------
 # Public routes
 # ---------------------------------------------------------------------------
@@ -285,7 +318,7 @@ def admin():
         return redirect(url_for("admin_login"))
 
     db = get_db()
-    categories = get_categories(db)
+    categories = [dict(c) for c in get_categories(db)]
     usd_rate = get_setting(db, "usd_rate", "400")
     rub_rate = get_setting(db, "rub_rate", "4.2")
 
@@ -300,9 +333,18 @@ def admin():
         d["photos"] = photos_by_item.get(it["id"], [])
         item_list.append(d)
 
+    known_slugs = {c["slug"] for c in categories}
+    counts = {c["slug"]: 0 for c in categories}
+    for it in item_list:
+        if it["category"] in counts:
+            counts[it["category"]] += 1
+    unsorted = [it for it in item_list if it["category"] not in known_slugs]
+
     return render_template(
         "admin.html",
         items=item_list,
+        unsorted=unsorted,
+        counts=counts,
         categories=categories,
         max_photos=MAX_PHOTOS,
         modes=MODES,
@@ -357,7 +399,7 @@ def admin_upload(item_id):
         flash(f"Added {added} photo(s).", "ok")
     if skipped:
         flash(f"Skipped {skipped} file(s) — unsupported type or over the {MAX_PHOTOS}-photo limit.", "error")
-    return redirect(url_for("admin"))
+    return back_to_admin(f"item-{item_id}")
 
 
 @app.route("/admin/remove-photo/<int:photo_id>", methods=["POST"])
@@ -374,7 +416,8 @@ def admin_remove_photo(photo_id):
         db.execute("DELETE FROM item_photos WHERE id = ?", (photo_id,))
         db.commit()
         flash("Photo removed.", "ok")
-    return redirect(url_for("admin"))
+        return back_to_admin(f"item-{photo['item_id']}")
+    return back_to_admin()
 
 
 @app.route("/admin/reorder-photos/<int:item_id>", methods=["POST"])
@@ -419,11 +462,11 @@ def admin_update_item(item_id):
     description = request.form.get("description") or ""
     mode = request.form.get("mode") or "Sale"
     category = (request.form.get("category") or "").strip()
-    price_raw = (request.form.get("price") or "").strip()
+    price = parse_price(request.form.get("price"))
 
     if not name:
         flash("Name is required.", "error")
-        return redirect(url_for("admin"))
+        return back_to_admin(f"item-{item_id}")
 
     if mode not in MODES:
         mode = "Sale"
@@ -432,13 +475,6 @@ def admin_update_item(item_id):
     if category not in valid_slugs:
         flash("Unknown category — item left in its previous category.", "error")
         category = None  # leave unchanged below
-
-    price = None
-    if price_raw:
-        try:
-            price = int(float(price_raw))
-        except ValueError:
-            price = None
 
     if category:
         db.execute(
@@ -452,7 +488,50 @@ def admin_update_item(item_id):
         )
     db.commit()
     flash("Saved.", "ok")
-    return redirect(url_for("admin"))
+    return back_to_admin(f"item-{item_id}")
+
+
+@app.route("/admin/add-item", methods=["POST"])
+def admin_add_item():
+    if not admin_logged_in():
+        return redirect(url_for("admin_login"))
+
+    db = get_db()
+    name = (request.form.get("name") or "").strip()
+    category = (request.form.get("category") or "").strip()
+    mode = request.form.get("mode") or "Sale"
+    if mode not in MODES:
+        mode = "Sale"
+
+    if not name:
+        flash("Name is required.", "error")
+        return back_to_admin("add-item")
+    if category not in {c["slug"] for c in get_categories(db)}:
+        flash("Pick a section for the new item.", "error")
+        return back_to_admin("add-item")
+
+    cur = db.execute(
+        "INSERT INTO items (name, category, description, mode, price) VALUES (?,?,?,?,?)",
+        (name, category, request.form.get("description") or "", mode, parse_price(request.form.get("price"))),
+    )
+    db.commit()
+    flash(f"“{name}” added — now upload its photos.", "ok")
+    return back_to_admin(f"item-{cur.lastrowid}")
+
+
+@app.route("/admin/delete-item/<int:item_id>", methods=["POST"])
+def admin_delete_item(item_id):
+    if not admin_logged_in():
+        return redirect(url_for("admin_login"))
+
+    db = get_db()
+    item = db.execute("SELECT name FROM items WHERE id = ?", (item_id,)).fetchone()
+    if item:
+        delete_item_photos(db, item_id)
+        db.execute("DELETE FROM items WHERE id = ?", (item_id,))
+        db.commit()
+        flash(f"“{item['name']}” deleted.", "ok")
+    return back_to_admin("items")
 
 
 @app.route("/admin/update-category/<slug>", methods=["POST"])
@@ -463,18 +542,92 @@ def admin_update_category(slug):
     db = get_db()
     cat = db.execute("SELECT slug FROM categories WHERE slug = ?", (slug,)).fetchone()
     if not cat:
-        flash("Category not found.", "error")
-        return redirect(url_for("admin"))
+        flash("Section not found.", "error")
+        return back_to_admin("sections")
 
     name = (request.form.get("name") or "").strip()
     if not name:
-        flash("Category name can't be empty.", "error")
-        return redirect(url_for("admin"))
+        flash("Section name can't be empty.", "error")
+        return back_to_admin("sections")
 
     db.execute("UPDATE categories SET name = ? WHERE slug = ?", (name, slug))
     db.commit()
-    flash("Category renamed.", "ok")
-    return redirect(url_for("admin"))
+    flash("Section renamed.", "ok")
+    return back_to_admin("sections")
+
+
+@app.route("/admin/add-category", methods=["POST"])
+def admin_add_category():
+    if not admin_logged_in():
+        return redirect(url_for("admin_login"))
+
+    db = get_db()
+    name = (request.form.get("name") or "").strip()
+    if not name:
+        flash("Section name can't be empty.", "error")
+        return back_to_admin("sections")
+
+    position = db.execute("SELECT COALESCE(MAX(position), -1) + 1 AS p FROM categories").fetchone()["p"]
+    db.execute(
+        "INSERT INTO categories (slug, name, position) VALUES (?,?,?)",
+        (make_category_slug(db, name), name, position),
+    )
+    db.commit()
+    flash(f"Section “{name}” added.", "ok")
+    return back_to_admin("sections")
+
+
+@app.route("/admin/move-category/<slug>/<direction>", methods=["POST"])
+def admin_move_category(slug, direction):
+    if not admin_logged_in():
+        return redirect(url_for("admin_login"))
+
+    db = get_db()
+    slugs = [c["slug"] for c in get_categories(db)]
+    if slug in slugs:
+        i = slugs.index(slug)
+        j = i - 1 if direction == "up" else i + 1
+        if 0 <= j < len(slugs):
+            slugs[i], slugs[j] = slugs[j], slugs[i]
+            for position, s in enumerate(slugs):
+                db.execute("UPDATE categories SET position = ? WHERE slug = ?", (position, s))
+            db.commit()
+    return back_to_admin("sections")
+
+
+@app.route("/admin/delete-category/<slug>", methods=["POST"])
+def admin_delete_category(slug):
+    if not admin_logged_in():
+        return redirect(url_for("admin_login"))
+
+    db = get_db()
+    cat = db.execute("SELECT name FROM categories WHERE slug = ?", (slug,)).fetchone()
+    if not cat:
+        flash("Section not found.", "error")
+        return back_to_admin("sections")
+
+    other_slugs = {c["slug"] for c in get_categories(db)} - {slug}
+    if not other_slugs:
+        flash("The catalog needs at least one section.", "error")
+        return back_to_admin("sections")
+
+    item_ids = [r["id"] for r in db.execute("SELECT id FROM items WHERE category = ?", (slug,))]
+    target = request.form.get("items_to") or ""
+    if item_ids:
+        if target == "__delete__":
+            for item_id in item_ids:
+                delete_item_photos(db, item_id)
+            db.execute("DELETE FROM items WHERE category = ?", (slug,))
+        elif target in other_slugs:
+            db.execute("UPDATE items SET category = ? WHERE category = ?", (target, slug))
+        else:
+            flash("Choose where this section's items should go.", "error")
+            return back_to_admin("sections")
+
+    db.execute("DELETE FROM categories WHERE slug = ?", (slug,))
+    db.commit()
+    flash(f"Section “{cat['name']}” deleted.", "ok")
+    return back_to_admin("sections")
 
 
 @app.route("/admin/settings", methods=["POST"])
@@ -506,7 +659,7 @@ def admin_settings():
     )
     db.commit()
     flash(f"Rates updated — {usd_rate} ֏ per $1, {rub_rate} ֏ per ₽1.", "ok")
-    return redirect(url_for("admin"))
+    return back_to_admin("rates")
 
 
 # ---------------------------------------------------------------------------
