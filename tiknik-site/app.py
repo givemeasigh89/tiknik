@@ -4,8 +4,11 @@ import re
 import sqlite3
 import subprocess
 
-from flask import Flask, abort, g, jsonify, redirect, render_template, request, session, url_for, flash
+from flask import Flask, abort, g, jsonify, make_response, redirect, render_template, request, session, url_for, flash
 from werkzeug.utils import secure_filename
+
+import content_translations
+from i18n import JS_KEYS, LANG_LABELS, LANGS, translator
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "tiknik.db")
@@ -122,6 +125,14 @@ def init_db():
     if "image" not in item_cols:
         db.execute("ALTER TABLE items ADD COLUMN image TEXT")
 
+    # Translations: English lives in name/description, other languages in *_<lang> columns.
+    for table, fields in (("categories", ("name",)), ("items", ("name", "description"))):
+        cols = _table_columns(db, table)
+        for field in fields:
+            for lang in LANGS[1:]:
+                if f"{field}_{lang}" not in cols:
+                    db.execute(f"ALTER TABLE {table} ADD COLUMN {field}_{lang} TEXT")
+
     db.execute(
         """CREATE TABLE IF NOT EXISTS item_photos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -174,6 +185,25 @@ def init_db():
                 (row["id"], row["image"]),
             )
 
+    # One-off: fill in the initial RU/HY translations. Flagged in settings so translations
+    # cleared later in /admin are never filled back in.
+    if not db.execute("SELECT 1 FROM settings WHERE key = 'translations_seeded'").fetchone():
+        for slug, (ru, hy) in content_translations.CATEGORIES.items():
+            db.execute(
+                "UPDATE categories SET name_ru = COALESCE(NULLIF(name_ru, ''), ?), "
+                "name_hy = COALESCE(NULLIF(name_hy, ''), ?) WHERE slug = ?",
+                (ru, hy, slug),
+            )
+        for item_id, (en_name, tr) in content_translations.ITEMS.items():
+            for lang, (name, description) in tr.items():
+                db.execute(
+                    f"UPDATE items SET name_{lang} = COALESCE(NULLIF(name_{lang}, ''), ?), "
+                    f"description_{lang} = COALESCE(NULLIF(description_{lang}, ''), ?) "
+                    "WHERE id = ? AND name = ?",
+                    (name, description, item_id, en_name),
+                )
+        db.execute("INSERT INTO settings (key, value) VALUES ('translations_seeded', '1')")
+
     db.commit()
     db.close()
 
@@ -183,7 +213,25 @@ def init_db():
 # ---------------------------------------------------------------------------
 
 def get_categories(db):
-    return db.execute("SELECT slug, name FROM categories ORDER BY position").fetchall()
+    return db.execute("SELECT * FROM categories ORDER BY position").fetchall()
+
+
+def localized(row, field, lang):
+    """The field in `lang`, falling back to English when there's no translation."""
+    if lang != "en":
+        value = row[f"{field}_{lang}"]
+        if value and value.strip():
+            return value
+    return row[field]
+
+
+def public_categories(db, lang):
+    return [{"slug": c["slug"], "name": localized(c, "name", lang)} for c in get_categories(db)]
+
+
+def request_lang():
+    lang = request.args.get("lang", "en")
+    return lang if lang in LANGS else "en"
 
 
 def get_setting(db, key, default=None):
@@ -228,18 +276,41 @@ def back_to_admin(anchor=None):
 # ---------------------------------------------------------------------------
 
 @app.route("/")
-def index():
+@app.route("/<lang>/")
+def index(lang=None):
+    # English lives at "/", the others at "/ru/" and "/hy/".
+    if lang is not None and lang not in LANGS[1:]:
+        abort(404)
+    if lang is None:
+        # "/?lang=en" is the language switcher's English link: show English and remember it.
+        # Otherwise send visitors to their remembered language, or on a first visit, their browser's.
+        if request.args.get("lang") != "en":
+            preferred = request.cookies.get("lang") or request.accept_languages.best_match(LANGS)
+            if preferred in LANGS[1:]:
+                return redirect(url_for("index", lang=preferred))
+        lang = "en"
+
     db = get_db()
-    categories = [dict(c) for c in get_categories(db)]
-    usd_rate = get_setting(db, "usd_rate", "400")
-    rub_rate = get_setting(db, "rub_rate", "4.2")
-    return render_template("index.html", categories=categories, usd_rate=usd_rate, rub_rate=rub_rate)
+    t = translator(lang)
+    resp = make_response(render_template(
+        "index.html",
+        lang=lang,
+        langs=LANGS,
+        lang_labels=LANG_LABELS,
+        t=t,
+        js_i18n={key: t(key) for key in JS_KEYS},
+        categories=public_categories(db, lang),
+        usd_rate=get_setting(db, "usd_rate", "400"),
+        rub_rate=get_setting(db, "rub_rate", "4.2"),
+    ))
+    resp.set_cookie("lang", lang, max_age=365 * 24 * 3600, samesite="Lax")
+    return resp
 
 
 @app.route("/api/categories")
 def api_categories():
     db = get_db()
-    return jsonify([dict(c) for c in get_categories(db)])
+    return jsonify(public_categories(db, request_lang()))
 
 
 @app.route("/api/settings")
@@ -254,6 +325,7 @@ def api_settings():
 @app.route("/api/items")
 def api_items():
     db = get_db()
+    lang = request_lang()
     items = db.execute("SELECT * FROM items ORDER BY id").fetchall()
     photos_by_item = {}
     for p in db.execute("SELECT item_id, filename FROM item_photos ORDER BY item_id, position"):
@@ -261,9 +333,15 @@ def api_items():
 
     result = []
     for it in items:
-        d = dict(it)
-        d["photos"] = photos_by_item.get(it["id"], [])
-        result.append(d)
+        result.append({
+            "id": it["id"],
+            "name": localized(it, "name", lang),
+            "description": localized(it, "description", lang),
+            "category": it["category"],
+            "mode": it["mode"],
+            "price": it["price"],
+            "photos": photos_by_item.get(it["id"], []),
+        })
     return jsonify(result)
 
 
@@ -331,6 +409,11 @@ def admin():
     for it in items:
         d = dict(it)
         d["photos"] = photos_by_item.get(it["id"], [])
+        d["missing_langs"] = [
+            lang for lang in LANGS[1:]
+            if not (it[f"name_{lang}"] or "").strip()
+            or ((it["description"] or "").strip() and not (it[f"description_{lang}"] or "").strip())
+        ]
         item_list.append(d)
 
     known_slugs = {c["slug"] for c in categories}
@@ -486,6 +569,11 @@ def admin_update_item(item_id):
             "UPDATE items SET name=?, description=?, mode=?, price=? WHERE id=?",
             (name, description, mode, price, item_id),
         )
+    for lang in LANGS[1:]:
+        db.execute(
+            f"UPDATE items SET name_{lang}=?, description_{lang}=? WHERE id=?",
+            ((request.form.get(f"name_{lang}") or "").strip(), request.form.get(f"description_{lang}") or "", item_id),
+        )
     db.commit()
     flash("Saved.", "ok")
     return back_to_admin(f"item-{item_id}")
@@ -550,9 +638,12 @@ def admin_update_category(slug):
         flash("Section name can't be empty.", "error")
         return back_to_admin("sections")
 
-    db.execute("UPDATE categories SET name = ? WHERE slug = ?", (name, slug))
+    db.execute(
+        "UPDATE categories SET name = ?, name_ru = ?, name_hy = ? WHERE slug = ?",
+        (name, (request.form.get("name_ru") or "").strip(), (request.form.get("name_hy") or "").strip(), slug),
+    )
     db.commit()
-    flash("Section renamed.", "ok")
+    flash("Section saved.", "ok")
     return back_to_admin("sections")
 
 
@@ -569,8 +660,9 @@ def admin_add_category():
 
     position = db.execute("SELECT COALESCE(MAX(position), -1) + 1 AS p FROM categories").fetchone()["p"]
     db.execute(
-        "INSERT INTO categories (slug, name, position) VALUES (?,?,?)",
-        (make_category_slug(db, name), name, position),
+        "INSERT INTO categories (slug, name, name_ru, name_hy, position) VALUES (?,?,?,?,?)",
+        (make_category_slug(db, name), name, (request.form.get("name_ru") or "").strip(),
+         (request.form.get("name_hy") or "").strip(), position),
     )
     db.commit()
     flash(f"Section “{name}” added.", "ok")

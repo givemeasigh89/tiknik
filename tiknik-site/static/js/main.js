@@ -9,6 +9,12 @@
   var activeCategory = "all";
   var activeCurrency = "USD";
   var RATES = window.TIKNIK_RATES || { USD: 400, RUB: 4.2 };
+  var LANG = window.TIKNIK_LANG || "en";
+  var I18N = window.TIKNIK_I18N || {};
+
+  function t(key, fallback) {
+    return I18N[key] || fallback;
+  }
 
   var ICONS = {
     corsets:
@@ -61,7 +67,7 @@
 
   function formatPrice(item) {
     if (item.mode === "Custom" || !item.price) {
-      return "Price on request";
+      return t("price_on_request", "Price on request");
     }
     var display;
     if (activeCurrency === "USD") {
@@ -71,7 +77,7 @@
     } else {
       display = item.price.toLocaleString("en-US") + " ֏";
     }
-    if (item.mode === "Rent") return display + " / day";
+    if (item.mode === "Rent") return display + t("per_day", " / day");
     return display;
   }
 
@@ -98,18 +104,7 @@
   });
 
   function modeLabel(mode) {
-    switch (mode) {
-      case "Rent":
-        return "For Rent";
-      case "Sale":
-        return "For Sale";
-      case "Both":
-        return "Rent or Buy";
-      case "Custom":
-        return "Made to Order";
-      default:
-        return mode;
-    }
+    return t("mode_" + mode, mode);
   }
 
   function photoUrl(filename) {
@@ -184,7 +179,7 @@
     if (card) openProduct(parseInt(card.getAttribute("data-id"), 10));
   });
 
-  fetch("/api/items")
+  fetch("/api/items?lang=" + encodeURIComponent(LANG))
     .then(function (res) {
       return res.json();
     })
@@ -196,7 +191,9 @@
     })
     .catch(function () {
       grid.innerHTML =
-        '<p class="col-span-full text-center text-sm text-ink/50 py-10">Unable to load the catalog right now.</p>';
+        '<p class="col-span-full text-center text-sm text-ink/50 py-10">' +
+        t("load_error", "Unable to load the catalog right now.") +
+        "</p>";
     });
 
   // ------------------------------------------------------------------
@@ -604,7 +601,7 @@
     form.addEventListener("submit", function (e) {
       e.preventDefault();
       var data = Object.fromEntries(new FormData(form).entries());
-      status.textContent = "Sending…";
+      status.textContent = t("sending", "Sending…");
       status.className = "sm:col-span-2 text-sm mt-1 text-ink/60";
 
       fetch("/api/inquiry", {
@@ -619,19 +616,20 @@
         })
         .then(function (result) {
           if (result.ok && result.body.ok) {
-            status.textContent =
-              "Thank you — we've received your request and will be in touch shortly.";
+            status.textContent = t(
+              "sent",
+              "Thank you — we've received your request and will be in touch shortly."
+            );
             status.className = "sm:col-span-2 text-sm mt-1 text-green-800";
             form.reset();
           } else {
-            status.textContent =
-              (result.body && result.body.error) ||
-              "Something went wrong. Please try again.";
+            // The only validation error the server sends is "name and contact are required".
+            status.textContent = t("required_error", (result.body && result.body.error) || "Something went wrong.");
             status.className = "sm:col-span-2 text-sm mt-1 text-red-700";
           }
         })
         .catch(function () {
-          status.textContent = "Something went wrong. Please try again.";
+          status.textContent = t("send_error", "Something went wrong. Please try again.");
           status.className = "sm:col-span-2 text-sm mt-1 text-red-700";
         });
     });

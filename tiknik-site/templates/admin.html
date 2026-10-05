@@ -124,8 +124,16 @@
               </form>
             </div>
             <form method="POST" action="{{ url_for('admin_update_category', slug=cat.slug) }}" class="rename-form flex-1 flex items-center gap-2 min-w-0">
-              <input name="name" value="{{ cat.name }}" data-original="{{ cat.name }}" required
-                     class="flex-1 min-w-0 bg-transparent px-2 py-1.5 rounded-md text-[15px] text-charcoal border border-transparent hover:border-charcoal/15 focus:outline-none focus:border-charcoal focus:bg-white transition">
+              <div class="flex-1 grid sm:grid-cols-3 gap-1 min-w-0">
+                {% for l, field in [('EN', 'name'), ('RU', 'name_ru'), ('HY', 'name_hy')] %}
+                  <label class="relative min-w-0">
+                    <input name="{{ field }}" value="{{ cat[field] or '' }}" data-original="{{ cat[field] or '' }}"
+                           {{ 'required' if field == 'name' }} placeholder="{{ 'Missing — shows English' if field != 'name' }}"
+                           class="w-full bg-transparent pl-2 pr-8 py-1.5 rounded-md text-[15px] text-charcoal border border-transparent hover:border-charcoal/15 focus:outline-none focus:border-charcoal focus:bg-white transition placeholder:text-[#9b2c2c]/50 placeholder:text-xs">
+                    <span class="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] tracking-wider text-ink/30 pointer-events-none">{{ l }}</span>
+                  </label>
+                {% endfor %}
+              </div>
               <button type="submit" class="save-btn btn btn-dark !py-1.5 hidden">Save</button>
             </form>
             <span class="text-xs text-ink/45 w-16 text-right shrink-0">{{ counts[cat.slug] }} item{{ '' if counts[cat.slug] == 1 else 's' }}</span>
@@ -139,8 +147,10 @@
         {% endfor %}
       </ul>
 
-      <form method="POST" action="{{ url_for('admin_add_category') }}" class="flex gap-2 mt-5">
-        <input name="name" required placeholder="New section name, e.g. Bridal Shoes" class="field flex-1 min-w-0">
+      <form method="POST" action="{{ url_for('admin_add_category') }}" class="flex flex-col sm:flex-row gap-2 mt-5">
+        <input name="name" required placeholder="New section (EN), e.g. Bridal Shoes" class="field flex-1 min-w-0">
+        <input name="name_ru" placeholder="RU" class="field sm:w-36 min-w-0">
+        <input name="name_hy" placeholder="HY" class="field sm:w-36 min-w-0">
         <button type="submit" class="btn btn-dark">+ Add section</button>
       </form>
     </section>
@@ -148,7 +158,7 @@
     <!-- ===================== Add item ===================== -->
     <section id="add-item" class="card p-5 sm:p-7">
       <h2 class="font-serif text-3xl text-charcoal">Add item</h2>
-      <p class="text-sm text-ink/55 mt-1 mb-5">Create the item first — you'll upload its photos right after.</p>
+      <p class="text-sm text-ink/55 mt-1 mb-5">Create the item in English first — you'll add photos and RU/HY translations on its card right after.</p>
       <form method="POST" action="{{ url_for('admin_add_item') }}" class="grid sm:grid-cols-2 gap-3">
         <input name="name" required placeholder="Name" class="field sm:col-span-2">
         <select name="category" required class="field">
@@ -180,7 +190,9 @@
       </div>
 
       {% macro item_card(item) %}
-        <details class="item card !rounded-xl transition" id="item-{{ item.id }}" data-name="{{ item.name|lower }}">
+        {% set missing = item.missing_langs %}
+        <details class="item card !rounded-xl transition" id="item-{{ item.id }}"
+                 data-name="{{ (item.name ~ ' ' ~ (item.name_ru or '') ~ ' ' ~ (item.name_hy or ''))|lower }}">
           <summary class="flex items-center gap-4 p-3 pr-4">
             <div class="w-12 h-14 shrink-0 rounded-md overflow-hidden bg-cream-dark flex items-center justify-center">
               {% if item.photos %}
@@ -197,6 +209,10 @@
                 <span>{{ ('{:,}'.format(item.price)).replace(',', ' ') ~ ' ֏' if item.price is not none else 'Price on request' }}</span>
                 <span>·</span>
                 <span>{{ item.photos|length }} photo{{ '' if item.photos|length == 1 else 's' }}</span>
+                {% if missing %}
+                  <span>·</span>
+                  <span class="text-[#9b2c2c]/80">no {{ missing|join(' / ')|upper }}</span>
+                {% endif %}
               </p>
             </div>
             <svg class="chev w-4 h-4 text-ink/40 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 9l6 6 6-6"/></svg>
@@ -240,9 +256,25 @@
               </div>
 
               <!-- Details -->
-              <form method="POST" action="{{ url_for('admin_update_item', item_id=item.id) }}" class="flex flex-col gap-2.5">
-                <input name="name" value="{{ item.name }}" required placeholder="Name" class="field">
-                <textarea name="description" rows="5" placeholder="Description" class="field leading-relaxed">{{ item.description or '' }}</textarea>
+              <form method="POST" action="{{ url_for('admin_update_item', item_id=item.id) }}" class="lang-form flex flex-col gap-2.5">
+                <div class="flex gap-1 text-xs tracking-wider">
+                  {% for l in ['en', 'ru', 'hy'] %}
+                    <button type="button" data-lang="{{ l }}"
+                            class="lang-tab px-3 py-1.5 rounded-md transition {{ 'bg-charcoal text-cream' if l == 'en' else 'text-ink/60 hover:bg-charcoal/5' }}">
+                      {{ l|upper }}{% if l in missing %}<span class="ml-1 inline-block w-1.5 h-1.5 rounded-full bg-[#9b2c2c]/70 align-middle"></span>{% endif %}
+                    </button>
+                  {% endfor %}
+                </div>
+                <div class="lang-pane flex flex-col gap-2.5" data-lang="en">
+                  <input name="name" value="{{ item.name }}" required placeholder="Name" class="field">
+                  <textarea name="description" rows="5" placeholder="Description" class="field leading-relaxed">{{ item.description or '' }}</textarea>
+                </div>
+                {% for l, label in [('ru', 'Russian'), ('hy', 'Armenian')] %}
+                  <div class="lang-pane hidden flex-col gap-2.5" data-lang="{{ l }}">
+                    <input name="name_{{ l }}" value="{{ item['name_' ~ l] or '' }}" placeholder="Name in {{ label }} — empty shows English" class="field">
+                    <textarea name="description_{{ l }}" rows="5" placeholder="Description in {{ label }} — empty shows English" class="field leading-relaxed">{{ item['description_' ~ l] or '' }}</textarea>
+                  </div>
+                {% endfor %}
                 <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                   <select name="category" class="field col-span-2 sm:col-span-1">
                     {% for cat2 in categories %}
@@ -364,14 +396,39 @@
       }
     })();
 
-    // ---- Section rename: show "Save" only once the name actually changed ----
+    // ---- Section names: show "Save" only once a name actually changed ----
     document.querySelectorAll(".rename-form").forEach(function (f) {
-      var input = f.querySelector("input"), btn = f.querySelector(".save-btn");
-      input.addEventListener("input", function () {
-        btn.classList.toggle("hidden", input.value.trim() === input.getAttribute("data-original"));
+      var inputs = f.querySelectorAll("input"), btn = f.querySelector(".save-btn");
+      function changed() {
+        return Array.prototype.some.call(inputs, function (i) { return i.value.trim() !== i.getAttribute("data-original"); });
+      }
+      inputs.forEach(function (input) {
+        input.addEventListener("input", function () { btn.classList.toggle("hidden", !changed()); });
+        input.addEventListener("keydown", function (e) {
+          if (e.key === "Escape") {
+            inputs.forEach(function (i) { i.value = i.getAttribute("data-original"); });
+            btn.classList.add("hidden"); input.blur();
+          }
+        });
       });
-      input.addEventListener("keydown", function (e) {
-        if (e.key === "Escape") { input.value = input.getAttribute("data-original"); btn.classList.add("hidden"); input.blur(); }
+    });
+
+    // ---- Item language tabs (EN / RU / HY) ----
+    document.querySelectorAll(".lang-form").forEach(function (f) {
+      var tabs = f.querySelectorAll(".lang-tab"), panes = f.querySelectorAll(".lang-pane");
+      tabs.forEach(function (tab) {
+        tab.addEventListener("click", function () {
+          var lang = tab.getAttribute("data-lang");
+          tabs.forEach(function (t) {
+            var on = t === tab;
+            t.classList.toggle("bg-charcoal", on); t.classList.toggle("text-cream", on);
+            t.classList.toggle("text-ink/60", !on); t.classList.toggle("hover:bg-charcoal/5", !on);
+          });
+          panes.forEach(function (p) {
+            var on = p.getAttribute("data-lang") === lang;
+            p.classList.toggle("hidden", !on); p.classList.toggle("flex", on);
+          });
+        });
       });
     });
 
