@@ -88,6 +88,7 @@ A built-in admin page handles everything — no PythonAnywhere file editing, no 
    - **Set the USD rate** — prices are entered in AMD; the site shows a USD price too (switchable by visitors via an AMD/USD toggle above the catalog), automatically converted using this rate. Update it whenever the rate changes — there's no live/automatic lookup, since that would depend on external services PythonAnywhere's free tier can't reliably reach.
    - **Manage catalog sections** — add, rename, reorder (↑/↓) or delete them; changes appear on the site's tabs immediately. Deleting a section that still has items asks whether to move them to another section or delete them too.
    - **Add or delete items** — "Add item" creates one (then upload its photos on its card); "Delete item" removes it together with its photos.
+   - **Card details** — Fabric, Colour, Lace, Made to and Occasions are separate fields. Catalog cards show only the ones filled in; the description is shown only on the product page.
    - **Translations** — each section has EN / RU / HY name fields; each item has EN / RU / HY tabs. An empty translation falls back to English on the site, and items still missing a translation are marked "no RU / HY".
 
 ## Languages

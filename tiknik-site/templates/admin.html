@@ -172,7 +172,10 @@
           </select>
           <input name="price" type="number" min="0" placeholder="Price ֏" class="field w-32">
         </div>
-        <textarea name="description" rows="3" placeholder="Description (optional)" class="field sm:col-span-2 leading-relaxed"></textarea>
+        {% for key, label in attrs %}
+          <input name="{{ key }}" placeholder="{{ label }} (optional)" class="field {{ 'sm:col-span-2' if loop.last }}">
+        {% endfor %}
+        <textarea name="description" rows="3" placeholder="Description (optional) — shown only on the product page" class="field sm:col-span-2 leading-relaxed"></textarea>
         <div class="sm:col-span-2">
           <button type="submit" class="btn btn-dark">+ Create item</button>
         </div>
@@ -188,6 +191,20 @@
         </div>
         <input id="item-search" type="search" placeholder="Search items…" class="field w-full sm:w-64">
       </div>
+
+      {# Fabric / Colour / Lace / Made to / Occasions — shown on the catalog card when filled in.
+         sfx is '' for English or '_ru' / '_hy'; translations show the English value as a hint. #}
+      {% macro attr_fields(item, sfx) %}
+        <div class="grid sm:grid-cols-2 gap-x-2.5 gap-y-2">
+          {% for key, label in attrs %}
+            <label class="flex flex-col gap-1 min-w-0 {{ 'sm:col-span-2' if loop.last }}">
+              <span class="text-[10px] uppercase tracking-wider text-ink/45">{{ label }}</span>
+              <input name="{{ key ~ sfx }}" value="{{ item[key ~ sfx] or '' }}"
+                     placeholder="{{ (item[key] or '') if sfx else 'Not shown if empty' }}" class="field !py-1.5">
+            </label>
+          {% endfor %}
+        </div>
+      {% endmacro %}
 
       {% macro item_card(item) %}
         {% set missing = item.missing_langs %}
@@ -267,11 +284,13 @@
                 </div>
                 <div class="lang-pane flex flex-col gap-2.5" data-lang="en">
                   <input name="name" value="{{ item.name }}" required placeholder="Name" class="field">
-                  <textarea name="description" rows="5" placeholder="Description" class="field leading-relaxed">{{ item.description or '' }}</textarea>
+                  {{ attr_fields(item, '') }}
+                  <textarea name="description" rows="5" placeholder="Description — shown only on the product page" class="field leading-relaxed">{{ item.description or '' }}</textarea>
                 </div>
                 {% for l, label in [('ru', 'Russian'), ('hy', 'Armenian')] %}
                   <div class="lang-pane hidden flex-col gap-2.5" data-lang="{{ l }}">
                     <input name="name_{{ l }}" value="{{ item['name_' ~ l] or '' }}" placeholder="Name in {{ label }} — empty shows English" class="field">
+                    {{ attr_fields(item, '_' ~ l) }}
                     <textarea name="description_{{ l }}" rows="5" placeholder="Description in {{ label }} — empty shows English" class="field leading-relaxed">{{ item['description_' ~ l] or '' }}</textarea>
                   </div>
                 {% endfor %}

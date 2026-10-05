@@ -15,6 +15,17 @@ DB_PATH = os.path.join(BASE_DIR, "tiknik.db")
 PRODUCTS_DIR = os.path.join(BASE_DIR, "static", "img", "products")
 WSGI_FILE = "/var/www/tiknik_pythonanywhere_com_wsgi.py"
 
+# Short item attributes shown on catalog cards (each translatable like name/description).
+ATTRS = ("fabric", "colour", "lace", "made_to", "occasions")
+
+# How these attributes used to be written as "Label: value" lines inside descriptions —
+# used once to move them out into their own fields.
+LEGACY_ATTR_LABELS = {
+    "en": {"fabric": "Fabric", "colour": "Colour", "lace": "Lace", "made_to": "Made to", "occasions": "Occasions"},
+    "ru": {"fabric": "Ткань", "colour": "Цвет", "lace": "Кружево", "made_to": "Пошив", "occasions": "Поводы"},
+    "hy": {"fabric": "Կտոր", "colour": "Գույն", "lace": "Ժանյակ", "made_to": "Կարվում է", "occasions": "Առիթներ"},
+}
+
 ALLOWED_EXT = {"jpg", "jpeg", "png", "webp"}
 MAX_PHOTOS = 10
 MODES = ("Sale", "Rent", "Both", "Custom")
@@ -125,8 +136,12 @@ def init_db():
     if "image" not in item_cols:
         db.execute("ALTER TABLE items ADD COLUMN image TEXT")
 
-    # Translations: English lives in name/description, other languages in *_<lang> columns.
-    for table, fields in (("categories", ("name",)), ("items", ("name", "description"))):
+    for attr in ATTRS:
+        if attr not in _table_columns(db, "items"):
+            db.execute(f"ALTER TABLE items ADD COLUMN {attr} TEXT")
+
+    # Translations: English lives in name/description/attrs, other languages in *_<lang> columns.
+    for table, fields in (("categories", ("name",)), ("items", ("name", "description") + ATTRS)):
         cols = _table_columns(db, table)
         for field in fields:
             for lang in LANGS[1:]:
@@ -204,8 +219,34 @@ def init_db():
                 )
         db.execute("INSERT INTO settings (key, value) VALUES ('translations_seeded', '1')")
 
+    # One-off: move "Fabric: …"-style lines out of descriptions into the attribute fields.
+    if not db.execute("SELECT 1 FROM settings WHERE key = 'attrs_extracted'").fetchone():
+        for it in db.execute("SELECT * FROM items").fetchall():
+            for lang in LANGS:
+                sfx = "" if lang == "en" else f"_{lang}"
+                found, rest = split_legacy_attrs(it[f"description{sfx}"], LEGACY_ATTR_LABELS[lang])
+                found = {a: v for a, v in found.items() if not (it[f"{a}{sfx}"] or "").strip()}
+                if found:
+                    sets = ", ".join(f"{a}{sfx} = ?" for a in found)
+                    db.execute(f"UPDATE items SET {sets}, description{sfx} = ? WHERE id = ?",
+                               (*found.values(), rest, it["id"]))
+        db.execute("INSERT INTO settings (key, value) VALUES ('attrs_extracted', '1')")
+
     db.commit()
     db.close()
+
+
+def split_legacy_attrs(text, labels):
+    """Pull "Label: value" lines for known attribute labels out of a description."""
+    found, kept = {}, []
+    for line in (text or "").splitlines():
+        m = re.match(r"\s*([^:՝]+?)\s*[:՝]\s*(.+?)\s*$", line)
+        attr = next((a for a, label in labels.items() if m and m.group(1).lower() == label.lower()), None)
+        if attr and attr not in found:
+            found[attr] = m.group(2)
+        else:
+            kept.append(line)
+    return found, "\n".join(kept).strip()
 
 
 # ---------------------------------------------------------------------------
@@ -337,6 +378,7 @@ def api_items():
             "id": it["id"],
             "name": localized(it, "name", lang),
             "description": localized(it, "description", lang),
+            "attrs": {a: (localized(it, a, lang) or "").strip() for a in ATTRS},
             "category": it["category"],
             "mode": it["mode"],
             "price": it["price"],
@@ -409,10 +451,11 @@ def admin():
     for it in items:
         d = dict(it)
         d["photos"] = photos_by_item.get(it["id"], [])
+        # A language is "missing" when the name, or any filled-in English text, has no translation.
         d["missing_langs"] = [
             lang for lang in LANGS[1:]
             if not (it[f"name_{lang}"] or "").strip()
-            or ((it["description"] or "").strip() and not (it[f"description_{lang}"] or "").strip())
+            or any((it[f] or "").strip() and not (it[f"{f}_{lang}"] or "").strip() for f in ("description",) + ATTRS)
         ]
         item_list.append(d)
 
@@ -431,6 +474,7 @@ def admin():
         categories=categories,
         max_photos=MAX_PHOTOS,
         modes=MODES,
+        attrs=[(a, LEGACY_ATTR_LABELS["en"][a]) for a in ATTRS],
         usd_rate=usd_rate,
         rub_rate=rub_rate,
     )
@@ -574,6 +618,12 @@ def admin_update_item(item_id):
             f"UPDATE items SET name_{lang}=?, description_{lang}=? WHERE id=?",
             ((request.form.get(f"name_{lang}") or "").strip(), request.form.get(f"description_{lang}") or "", item_id),
         )
+    for lang in LANGS:
+        sfx = "" if lang == "en" else f"_{lang}"
+        db.execute(
+            f"UPDATE items SET {', '.join(f'{a}{sfx}=?' for a in ATTRS)} WHERE id=?",
+            (*[(request.form.get(f"{a}{sfx}") or "").strip() for a in ATTRS], item_id),
+        )
     db.commit()
     flash("Saved.", "ok")
     return back_to_admin(f"item-{item_id}")
@@ -599,8 +649,10 @@ def admin_add_item():
         return back_to_admin("add-item")
 
     cur = db.execute(
-        "INSERT INTO items (name, category, description, mode, price) VALUES (?,?,?,?,?)",
-        (name, category, request.form.get("description") or "", mode, parse_price(request.form.get("price"))),
+        f"INSERT INTO items (name, category, description, mode, price, {', '.join(ATTRS)}) "
+        f"VALUES (?,?,?,?,?{',?' * len(ATTRS)})",
+        (name, category, request.form.get("description") or "", mode, parse_price(request.form.get("price")),
+         *[(request.form.get(a) or "").strip() for a in ATTRS]),
     )
     db.commit()
     flash(f"“{name}” added — now upload its photos.", "ok")

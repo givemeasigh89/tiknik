@@ -107,6 +107,24 @@
     return t("mode_" + mode, mode);
   }
 
+  var ATTRS = ["fabric", "colour", "lace", "made_to", "occasions"];
+
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+    });
+  }
+
+  // Only the attributes that are filled in, as [label, value] pairs.
+  function filledAttrs(item) {
+    var attrs = item.attrs || {};
+    return ATTRS.filter(function (a) {
+      return attrs[a];
+    }).map(function (a) {
+      return [t("attr_" + a, a), attrs[a]];
+    });
+  }
+
   function photoUrl(filename) {
     return "/static/img/products/" + filename;
   }
@@ -135,9 +153,19 @@
       '<h3 class="font-serif text-lg text-charcoal leading-snug mb-1">' +
       item.name +
       "</h3>" +
-      '<p class="text-xs text-ink/60 leading-relaxed mb-3 flex-1">' +
-      (item.description || "") +
-      "</p>" +
+      '<dl class="text-xs leading-relaxed mb-3 flex-1 space-y-1">' +
+      filledAttrs(item)
+        .map(function (p) {
+          return (
+            '<div><dt class="inline font-medium text-charcoal/80">' +
+            esc(p[0]) +
+            ':</dt> <dd class="inline text-ink/60">' +
+            esc(p[1]) +
+            "</dd></div>"
+          );
+        })
+        .join("") +
+      "</dl>" +
       '<p class="text-sm text-charcoal font-medium">' +
       formatPrice(item) +
       "</p>" +
@@ -312,6 +340,20 @@
     document.getElementById("product-category").textContent = categoryName(item.category);
     document.getElementById("product-name").textContent = item.name;
     document.getElementById("product-price").textContent = formatPrice(item);
+    var attrsEl = document.getElementById("product-attrs");
+    var pairs = filledAttrs(item);
+    attrsEl.innerHTML = pairs
+      .map(function (p) {
+        return (
+          '<dt class="text-[11px] uppercase tracking-widest text-ink/45 pt-0.5">' +
+          esc(p[0]) +
+          '</dt><dd class="text-charcoal/85">' +
+          esc(p[1]) +
+          "</dd>"
+        );
+      })
+      .join("");
+    attrsEl.classList.toggle("hidden", !pairs.length);
     document.getElementById("product-description").textContent = item.description || "";
     mainIconWrap.innerHTML = iconSvg(item.category, "w-20 h-20");
 

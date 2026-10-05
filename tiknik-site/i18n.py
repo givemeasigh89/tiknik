@@ -118,6 +118,11 @@ UI = {
     },
 
     # Used by static/js/main.js (passed in as window.TIKNIK_I18N)
+    "attr_fabric": {"en": "Fabric", "ru": "Ткань", "hy": "Կտոր"},
+    "attr_colour": {"en": "Colour", "ru": "Цвет", "hy": "Գույն"},
+    "attr_lace": {"en": "Lace", "ru": "Кружево", "hy": "Ժանյակ"},
+    "attr_made_to": {"en": "Made to", "ru": "Пошив", "hy": "Կարվում է"},
+    "attr_occasions": {"en": "Occasions", "ru": "Поводы", "hy": "Առիթներ"},
     "price_on_request": {"en": "Price on request", "ru": "Цена по запросу", "hy": "Գինը՝ ըստ հարցման"},
     "per_day": {"en": " / day", "ru": " / сутки", "hy": " / օր"},
     "mode_Rent": {"en": "For Rent", "ru": "Аренда", "hy": "Վարձույթ"},
@@ -148,6 +153,7 @@ UI = {
 }
 
 JS_KEYS = (
+    "attr_fabric", "attr_colour", "attr_lace", "attr_made_to", "attr_occasions",
     "price_on_request", "per_day", "mode_Rent", "mode_Sale", "mode_Both", "mode_Custom",
     "load_error", "sending", "sent", "send_error", "required_error",
 )
