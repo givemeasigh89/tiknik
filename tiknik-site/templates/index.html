@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tiknik — Bespoke Bridal &amp; Couture</title>
+<meta name="description" content="Tiknik — bespoke bridal corsets, gowns, veils and accessories. Rent or order made-to-measure.">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          cream: '#EFEEEA',
+          'cream-dark': '#E4E1D8',
+          panel: '#E9E6DF',
+          charcoal: '#2E2C29',
+          ink: '#3A3A3A',
+          line: '#C9C3B4',
+          gold: '#A48F66',
+        },
+        fontFamily: {
+          serif: ['"Cormorant Garamond"', 'serif'],
+          sans: ['Jost', 'sans-serif'],
+        },
+      },
+    },
+  };
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+  body { font-family: 'Jost', sans-serif; }
+  .font-serif { font-family: 'Cormorant Garamond', serif; }
+
+  .tab-btn { transition: all .2s ease; }
+  .tab-btn[data-active] { background-color: #2E2C29; color: #EFEEEA; border-color: #2E2C29; }
+  .currency-btn { transition: all .2s ease; color: #3A3A3A; }
+  .currency-btn[data-active] { background-color: #2E2C29; color: #EFEEEA; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .fade-in { animation: fadeIn .35s ease both; }
+
+  .hero-bg {
+    background-image: url('{{ url_for("static", filename="img/hero-bride.jpg") }}');
+    background-size: cover;
+    background-position: center;
+  }
+</style>
+</head>
+<body class="bg-cream text-ink antialiased">
+
+<!-- ============================== HEADER ============================== -->
+<header class="fixed top-0 inset-x-0 z-50 bg-cream border-b border-line/60">
+  <div class="max-w-6xl mx-auto px-5 py-3 flex items-center justify-between">
+    <a href="#top" class="flex items-center gap-2">
+      <img src="{{ url_for('static', filename='img/logo-nav.png') }}" alt="Tiknik" class="h-9 w-auto">
+    </a>
+    <nav class="hidden sm:flex items-center gap-7 text-sm tracking-wide text-ink/70">
+      <a href="#catalog" class="hover:text-charcoal transition">Catalog</a>
+      <a href="#process" class="hover:text-charcoal transition">Process</a>
+      <a href="#worldwide" class="hover:text-charcoal transition">Worldwide</a>
+      <a href="#contact" class="hover:text-charcoal transition">Contact</a>
+    </nav>
+    <a href="#contact" class="text-xs sm:text-sm tracking-wide bg-charcoal text-cream px-4 py-2 hover:bg-charcoal/90 transition">
+      Book a Fitting
+    </a>
+  </div>
+</header>
+
+<div id="top"></div>
+
+<!-- ============================== HERO ============================== -->
+<section class="hero-bg aspect-[4/5] sm:aspect-[16/10] lg:aspect-[16/9] w-full pt-24"></section>
+
+<!-- ============================== HERO CTA STRIP ============================== -->
+<section class="bg-cream text-charcoal text-center px-6 py-12 sm:py-14 border-b border-line/60">
+  <img src="{{ url_for('static', filename='img/logo-full.png') }}" alt="Tiknik" class="h-14 mx-auto mb-5">
+  <p class="font-serif text-xl sm:text-2xl max-w-xl mx-auto mb-7 text-charcoal/90">
+    Bespoke bridal corsets, gowns, veils and accessories — to rent or to keep.
+  </p>
+  <div class="flex items-center justify-center gap-3 flex-wrap">
+    <a href="#contact" class="bg-charcoal text-cream px-6 py-3 text-sm tracking-wide hover:bg-charcoal/90 transition">
+      ✨ Book a Fitting or Request a Quote
+    </a>
+    <a href="#catalog" class="border border-charcoal/40 text-charcoal px-6 py-3 text-sm tracking-wide hover:bg-charcoal/5 transition">
+      View the Catalog
+    </a>
+  </div>
+</section>
+
+<!-- ============================== CATALOG ============================== -->
+<section id="catalog" class="max-w-6xl mx-auto px-5 py-16">
+  <div class="flex items-end justify-between flex-wrap gap-4 mb-8">
+    <div>
+      <p class="text-xs uppercase tracking-widest text-gold mb-2">The Collection</p>
+      <h2 class="font-serif text-3xl sm:text-4xl text-charcoal">Catalog</h2>
+    </div>
+    <div id="currency-toggle" class="flex items-center border border-charcoal/20 text-xs tracking-wide overflow-hidden shrink-0">
+      <button type="button" class="currency-btn px-3 py-2" data-currency="USD" data-active="true">USD $</button>
+      <button type="button" class="currency-btn px-3 py-2 border-l border-charcoal/20" data-currency="RUB">RUB ₽</button>
+      <button type="button" class="currency-btn px-3 py-2 border-l border-charcoal/20" data-currency="AMD">AMD ֏</button>
+    </div>
+  </div>
+
+  <div class="flex gap-2 overflow-x-auto pb-2 mb-8 -mx-5 px-5 sm:mx-0 sm:px-0 sm:flex-wrap">
+    <button class="tab-btn shrink-0 border border-charcoal/25 text-charcoal text-xs sm:text-sm px-4 py-2 tracking-wide" data-category="all" data-active="true">All</button>
+    {% for cat in categories %}
+      <button class="tab-btn shrink-0 border border-charcoal/25 text-charcoal text-xs sm:text-sm px-4 py-2 tracking-wide" data-category="{{ cat.slug }}">{{ cat.name }}</button>
+    {% endfor %}
+  </div>
+
+  <div id="catalog-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6"></div>
+  <p id="catalog-empty" class="hidden text-center text-sm text-ink/50 py-10">No items in this category yet.</p>
+</section>
+
+<!-- ============================== PROCESS ============================== -->
+<section id="process" class="bg-panel/60 py-16">
+  <div class="max-w-6xl mx-auto px-5">
+    <p class="text-xs uppercase tracking-widest text-gold mb-2 text-center">How It Works</p>
+    <h2 class="font-serif text-3xl sm:text-4xl text-charcoal text-center mb-12">From Sketch to Fitting</h2>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div>
+        <div class="aspect-square bg-cream-dark overflow-hidden mb-4">
+          <img src="{{ url_for('static', filename='img/crop-fabric-rolls.jpg') }}" alt="" class="w-full h-full object-cover">
+        </div>
+        <p class="text-xs uppercase tracking-widest text-gold mb-1">01</p>
+        <h3 class="font-serif text-lg text-charcoal mb-1">Consultation &amp; Sketching</h3>
+        <p class="text-sm text-ink/60 leading-relaxed">We talk through silhouette, fabric and occasion, then sketch your piece.</p>
+      </div>
+      <div>
+        <div class="aspect-square bg-cream-dark overflow-hidden mb-4">
+          <img src="{{ url_for('static', filename='img/crop-scissors.jpg') }}" alt="" class="w-full h-full object-cover">
+        </div>
+        <p class="text-xs uppercase tracking-widest text-gold mb-1">02</p>
+        <h3 class="font-serif text-lg text-charcoal mb-1">Measurements &amp; Toile</h3>
+        <p class="text-sm text-ink/60 leading-relaxed">Precise measurements and a toile fitting before cutting final fabric.</p>
+      </div>
+      <div>
+        <div class="aspect-square bg-cream-dark overflow-hidden mb-4">
+          <img src="{{ url_for('static', filename='img/crop-corset2.jpg') }}" alt="" class="w-full h-full object-cover">
+        </div>
+        <p class="text-xs uppercase tracking-widest text-gold mb-1">03</p>
+        <h3 class="font-serif text-lg text-charcoal mb-1">Fittings</h3>
+        <p class="text-sm text-ink/60 leading-relaxed">One or more fittings to perfect the fit and finish.</p>
+      </div>
+      <div>
+        <div class="aspect-square bg-cream-dark overflow-hidden mb-4">
+          <img src="{{ url_for('static', filename='img/sewing-machine.jpg') }}" alt="" class="w-full h-full object-cover">
+        </div>
+        <p class="text-xs uppercase tracking-widest text-gold mb-1">04</p>
+        <h3 class="font-serif text-lg text-charcoal mb-1">Final Reveal</h3>
+        <p class="text-sm text-ink/60 leading-relaxed">Your piece, finished by hand and ready to wear. 2–4 months for bridal gowns, express on request.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== WORLDWIDE ============================== -->
+<section id="worldwide" class="bg-charcoal text-cream py-16">
+  <div class="max-w-4xl mx-auto px-5 text-center">
+    <p class="text-xs uppercase tracking-widest text-gold mb-2">Worldwide</p>
+    <h2 class="font-serif text-3xl sm:text-4xl mb-5">We Ship &amp; Fit Remotely</h2>
+    <p class="text-cream/70 leading-relaxed max-w-xl mx-auto">
+      Based in Yerevan, working with clients worldwide. Remote measurement guides, video fittings and
+      international shipping available for custom and made-to-order pieces.
+    </p>
+  </div>
+</section>
+
+<!-- ============================== CONTACT ============================== -->
+<section id="contact" class="max-w-xl mx-auto px-5 py-16">
+  <p class="text-xs uppercase tracking-widest text-gold mb-2 text-center">Get in Touch</p>
+  <h2 class="font-serif text-3xl sm:text-4xl text-charcoal text-center mb-8">Book a Fitting or Request a Quote</h2>
+  <form id="quote-form" class="grid sm:grid-cols-2 gap-4">
+    <input name="name" required placeholder="Your name"
+      class="border border-charcoal/25 bg-transparent px-3 py-3 text-sm focus:outline-none focus:border-charcoal">
+    <input name="contact" required placeholder="Email, phone or Instagram"
+      class="border border-charcoal/25 bg-transparent px-3 py-3 text-sm focus:outline-none focus:border-charcoal">
+    <select name="category" class="sm:col-span-2 border border-charcoal/25 bg-transparent px-3 py-3 text-sm focus:outline-none focus:border-charcoal">
+      <option value="">What are you interested in?</option>
+      {% for cat in categories %}
+        <option value="{{ cat.slug }}">{{ cat.name }}</option>
+      {% endfor %}
+    </select>
+    <textarea name="message" rows="4" placeholder="Tell us a little about what you're looking for"
+      class="sm:col-span-2 border border-charcoal/25 bg-transparent px-3 py-3 text-sm focus:outline-none focus:border-charcoal"></textarea>
+    <button type="submit" class="sm:col-span-2 bg-charcoal text-cream px-6 py-3 text-sm tracking-wide hover:bg-charcoal/90 transition">
+      Send Request
+    </button>
+    <p id="quote-status" class="sm:col-span-2 text-sm mt-1"></p>
+  </form>
+</section>
+
+<!-- ============================== FOOTER ============================== -->
+<footer class="border-t border-line/60 py-10">
+  <div class="max-w-6xl mx-auto px-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+    <img src="{{ url_for('static', filename='img/logo-nav.png') }}" alt="Tiknik" class="h-7 w-auto">
+    <div class="flex items-center gap-5 text-sm text-ink/60">
+      <a href="https://instagram.com" target="_blank" rel="noopener" class="hover:text-charcoal transition">Instagram</a>
+      <a href="https://wa.me/374" target="_blank" rel="noopener" class="hover:text-charcoal transition">WhatsApp</a>
+      <a href="mailto:hello@tiknik.com" class="hover:text-charcoal transition">hello@tiknik.com</a>
+    </div>
+    <p class="text-xs text-ink/40">&copy; Tiknik</p>
+  </div>
+</footer>
+
+<!-- ============================== PRODUCT DETAIL OVERLAY ============================== -->
+<div id="product-overlay" class="fixed inset-0 z-[70] bg-cream translate-x-full transition-transform duration-300 ease-out overflow-y-auto">
+  <div class="max-w-[1500px] mx-auto px-5 py-6 sm:py-8">
+    <div class="flex items-center justify-between gap-4 mb-6">
+      <button id="product-close" class="text-sm tracking-wide text-ink/70 hover:text-charcoal flex items-center gap-2 shrink-0">
+        <span aria-hidden="true">&larr;</span> Back to Catalog
+      </button>
+      <div class="flex items-center gap-3 sm:gap-4 text-sm text-ink/70 shrink-0">
+        <button id="product-item-prev" aria-label="Previous item" class="hidden hover:text-charcoal flex items-center gap-1">
+          <span aria-hidden="true">&#8249;</span> <span class="hidden sm:inline">Prev item</span>
+        </button>
+        <span id="product-item-counter" class="text-xs text-ink/40 tracking-wide"></span>
+        <button id="product-item-next" aria-label="Next item" class="hidden hover:text-charcoal flex items-center gap-1">
+          <span class="hidden sm:inline">Next item</span> <span aria-hidden="true">&#8250;</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="grid md:grid-cols-[minmax(0,1fr)_96px_minmax(0,1fr)] lg:grid-cols-[minmax(0,1.6fr)_110px_minmax(0,1fr)] gap-6 lg:gap-10">
+
+      <!-- Main image -->
+      <div id="product-main-image-wrap" class="relative aspect-[3/4] bg-cream-dark overflow-hidden order-1 cursor-zoom-in">
+        <img id="product-main-image" src="" alt="" class="w-full h-full object-cover hidden">
+        <div id="product-main-icon" class="w-full h-full flex items-center justify-center text-charcoal/25"></div>
+        <button id="product-prev" aria-label="Previous photo" class="hidden absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-cream/85 hover:bg-cream flex items-center justify-center text-charcoal text-lg shadow-sm">&#8249;</button>
+        <button id="product-next" aria-label="Next photo" class="hidden absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-cream/85 hover:bg-cream flex items-center justify-center text-charcoal text-lg shadow-sm">&#8250;</button>
+      </div>
+
+      <!-- Thumbnails -->
+      <div id="product-thumbs" class="hidden order-2 flex md:flex-col gap-2 overflow-x-auto md:overflow-y-auto md:max-h-[640px] lg:max-h-[780px] pb-1 md:pb-0"></div>
+
+      <!-- Details -->
+      <div class="order-3 pt-1">
+        <p id="product-category" class="text-xs uppercase tracking-widest text-gold mb-2"></p>
+        <h2 id="product-name" class="font-serif text-3xl sm:text-4xl text-charcoal leading-tight mb-3"></h2>
+        <p id="product-price" class="text-lg text-charcoal mb-5"></p>
+        <p id="product-description" class="text-sm text-ink/70 leading-relaxed mb-8 whitespace-pre-line"></p>
+        <a href="#contact" onclick="document.getElementById('product-close').click()" class="inline-block bg-charcoal text-cream px-6 py-3 text-sm tracking-wide hover:bg-charcoal/90 transition">
+          ✨ Book a Fitting or Request a Quote
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================== ZOOM OVERLAY ============================== -->
+<div id="zoom-overlay" class="fixed inset-0 z-[80] bg-black/95 hidden items-center justify-center overflow-hidden touch-none select-none">
+  <button id="zoom-close" aria-label="Close zoom" class="absolute top-4 right-4 w-10 h-10 rounded-full bg-cream/15 hover:bg-cream/25 text-cream text-xl flex items-center justify-center z-10">&times;</button>
+  <p class="absolute bottom-4 inset-x-0 text-center text-cream/50 text-xs tracking-wide hidden sm:block z-10 pointer-events-none">Scroll or double-click to zoom &middot; drag to pan &middot; Esc to close</p>
+  <img id="zoom-image" src="" alt="" class="max-w-[100vw] max-h-[100vh] w-auto h-auto object-contain will-change-transform" style="transform-origin: center center;">
+</div>
+
+<script>
+  window.TIKNIK_CATEGORIES = {{ categories|tojson }};
+  window.TIKNIK_RATES = { USD: {{ usd_rate|float }}, RUB: {{ rub_rate|float }} };
+</script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

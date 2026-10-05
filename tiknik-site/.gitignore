@@ -1,0 +1,4 @@
+tiknik.db
+static/img/products/*
+__pycache__/
+*.pyc

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tiknik Admin — Sign in</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: { extend: { colors: {
+      cream: '#EFEEEA', 'cream-dark': '#E4E1D8', charcoal: '#2E2C29', ink: '#3A3A3A', line: '#C9C3B4', gold: '#A48F66',
+    } } }
+  };
+</script>
+</head>
+<body class="bg-cream text-ink min-h-screen flex items-center justify-center px-5">
+  <div class="w-full max-w-sm">
+    <h1 class="text-2xl text-charcoal mb-6 text-center">Tiknik Admin</h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="mb-4">
+          {% for category, msg in messages %}
+            <p class="text-sm {{ 'text-green-800' if category == 'ok' else 'text-red-700' }}">{{ msg }}</p>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+    <form method="POST" class="flex flex-col gap-3">
+      <input type="password" name="password" placeholder="Password" required
+        class="border border-charcoal/25 bg-transparent px-3 py-2 text-sm focus:outline-none focus:border-charcoal">
+      <button type="submit" class="bg-charcoal text-cream text-sm px-3 py-2 hover:bg-charcoal/90 transition">
+        Sign In
+      </button>
+    </form>
+  </div>
+</body>
+</html>
