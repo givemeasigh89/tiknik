@@ -159,22 +159,62 @@
       </form>
     </section>
 
+      {# One parameter (e.g. Fabric: Batiste), shown on the catalog card when it has a value.
+         sfx is '' for English or '_ru' / '_hy'; translations show the English text as a hint.
+         Row N in every language pane is the same parameter — the JS below keeps them in step. #}
+      {% macro param_row(a, sfx) %}
+        <div class="param-row flex gap-1.5 items-center">
+          <input name="p_label{{ sfx }}" value="{{ a['label' ~ sfx] or '' }}" {{ 'list=param-labels' if not sfx }}
+                 placeholder="{{ (a.label or 'Parameter') if sfx else 'Parameter, e.g. Fabric' }}" class="field !py-1.5 w-32 sm:w-40 shrink-0 min-w-0">
+          <input name="p_value{{ sfx }}" value="{{ a['value' ~ sfx] or '' }}"
+                 placeholder="{{ (a.value or 'Value') if sfx else 'Value — not shown if empty' }}" class="field !py-1.5 flex-1 min-w-0">
+          <button type="button" class="icon-btn danger js-param-del shrink-0" title="Remove parameter">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          </button>
+        </div>
+      {% endmacro %}
+
+      {% macro param_fields(attrs, sfx) %}
+        <div>
+          <p class="text-[10px] uppercase tracking-wider text-ink/45 mb-1.5">Parameters · shown on the card</p>
+          <div class="params flex flex-col gap-1.5" data-sfx="{{ sfx }}">
+            {% for a in attrs %}{{ param_row(a, sfx) }}{% endfor %}
+          </div>
+          <button type="button" class="js-param-add text-xs text-ink/60 hover:text-charcoal mt-1.5 px-1">+ Add parameter</button>
+        </div>
+      {% endmacro %}
+
+      {# Sale price and/or rent price per day — the JS shows only the ones the chosen mode uses. #}
+      {% macro price_fields(item) %}
+        <label class="js-price-sale flex flex-col gap-1 min-w-0">
+          <span class="text-[10px] uppercase tracking-wider text-ink/45">Sale price ֏</span>
+          <input name="price" type="number" min="0" value="{{ item.price if item.price is not none else '' }}" placeholder="—" class="field">
+        </label>
+        <label class="js-price-rent flex flex-col gap-1 min-w-0">
+          <span class="text-[10px] uppercase tracking-wider text-ink/45">Rent ֏ / day</span>
+          <input name="rent_price" type="number" min="0" value="{{ item.rent_price if item.rent_price is not none else '' }}" placeholder="—" class="field">
+        </label>
+      {% endmacro %}
+
     <!-- ===================== Add item ===================== -->
     <section id="add-item" class="card p-5 sm:p-7">
       <h2 class="font-serif text-3xl text-charcoal">Add item</h2>
-      <p class="text-sm text-ink/55 mt-1 mb-5">Create the item in English first — you'll add its parameters, photos, videos and RU/HY translations on its card right after.</p>
-      <form method="POST" action="{{ url_for('admin_add_item') }}" class="grid sm:grid-cols-2 gap-3">
+      <p class="text-sm text-ink/55 mt-1 mb-5">Create the item in English first — you'll add photos, videos and RU/HY translations on its card right after.</p>
+      <form method="POST" action="{{ url_for('admin_add_item') }}" class="lang-form price-form grid sm:grid-cols-2 gap-3">
         <input name="name" required placeholder="Name" class="field sm:col-span-2">
         <select name="category" required class="field">
           {% for cat in categories %}
             <option value="{{ cat.slug }}">{{ cat.name }}</option>
           {% endfor %}
         </select>
-        <div class="flex gap-3">
-          <select name="mode" class="field flex-1 min-w-0">
-            {% for m in modes %}<option value="{{ m }}">{{ m }}</option>{% endfor %}
-          </select>
-          <input name="price" type="number" min="0" placeholder="Price ֏" class="field w-32">
+        <select name="mode" class="field js-mode">
+          {% for m in modes %}<option value="{{ m }}">{{ m }}</option>{% endfor %}
+        </select>
+        <div class="sm:col-span-2 grid grid-cols-2 gap-3">{{ price_fields({}) }}</div>
+        <div class="sm:col-span-2">
+          {% set rows = [] %}{% for l in default_params %}{% set _ = rows.append({'label': l}) %}{% endfor %}
+          {{ param_fields(rows, '') }}
+          <p class="text-[11px] text-ink/40 mt-1">Keep only the parameters this item needs — remove the rest with ×, or add your own.</p>
         </div>
         <textarea name="description" rows="3" placeholder="Description (optional) — shown only on the product page" class="field sm:col-span-2 leading-relaxed"></textarea>
         <div class="sm:col-span-2">
@@ -193,30 +233,6 @@
         <input id="item-search" type="search" placeholder="Search items…" class="field w-full sm:w-64">
       </div>
 
-      {# One parameter (e.g. Fabric: Batiste), shown on the catalog card when it has a value.
-         sfx is '' for English or '_ru' / '_hy'; translations show the English text as a hint.
-         Row N in every language pane is the same parameter — the JS below keeps them in step. #}
-      {% macro param_row(a, sfx) %}
-        <div class="param-row flex gap-1.5 items-center">
-          <input name="p_label{{ sfx }}" value="{{ a['label' ~ sfx] or '' }}" {{ 'list=param-labels' if not sfx }}
-                 placeholder="{{ (a.label or 'Parameter') if sfx else 'Parameter, e.g. Fabric' }}" class="field !py-1.5 w-32 sm:w-40 shrink-0 min-w-0">
-          <input name="p_value{{ sfx }}" value="{{ a['value' ~ sfx] or '' }}"
-                 placeholder="{{ (a.value or 'Value') if sfx else 'Value — not shown if empty' }}" class="field !py-1.5 flex-1 min-w-0">
-          <button type="button" class="icon-btn danger js-param-del shrink-0" title="Remove parameter">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 6l12 12M18 6L6 18"/></svg>
-          </button>
-        </div>
-      {% endmacro %}
-
-      {% macro param_fields(item, sfx) %}
-        <div>
-          <p class="text-[10px] uppercase tracking-wider text-ink/45 mb-1.5">Parameters · shown on the card</p>
-          <div class="params flex flex-col gap-1.5" data-sfx="{{ sfx }}">
-            {% for a in item.attrs %}{{ param_row(a, sfx) }}{% endfor %}
-          </div>
-          <button type="button" class="js-param-add text-xs text-ink/60 hover:text-charcoal mt-1.5 px-1">+ Add parameter</button>
-        </div>
-      {% endmacro %}
 
       {% macro item_card(item) %}
         {% set missing = item.missing_langs %}
@@ -235,7 +251,9 @@
               <p class="text-xs text-ink/50 mt-0.5 flex items-center gap-2">
                 <span class="uppercase tracking-wider text-[10px] text-gold">{{ item.mode }}</span>
                 <span>·</span>
-                <span>{{ ('{:,}'.format(item.price)).replace(',', ' ') ~ ' ֏' if item.price is not none else 'Price on request' }}</span>
+                {% set sale = ('{:,}'.format(item.price)).replace(',', ' ') ~ ' ֏' if item.price is not none and item.mode in ('Sale', 'Both') %}
+                {% set rent = ('{:,}'.format(item.rent_price)).replace(',', ' ') ~ ' ֏/day' if item.rent_price is not none and item.mode in ('Rent', 'Both') %}
+                <span>{{ [sale, rent]|select|join(' · ') or 'Price on request' }}</span>
                 <span>·</span>
                 <span>{{ item.photo_count }} photo{{ '' if item.photo_count == 1 else 's' }}{% if item.video_count %}, {{ item.video_count }} video{{ '' if item.video_count == 1 else 's' }}{% endif %}</span>
                 {% if missing %}
@@ -306,28 +324,28 @@
                 </div>
                 <div class="lang-pane flex flex-col gap-2.5" data-lang="en">
                   <input name="name" value="{{ item.name }}" required placeholder="Name" class="field">
-                  {{ param_fields(item, '') }}
+                  {{ param_fields(item.attrs, '') }}
                   <textarea name="description" rows="5" placeholder="Description — shown only on the product page" class="field leading-relaxed">{{ item.description or '' }}</textarea>
                 </div>
                 {% for l, label in [('ru', 'Russian'), ('hy', 'Armenian')] %}
                   <div class="lang-pane hidden flex-col gap-2.5" data-lang="{{ l }}">
                     <input name="name_{{ l }}" value="{{ item['name_' ~ l] or '' }}" placeholder="Name in {{ label }} — empty shows English" class="field">
-                    {{ param_fields(item, '_' ~ l) }}
+                    {{ param_fields(item.attrs, '_' ~ l) }}
                     <textarea name="description_{{ l }}" rows="5" placeholder="Description in {{ label }} — empty shows English" class="field leading-relaxed">{{ item['description_' ~ l] or '' }}</textarea>
                   </div>
                 {% endfor %}
-                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                  <select name="category" class="field col-span-2 sm:col-span-1">
+                <div class="grid grid-cols-2 gap-2.5">
+                  <select name="category" class="field">
                     {% for cat2 in categories %}
                       <option value="{{ cat2.slug }}" {{ 'selected' if item.category == cat2.slug }}>{{ cat2.name }}</option>
                     {% endfor %}
                   </select>
-                  <select name="mode" class="field">
+                  <select name="mode" class="field js-mode">
                     {% for m in modes %}
                       <option value="{{ m }}" {{ 'selected' if item.mode == m }}>{{ m }}</option>
                     {% endfor %}
                   </select>
-                  <input name="price" type="number" min="0" value="{{ item.price if item.price is not none else '' }}" placeholder="Price ֏" class="field">
+                  {{ price_fields(item) }}
                 </div>
                 <div class="flex items-center justify-between gap-2 mt-1">
                   <button type="submit" class="btn btn-dark">Save changes</button>
@@ -533,6 +551,18 @@
           if (known && known[lang] && !input.value) input.value = known[lang];
         });
       });
+    });
+
+    // ---- Prices: Sale shows the sale price, Rent the price per day, Both shows both, Custom neither ----
+    document.querySelectorAll(".js-mode").forEach(function (select) {
+      var form = select.form;
+      function update() {
+        var m = select.value;
+        form.querySelector(".js-price-sale").classList.toggle("hidden", m !== "Sale" && m !== "Both");
+        form.querySelector(".js-price-rent").classList.toggle("hidden", m !== "Rent" && m !== "Both");
+      }
+      select.addEventListener("change", update);
+      update();
     });
 
     // ---- Upload as soon as files are picked (videos over the size limit are refused right away) ----

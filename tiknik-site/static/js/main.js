@@ -65,20 +65,22 @@
     return Math.round(value / 100) * 100;
   }
 
+  function formatAmount(amd) {
+    if (activeCurrency === "USD") return "$" + niceRound(amd / RATES.USD).toLocaleString("en-US");
+    if (activeCurrency === "RUB") return niceRound(amd / RATES.RUB).toLocaleString("en-US") + " ₽";
+    return amd.toLocaleString("en-US") + " ֏";
+  }
+
+  // Sale price and/or rent price per day, depending on the item's mode — "$300 · $40 / day" for both.
   function formatPrice(item) {
-    if (item.mode === "Custom" || !item.price) {
-      return t("price_on_request", "Price on request");
+    var parts = [];
+    if ((item.mode === "Sale" || item.mode === "Both") && item.price) {
+      parts.push(formatAmount(item.price));
     }
-    var display;
-    if (activeCurrency === "USD") {
-      display = "$" + niceRound(item.price / RATES.USD).toLocaleString("en-US");
-    } else if (activeCurrency === "RUB") {
-      display = niceRound(item.price / RATES.RUB).toLocaleString("en-US") + " ₽";
-    } else {
-      display = item.price.toLocaleString("en-US") + " ֏";
+    if ((item.mode === "Rent" || item.mode === "Both") && item.rent_price) {
+      parts.push(formatAmount(item.rent_price) + t("per_day", " / day"));
     }
-    if (item.mode === "Rent") return display + t("per_day", " / day");
-    return display;
+    return parts.length ? parts.join(" · ") : t("price_on_request", "Price on request");
   }
 
   function setCurrency(code) {

@@ -31,7 +31,7 @@ LEGACY_ATTR_LABELS = {
 
 ALLOWED_EXT = {"jpg", "jpeg", "png", "webp"}
 VIDEO_EXT = {"mp4", "webm", "mov"}
-MAX_PHOTOS = 10
+MAX_PHOTOS = 20
 MAX_VIDEOS = 3
 # Free PythonAnywhere accounts get 512 MB of disk in total (code included), so videos are capped.
 MAX_VIDEO_MB = 30
@@ -144,6 +144,10 @@ def init_db():
     if "image" not in item_cols:
         db.execute("ALTER TABLE items ADD COLUMN image TEXT")
 
+    # `price` is the sale price; `rent_price` is the rental price per day.
+    if "rent_price" not in _table_columns(db, "items"):
+        db.execute("ALTER TABLE items ADD COLUMN rent_price INTEGER")
+
     for attr in ATTRS:
         if attr not in _table_columns(db, "items"):
             db.execute(f"ALTER TABLE items ADD COLUMN {attr} TEXT")
@@ -253,6 +257,11 @@ def init_db():
                                (*found.values(), rest, it["id"]))
         db.execute("INSERT INTO settings (key, value) VALUES ('attrs_extracted', '1')")
 
+    # One-off: rental items used to keep their per-day price in `price`.
+    if not db.execute("SELECT 1 FROM settings WHERE key = 'rent_price_split'").fetchone():
+        db.execute("UPDATE items SET rent_price = price, price = NULL WHERE mode = 'Rent' AND rent_price IS NULL")
+        db.execute("INSERT INTO settings (key, value) VALUES ('rent_price_split', '1')")
+
     # One-off: move the fixed attribute columns into per-item parameter rows.
     if not db.execute("SELECT 1 FROM settings WHERE key = 'attrs_to_rows'").fetchone():
         for it in db.execute("SELECT * FROM items").fetchall():
@@ -355,6 +364,20 @@ def attrs_by_item(db):
     return result
 
 
+def known_param_labels(db):
+    """Parameter labels already in use, with their RU / HY translations: {"Fabric": {"ru": "Ткань", "hy": "Կտոր"}}."""
+    known_labels = {}
+    for a in db.execute("SELECT label, label_ru, label_hy FROM item_attrs WHERE TRIM(COALESCE(label, '')) != '' ORDER BY id"):
+        known = known_labels.setdefault(a["label"].strip(), {"ru": "", "hy": ""})
+        for lang in LANGS[1:]:
+            known[lang] = known[lang] or (a[f"label_{lang}"] or "").strip()
+    for a in ATTRS:
+        known = known_labels.setdefault(LEGACY_ATTR_LABELS["en"][a], {"ru": "", "hy": ""})
+        for lang in LANGS[1:]:
+            known[lang] = known[lang] or LEGACY_ATTR_LABELS[lang][a]
+    return known_labels
+
+
 def uploads_size_mb():
     total = 0
     for entry in os.scandir(PRODUCTS_DIR):
@@ -443,6 +466,7 @@ def api_items():
             "category": it["category"],
             "mode": it["mode"],
             "price": it["price"],
+            "rent_price": it["rent_price"],
             "media": media_by_item.get(it["id"], []),
         })
     return jsonify(result)
@@ -533,11 +557,7 @@ def admin():
         item_list.append(d)
 
     # Parameter labels already in use, so the admin can pick one and get its translations filled in.
-    known_labels = {}
-    for a in db.execute("SELECT label, label_ru, label_hy FROM item_attrs WHERE TRIM(COALESCE(label, '')) != '' ORDER BY id"):
-        known = known_labels.setdefault(a["label"].strip(), {"ru": "", "hy": ""})
-        for lang in LANGS[1:]:
-            known[lang] = known[lang] or (a[f"label_{lang}"] or "").strip()
+    known_labels = known_param_labels(db)
 
     known_slugs = {c["slug"] for c in categories}
     counts = {c["slug"]: 0 for c in categories}
@@ -558,6 +578,7 @@ def admin():
         uploads_mb=uploads_size_mb(),
         modes=MODES,
         known_labels=known_labels,
+        default_params=[LEGACY_ATTR_LABELS["en"][a] for a in ATTRS],
         usd_rate=usd_rate,
         rub_rate=rub_rate,
     )
@@ -690,6 +711,7 @@ def admin_update_item(item_id):
     mode = request.form.get("mode") or "Sale"
     category = (request.form.get("category") or "").strip()
     price = parse_price(request.form.get("price"))
+    rent_price = parse_price(request.form.get("rent_price"))
 
     if not name:
         flash("Name is required.", "error")
@@ -705,13 +727,13 @@ def admin_update_item(item_id):
 
     if category:
         db.execute(
-            "UPDATE items SET name=?, description=?, mode=?, price=?, category=? WHERE id=?",
-            (name, description, mode, price, category, item_id),
+            "UPDATE items SET name=?, description=?, mode=?, price=?, rent_price=?, category=? WHERE id=?",
+            (name, description, mode, price, rent_price, category, item_id),
         )
     else:
         db.execute(
-            "UPDATE items SET name=?, description=?, mode=?, price=? WHERE id=?",
-            (name, description, mode, price, item_id),
+            "UPDATE items SET name=?, description=?, mode=?, price=?, rent_price=? WHERE id=?",
+            (name, description, mode, price, rent_price, item_id),
         )
     for lang in LANGS[1:]:
         db.execute(
@@ -727,13 +749,19 @@ def admin_update_item(item_id):
 ATTR_FIELDS = ("label", "label_ru", "label_hy", "value", "value_ru", "value_hy")
 
 
-def save_item_attrs(db, item_id):
-    """Replace an item's parameters with the rows posted from its admin card (p_label, p_value_ru, …)."""
+def save_item_attrs(db, item_id, known_labels=None):
+    """Replace an item's parameters with the rows posted from its admin card (p_label, p_value_ru, …).
+
+    With known_labels, missing RU / HY labels are filled in from labels used before."""
     columns = [request.form.getlist(f"p_{field}") for field in ATTR_FIELDS]
     db.execute("DELETE FROM item_attrs WHERE item_id = ?", (item_id,))
     position = 0
     for row in itertools.zip_longest(*columns, fillvalue=""):
         row = [v.strip() for v in row]
+        known = (known_labels or {}).get(row[0])
+        if known:
+            row[1] = row[1] or known["ru"]
+            row[2] = row[2] or known["hy"]
         if any(row):
             db.execute(
                 f"INSERT INTO item_attrs (item_id, position, {', '.join(ATTR_FIELDS)}) VALUES (?,?,?,?,?,?,?,?)",
@@ -762,15 +790,11 @@ def admin_add_item():
         return back_to_admin("add-item")
 
     cur = db.execute(
-        "INSERT INTO items (name, category, description, mode, price) VALUES (?,?,?,?,?)",
-        (name, category, request.form.get("description") or "", mode, parse_price(request.form.get("price"))),
+        "INSERT INTO items (name, category, description, mode, price, rent_price) VALUES (?,?,?,?,?,?)",
+        (name, category, request.form.get("description") or "", mode,
+         parse_price(request.form.get("price")), parse_price(request.form.get("rent_price"))),
     )
-    # Start with the usual parameters, empty (empty ones aren't shown) — add or remove them on the item's card.
-    for position, a in enumerate(ATTRS):
-        db.execute(
-            "INSERT INTO item_attrs (item_id, position, label, label_ru, label_hy) VALUES (?,?,?,?,?)",
-            (cur.lastrowid, position, *[LEGACY_ATTR_LABELS[lang][a] for lang in LANGS]),
-        )
+    save_item_attrs(db, cur.lastrowid, known_param_labels(db))
     db.commit()
     flash(f"“{name}” added — now fill in its parameters and upload photos.", "ok")
     return back_to_admin(f"item-{cur.lastrowid}")
