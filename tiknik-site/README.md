@@ -88,7 +88,7 @@ A built-in admin page handles everything — no PythonAnywhere file editing, no 
    - **Set the USD rate** — prices are entered in AMD; the site shows a USD price too (switchable by visitors via an AMD/USD toggle above the catalog), automatically converted using this rate. Update it whenever the rate changes — there's no live/automatic lookup, since that would depend on external services PythonAnywhere's free tier can't reliably reach.
    - **Manage catalog sections** — add, rename, reorder (↑/↓) or delete them; changes appear on the site's tabs immediately. Deleting a section that still has items asks whether to move them to another section or delete them too.
    - **Add or delete items** — "Add item" creates one (then upload its photos on its card); "Delete item" removes it together with its photos.
-   - **Card details** — Fabric, Colour, Lace, Made to and Occasions are separate fields. Catalog cards show only the ones filled in; the description is shown only on the product page.
+   - **Parameters** — each item has its own list of parameters (Fabric: Batiste, Length: Midi, …). Add or remove them on the item's card with "+ Add parameter" / ×; new items start with Fabric, Colour, Lace, Made to and Occasions. Only parameters with a value are shown on the catalog card and product page; the description is shown only on the product page. Typing a label already used on another item fills in its RU / HY translation.
    - **Translations** — each section has EN / RU / HY name fields; each item has EN / RU / HY tabs. An empty translation falls back to English on the site, and items still missing a translation are marked "no RU / HY".
 
 ## Languages
@@ -98,7 +98,8 @@ The site is in English (`/`), Russian (`/ru/`) and Armenian (`/hy/`). First-time
 - Fixed site text (headings, buttons, form) lives in `i18n.py` — edit all three languages there.
 - Catalog text (section names, item names and descriptions) lives in the database and is translated from `/admin`.
    - For each item:
-     - **Photos** — up to 10 per item (JPG/PNG/WEBP). Upload several at once. **Drag a thumbnail to reorder** — the first photo is the catalog thumbnail and the main photo on the product page; the order saves automatically as soon as you drop it. Hover a thumbnail and click **Remove** to delete one.
+     - **Photos and videos** — big photos are scaled down to 2000 px (JPEG) in the browser before uploading, so camera originals don't fill the disk. Up to 10 photos (JPG/PNG/WEBP) and 3 videos (MP4 best, WEBM or MOV, up to 30 MB each) per item. Upload several at once. **Drag a thumbnail to reorder** — the first photo is the catalog thumbnail; videos appear in the product page gallery in their place in the order. The order saves automatically as soon as you drop it. Hover a thumbnail and click **Remove** to delete one.
+     - Videos aren't compressed on the server — the free PythonAnywhere plan has only 512 MB of disk in total and ~100 CPU-seconds a day, not enough for re-encoding. Compress videos before uploading (720p is plenty: HandBrake on a computer, or any "video compressor" app on a phone). The admin header shows how much space uploads take.
      - **Details** — name, description (line breaks you type are preserved exactly on the site), price, Sale/Rent/Both/Custom status, and **section** — move an item to a different catalog section right from its own dropdown, no need to delete/recreate it.
 
 Changes appear on the live site immediately, no reload needed. You can share the `/admin` link + password with anyone (a partner, a photographer) so they can manage the catalog themselves without touching PythonAnywhere or any code.
@@ -116,6 +117,16 @@ Closing the product view (or pressing Escape) returns to the catalog exactly whe
 ## Currency
 
 Prices are entered once, in AMD, in `/admin`. Visitors can switch the displayed currency between **USD (default), RUB and AMD** using the toggle above the catalog grid. Converted prices are rounded to a clean, "sticker" number — no odd cents or kopecks (e.g. $365, not $362.50) — the way other clothing sites display a fixed-looking price per currency rather than a literal exact conversion. Both rates (AMD per $1, AMD per ₽1) are set in `/admin` → Currency, and are not fetched live — update them there periodically (e.g. to match a bank's published rate) to keep converted prices accurate.
+
+## Freeing disk space
+
+Photos uploaded before in-browser resizing may be 10–40 MB each. To shrink them in place (same filenames, so the database is untouched), in a PythonAnywhere Bash console:
+
+```bash
+cd ~/tiknik-repo/tiknik-site
+python3 tools/compress_photos.py           # dry run: lists what would be shrunk
+python3 tools/compress_photos.py --apply
+```
 
 ## Editing the seed catalog
 

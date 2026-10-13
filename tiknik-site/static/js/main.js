@@ -107,22 +107,23 @@
     return t("mode_" + mode, mode);
   }
 
-  var ATTRS = ["fabric", "colour", "lace", "made_to", "occasions"];
-
   function esc(s) {
     return String(s).replace(/[&<>"]/g, function (c) {
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
     });
   }
 
-  // Only the attributes that are filled in, as [label, value] pairs.
+  // The item's parameters as [label, value] pairs (the server only sends filled-in ones).
   function filledAttrs(item) {
-    var attrs = item.attrs || {};
-    return ATTRS.filter(function (a) {
-      return attrs[a];
-    }).map(function (a) {
-      return [t("attr_" + a, a), attrs[a]];
+    return item.attrs || [];
+  }
+
+  // The first photo (not video) is the catalog thumbnail.
+  function mainPhoto(item) {
+    var first = (item.media || []).find(function (m) {
+      return !m.video;
     });
+    return first ? first.file : null;
   }
 
   function photoUrl(filename) {
@@ -130,9 +131,9 @@
   }
 
   function cardHtml(item) {
-    var thumb = item.photos && item.photos.length ? item.photos[0] : null;
+    var thumb = mainPhoto(item);
     var media = thumb
-      ? '<img src="' + photoUrl(thumb) + '" alt="' + item.name + '" class="w-full h-full object-cover">'
+      ? '<img src="' + photoUrl(thumb) + '" alt="' + esc(item.name) + '" class="w-full h-full object-cover">'
       : iconSvg(item.category);
     return (
       '<div class="fade-in group border border-charcoal/15 bg-cream hover:border-charcoal/40 transition flex flex-col cursor-pointer" data-cat="' +
@@ -229,6 +230,7 @@
   // ------------------------------------------------------------------
   var overlay = document.getElementById("product-overlay");
   var mainImage = document.getElementById("product-main-image");
+  var mainVideo = document.getElementById("product-main-video");
   var mainIconWrap = document.getElementById("product-main-icon");
   var thumbsWrap = document.getElementById("product-thumbs");
   var prevBtn = document.getElementById("product-prev");
@@ -245,15 +247,25 @@
   var productIndex = -1;
   var currentOpenItem = null;
 
+  function currentIsVideo() {
+    return galleryPhotos.length && galleryPhotos[galleryIndex].video;
+  }
+
   function renderGalleryMain() {
-    if (galleryPhotos.length) {
-      mainImage.src = photoUrl(galleryPhotos[galleryIndex]);
-      mainImage.classList.remove("hidden");
-      mainIconWrap.classList.add("hidden");
+    var current = galleryPhotos[galleryIndex];
+    var isVideo = !!(current && current.video);
+    mainVideo.pause();
+    if (isVideo) {
+      if (mainVideo.getAttribute("src") !== photoUrl(current.file)) mainVideo.src = photoUrl(current.file);
     } else {
-      mainImage.classList.add("hidden");
-      mainIconWrap.classList.remove("hidden");
+      mainVideo.removeAttribute("src");
+      mainVideo.load();
     }
+    if (current && !isVideo) mainImage.src = photoUrl(current.file);
+    mainImage.classList.toggle("hidden", !current || isVideo);
+    mainVideo.classList.toggle("hidden", !isVideo);
+    mainIconWrap.classList.toggle("hidden", !!current);
+    mainImageWrap.classList.toggle("cursor-zoom-in", !isVideo);
     var multi = galleryPhotos.length > 1;
     prevBtn.classList.toggle("hidden", !multi);
     nextBtn.classList.toggle("hidden", !multi);
@@ -267,15 +279,21 @@
     }
     thumbsWrap.classList.remove("hidden");
     thumbsWrap.innerHTML = galleryPhotos
-      .map(function (fn, i) {
+      .map(function (m, i) {
+        var preview = m.video
+          ? '<video src="' +
+            photoUrl(m.file) +
+            '#t=0.1" muted playsinline preload="metadata" class="w-full h-full object-cover pointer-events-none"></video>' +
+            '<span class="absolute inset-0 flex items-center justify-center"><span class="w-7 h-7 rounded-full bg-cream/85 text-charcoal text-[10px] flex items-center justify-center pl-0.5">&#9654;</span></span>'
+          : '<img src="' + photoUrl(m.file) + '" class="w-full h-full object-cover" alt="">';
         return (
           '<button data-i="' +
           i +
-          '" class="thumb-btn shrink-0 w-16 h-20 md:w-full md:h-24 overflow-hidden border transition ' +
+          '" class="thumb-btn relative shrink-0 w-16 h-20 md:w-full md:h-24 overflow-hidden border transition bg-cream-dark ' +
           (i === galleryIndex ? "border-charcoal" : "border-charcoal/15 hover:border-charcoal/40") +
-          '"><img src="' +
-          photoUrl(fn) +
-          '" class="w-full h-full object-cover" alt=""></button>'
+          '">' +
+          preview +
+          "</button>"
         );
       })
       .join("");
@@ -334,7 +352,7 @@
     }
 
     currentOpenItem = item;
-    galleryPhotos = item.photos || [];
+    galleryPhotos = item.media || [];
     galleryIndex = 0;
 
     document.getElementById("product-category").textContent = categoryName(item.category);
@@ -370,6 +388,7 @@
 
   function closeProduct() {
     overlay.classList.add("translate-x-full");
+    mainVideo.pause();
     document.body.style.overflow = "";
     closeZoom();
     if (location.hash.indexOf("#item-") === 0) {
@@ -482,8 +501,9 @@
   }
 
   function openZoom() {
-    if (!galleryPhotos.length) return;
-    zoomImage.src = photoUrl(galleryPhotos[galleryIndex]);
+    // Videos have their own fullscreen button in the player controls.
+    if (!galleryPhotos.length || currentIsVideo()) return;
+    zoomImage.src = photoUrl(galleryPhotos[galleryIndex].file);
     // Open fitted to the screen (not pre-zoomed) — double-click/scroll/pinch zoom in from here.
     zoomScale = 1;
     zoomTx = 0;

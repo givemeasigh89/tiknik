@@ -1,4 +1,5 @@
 import hmac
+import itertools
 import os
 import re
 import sqlite3
@@ -15,11 +16,13 @@ DB_PATH = os.path.join(BASE_DIR, "tiknik.db")
 PRODUCTS_DIR = os.path.join(BASE_DIR, "static", "img", "products")
 WSGI_FILE = "/var/www/tiknik_pythonanywhere_com_wsgi.py"
 
-# Short item attributes shown on catalog cards (each translatable like name/description).
+# The fixed item attributes the catalog used to have (columns on `items`). Item parameters
+# now live in `item_attrs`, one row per parameter, so each item can have its own set;
+# these are only used to migrate old data and as the starting set for new items.
 ATTRS = ("fabric", "colour", "lace", "made_to", "occasions")
 
-# How these attributes used to be written as "Label: value" lines inside descriptions —
-# used once to move them out into their own fields.
+# Their labels in every language — also how they used to be written as "Label: value"
+# lines inside descriptions.
 LEGACY_ATTR_LABELS = {
     "en": {"fabric": "Fabric", "colour": "Colour", "lace": "Lace", "made_to": "Made to", "occasions": "Occasions"},
     "ru": {"fabric": "Ткань", "colour": "Цвет", "lace": "Кружево", "made_to": "Пошив", "occasions": "Поводы"},
@@ -27,7 +30,11 @@ LEGACY_ATTR_LABELS = {
 }
 
 ALLOWED_EXT = {"jpg", "jpeg", "png", "webp"}
+VIDEO_EXT = {"mp4", "webm", "mov"}
 MAX_PHOTOS = 10
+MAX_VIDEOS = 3
+# Free PythonAnywhere accounts get 512 MB of disk in total (code included), so videos are capped.
+MAX_VIDEO_MB = 30
 MODES = ("Sale", "Rent", "Both", "Custom")
 
 # Set in the PythonAnywhere WSGI file (never commit them). Empty ADMIN_PASSWORD disables admin login.
@@ -35,6 +42,7 @@ ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "")
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY") or os.urandom(32)
+app.config["MAX_CONTENT_LENGTH"] = 100 * 1024 * 1024
 
 
 # ---------------------------------------------------------------------------
@@ -157,6 +165,19 @@ def init_db():
             FOREIGN KEY (item_id) REFERENCES items (id)
         )"""
     )
+    if "kind" not in _table_columns(db, "item_photos"):
+        db.execute("ALTER TABLE item_photos ADD COLUMN kind TEXT NOT NULL DEFAULT 'photo'")
+
+    db.execute(
+        """CREATE TABLE IF NOT EXISTS item_attrs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            item_id INTEGER NOT NULL,
+            position INTEGER NOT NULL DEFAULT 0,
+            label TEXT, label_ru TEXT, label_hy TEXT,
+            value TEXT, value_ru TEXT, value_hy TEXT,
+            FOREIGN KEY (item_id) REFERENCES items (id)
+        )"""
+    )
 
     db.execute(
         """CREATE TABLE IF NOT EXISTS inquiries (
@@ -232,6 +253,22 @@ def init_db():
                                (*found.values(), rest, it["id"]))
         db.execute("INSERT INTO settings (key, value) VALUES ('attrs_extracted', '1')")
 
+    # One-off: move the fixed attribute columns into per-item parameter rows.
+    if not db.execute("SELECT 1 FROM settings WHERE key = 'attrs_to_rows'").fetchone():
+        for it in db.execute("SELECT * FROM items").fetchall():
+            position = 0
+            for a in ATTRS:
+                values = [(it[a if lang == "en" else f"{a}_{lang}"] or "").strip() for lang in LANGS]
+                if any(values):
+                    labels = [LEGACY_ATTR_LABELS[lang][a] for lang in LANGS]
+                    db.execute(
+                        "INSERT INTO item_attrs (item_id, position, label, label_ru, label_hy, value, value_ru, value_hy) "
+                        "VALUES (?,?,?,?,?,?,?,?)",
+                        (it["id"], position, *labels, *values),
+                    )
+                    position += 1
+        db.execute("INSERT INTO settings (key, value) VALUES ('attrs_to_rows', '1')")
+
     db.commit()
     db.close()
 
@@ -300,12 +337,30 @@ def parse_price(raw):
         return None
 
 
-def delete_item_photos(db, item_id):
+def delete_item(db, item_id):
+    """Delete an item with its photos, videos and parameters."""
     for photo in db.execute("SELECT filename FROM item_photos WHERE item_id = ?", (item_id,)).fetchall():
         path = os.path.join(PRODUCTS_DIR, photo["filename"])
         if os.path.exists(path):
             os.remove(path)
     db.execute("DELETE FROM item_photos WHERE item_id = ?", (item_id,))
+    db.execute("DELETE FROM item_attrs WHERE item_id = ?", (item_id,))
+    db.execute("DELETE FROM items WHERE id = ?", (item_id,))
+
+
+def attrs_by_item(db):
+    result = {}
+    for row in db.execute("SELECT * FROM item_attrs ORDER BY item_id, position, id"):
+        result.setdefault(row["item_id"], []).append(row)
+    return result
+
+
+def uploads_size_mb():
+    total = 0
+    for entry in os.scandir(PRODUCTS_DIR):
+        if entry.is_file():
+            total += entry.stat().st_size
+    return total / (1024 * 1024)
 
 
 def back_to_admin(anchor=None):
@@ -368,21 +423,27 @@ def api_items():
     db = get_db()
     lang = request_lang()
     items = db.execute("SELECT * FROM items ORDER BY id").fetchall()
-    photos_by_item = {}
-    for p in db.execute("SELECT item_id, filename FROM item_photos ORDER BY item_id, position"):
-        photos_by_item.setdefault(p["item_id"], []).append(p["filename"])
+    media_by_item = {}
+    for p in db.execute("SELECT item_id, filename, kind FROM item_photos ORDER BY item_id, position"):
+        media_by_item.setdefault(p["item_id"], []).append({"file": p["filename"], "video": p["kind"] == "video"})
+    attrs = attrs_by_item(db)
 
     result = []
     for it in items:
+        pairs = []
+        for a in attrs.get(it["id"], []):
+            label, value = (localized(a, "label", lang) or "").strip(), (localized(a, "value", lang) or "").strip()
+            if label and value:
+                pairs.append([label, value])
         result.append({
             "id": it["id"],
             "name": localized(it, "name", lang),
             "description": localized(it, "description", lang),
-            "attrs": {a: (localized(it, a, lang) or "").strip() for a in ATTRS},
+            "attrs": pairs,
             "category": it["category"],
             "mode": it["mode"],
             "price": it["price"],
-            "photos": photos_by_item.get(it["id"], []),
+            "media": media_by_item.get(it["id"], []),
         })
     return jsonify(result)
 
@@ -444,20 +505,39 @@ def admin():
 
     items = db.execute("SELECT * FROM items ORDER BY category, id").fetchall()
     photos_by_item = {}
-    for p in db.execute("SELECT id, item_id, filename FROM item_photos ORDER BY item_id, position"):
-        photos_by_item.setdefault(p["item_id"], []).append({"id": p["id"], "filename": p["filename"]})
+    for p in db.execute("SELECT id, item_id, filename, kind FROM item_photos ORDER BY item_id, position"):
+        photos_by_item.setdefault(p["item_id"], []).append(
+            {"id": p["id"], "filename": p["filename"], "video": p["kind"] == "video"})
+    attrs = attrs_by_item(db)
+
+    def untranslated(row, field, lang):
+        return bool((row[field] or "").strip()) and not (row[f"{field}_{lang}"] or "").strip()
 
     item_list = []
     for it in items:
         d = dict(it)
-        d["photos"] = photos_by_item.get(it["id"], [])
+        media = photos_by_item.get(it["id"], [])
+        d["media"] = media
+        d["photo_count"] = sum(not m["video"] for m in media)
+        d["video_count"] = len(media) - d["photo_count"]
+        d["thumb"] = next((m["filename"] for m in media if not m["video"]), None)
+        d["attrs"] = [dict(a) for a in attrs.get(it["id"], [])]
         # A language is "missing" when the name, or any filled-in English text, has no translation.
         d["missing_langs"] = [
             lang for lang in LANGS[1:]
             if not (it[f"name_{lang}"] or "").strip()
-            or any((it[f] or "").strip() and not (it[f"{f}_{lang}"] or "").strip() for f in ("description",) + ATTRS)
+            or untranslated(it, "description", lang)
+            or any((a["value"] or "").strip() and (untranslated(a, "label", lang) or untranslated(a, "value", lang))
+                   for a in attrs.get(it["id"], []))
         ]
         item_list.append(d)
+
+    # Parameter labels already in use, so the admin can pick one and get its translations filled in.
+    known_labels = {}
+    for a in db.execute("SELECT label, label_ru, label_hy FROM item_attrs WHERE TRIM(COALESCE(label, '')) != '' ORDER BY id"):
+        known = known_labels.setdefault(a["label"].strip(), {"ru": "", "hy": ""})
+        for lang in LANGS[1:]:
+            known[lang] = known[lang] or (a[f"label_{lang}"] or "").strip()
 
     known_slugs = {c["slug"] for c in categories}
     counts = {c["slug"]: 0 for c in categories}
@@ -473,8 +553,11 @@ def admin():
         counts=counts,
         categories=categories,
         max_photos=MAX_PHOTOS,
+        max_videos=MAX_VIDEOS,
+        max_video_mb=MAX_VIDEO_MB,
+        uploads_mb=uploads_size_mb(),
         modes=MODES,
-        attrs=[(a, LEGACY_ATTR_LABELS["en"][a]) for a in ATTRS],
+        known_labels=known_labels,
         usd_rate=usd_rate,
         rub_rate=rub_rate,
     )
@@ -491,42 +574,59 @@ def admin_upload(item_id):
         flash("Item not found.", "error")
         return redirect(url_for("admin"))
 
-    current_count = db.execute(
-        "SELECT COUNT(*) AS c FROM item_photos WHERE item_id = ?", (item_id,)
-    ).fetchone()["c"]
-    next_position = db.execute(
+    counts = {"photo": 0, "video": 0}
+    for row in db.execute("SELECT kind, COUNT(*) AS c FROM item_photos WHERE item_id = ? GROUP BY kind", (item_id,)):
+        counts[row["kind"]] = row["c"]
+    limits = {"photo": MAX_PHOTOS, "video": MAX_VIDEOS}
+    position = db.execute(
         "SELECT COALESCE(MAX(position), -1) AS m FROM item_photos WHERE item_id = ?", (item_id,)
     ).fetchone()["m"] + 1
 
-    files = request.files.getlist("photos")
-    added, skipped = 0, 0
+    added = {"photo": 0, "video": 0}
+    problems = []
 
-    for f in files:
+    for f in request.files.getlist("photos"):
         if not f or not f.filename:
             continue
         ext = f.filename.rsplit(".", 1)[-1].lower() if "." in f.filename else ""
-        if ext not in ALLOWED_EXT:
-            skipped += 1
+        kind = "photo" if ext in ALLOWED_EXT else "video" if ext in VIDEO_EXT else None
+        if not kind:
+            problems.append(f"{f.filename}: unsupported file type")
             continue
-        if current_count + added >= MAX_PHOTOS:
-            skipped += 1
+        if counts[kind] + added[kind] >= limits[kind]:
+            problems.append(f"{f.filename}: over the {limits[kind]}-{kind} limit")
             continue
+        if kind == "video":
+            f.stream.seek(0, os.SEEK_END)
+            size_mb = f.stream.tell() / (1024 * 1024)
+            f.stream.seek(0)
+            if size_mb > MAX_VIDEO_MB:
+                problems.append(f"{f.filename}: {size_mb:.0f} MB, the limit is {MAX_VIDEO_MB} MB")
+                continue
 
-        filename = secure_filename(f"item-{item_id}-{next_position + added + 1}-{f.filename}")
+        filename = secure_filename(f"item-{item_id}-{position + 1}-{f.filename}")
         f.save(os.path.join(PRODUCTS_DIR, filename))
         db.execute(
-            "INSERT INTO item_photos (item_id, filename, position) VALUES (?,?,?)",
-            (item_id, filename, next_position + added),
+            "INSERT INTO item_photos (item_id, filename, position, kind) VALUES (?,?,?,?)",
+            (item_id, filename, position, kind),
         )
-        added += 1
+        position += 1
+        added[kind] += 1
 
     db.commit()
 
-    if added:
-        flash(f"Added {added} photo(s).", "ok")
-    if skipped:
-        flash(f"Skipped {skipped} file(s) — unsupported type or over the {MAX_PHOTOS}-photo limit.", "error")
+    if added["photo"] or added["video"]:
+        parts = [f"{n} {k}{'' if n == 1 else 's'}" for k, n in added.items() if n]
+        flash(f"Added {' and '.join(parts)}.", "ok")
+    if problems:
+        flash("Skipped — " + "; ".join(problems) + ".", "error")
     return back_to_admin(f"item-{item_id}")
+
+
+@app.errorhandler(413)
+def upload_too_large(e):
+    flash("Upload too large — send fewer files at once (100 MB max per upload).", "error")
+    return back_to_admin()
 
 
 @app.route("/admin/remove-photo/<int:photo_id>", methods=["POST"])
@@ -618,15 +718,28 @@ def admin_update_item(item_id):
             f"UPDATE items SET name_{lang}=?, description_{lang}=? WHERE id=?",
             ((request.form.get(f"name_{lang}") or "").strip(), request.form.get(f"description_{lang}") or "", item_id),
         )
-    for lang in LANGS:
-        sfx = "" if lang == "en" else f"_{lang}"
-        db.execute(
-            f"UPDATE items SET {', '.join(f'{a}{sfx}=?' for a in ATTRS)} WHERE id=?",
-            (*[(request.form.get(f"{a}{sfx}") or "").strip() for a in ATTRS], item_id),
-        )
+    save_item_attrs(db, item_id)
     db.commit()
     flash("Saved.", "ok")
     return back_to_admin(f"item-{item_id}")
+
+
+ATTR_FIELDS = ("label", "label_ru", "label_hy", "value", "value_ru", "value_hy")
+
+
+def save_item_attrs(db, item_id):
+    """Replace an item's parameters with the rows posted from its admin card (p_label, p_value_ru, …)."""
+    columns = [request.form.getlist(f"p_{field}") for field in ATTR_FIELDS]
+    db.execute("DELETE FROM item_attrs WHERE item_id = ?", (item_id,))
+    position = 0
+    for row in itertools.zip_longest(*columns, fillvalue=""):
+        row = [v.strip() for v in row]
+        if any(row):
+            db.execute(
+                f"INSERT INTO item_attrs (item_id, position, {', '.join(ATTR_FIELDS)}) VALUES (?,?,?,?,?,?,?,?)",
+                (item_id, position, *row),
+            )
+            position += 1
 
 
 @app.route("/admin/add-item", methods=["POST"])
@@ -649,13 +762,17 @@ def admin_add_item():
         return back_to_admin("add-item")
 
     cur = db.execute(
-        f"INSERT INTO items (name, category, description, mode, price, {', '.join(ATTRS)}) "
-        f"VALUES (?,?,?,?,?{',?' * len(ATTRS)})",
-        (name, category, request.form.get("description") or "", mode, parse_price(request.form.get("price")),
-         *[(request.form.get(a) or "").strip() for a in ATTRS]),
+        "INSERT INTO items (name, category, description, mode, price) VALUES (?,?,?,?,?)",
+        (name, category, request.form.get("description") or "", mode, parse_price(request.form.get("price"))),
     )
+    # Start with the usual parameters, empty (empty ones aren't shown) — add or remove them on the item's card.
+    for position, a in enumerate(ATTRS):
+        db.execute(
+            "INSERT INTO item_attrs (item_id, position, label, label_ru, label_hy) VALUES (?,?,?,?,?)",
+            (cur.lastrowid, position, *[LEGACY_ATTR_LABELS[lang][a] for lang in LANGS]),
+        )
     db.commit()
-    flash(f"“{name}” added — now upload its photos.", "ok")
+    flash(f"“{name}” added — now fill in its parameters and upload photos.", "ok")
     return back_to_admin(f"item-{cur.lastrowid}")
 
 
@@ -667,8 +784,7 @@ def admin_delete_item(item_id):
     db = get_db()
     item = db.execute("SELECT name FROM items WHERE id = ?", (item_id,)).fetchone()
     if item:
-        delete_item_photos(db, item_id)
-        db.execute("DELETE FROM items WHERE id = ?", (item_id,))
+        delete_item(db, item_id)
         db.commit()
         flash(f"“{item['name']}” deleted.", "ok")
     return back_to_admin("items")
@@ -760,8 +876,7 @@ def admin_delete_category(slug):
     if item_ids:
         if target == "__delete__":
             for item_id in item_ids:
-                delete_item_photos(db, item_id)
-            db.execute("DELETE FROM items WHERE category = ?", (slug,))
+                delete_item(db, item_id)
         elif target in other_slugs:
             db.execute("UPDATE items SET category = ? WHERE category = ?", (target, slug))
         else:

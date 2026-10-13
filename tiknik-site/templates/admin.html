@@ -78,6 +78,10 @@
         <a href="#rates" class="hover:text-charcoal">Rates</a>
       </nav>
       <div class="flex items-center gap-1 text-sm">
+        <span class="hidden sm:inline text-xs mr-2 {{ 'text-[#9b2c2c]' if uploads_mb > 350 else 'text-ink/45' }}"
+              title="Photos and videos take {{ '%.0f'|format(uploads_mb) }} MB. The free PythonAnywhere plan has 512 MB in total, including the site's code.">
+          Uploads {{ '%.0f'|format(uploads_mb) }} MB / 512
+        </span>
         <a href="/" target="_blank" class="btn btn-ghost !py-1.5">View site ↗</a>
         <a href="{{ url_for('admin_logout') }}" class="btn !py-1.5 text-ink/60 hover:text-charcoal">Sign out</a>
       </div>
@@ -158,7 +162,7 @@
     <!-- ===================== Add item ===================== -->
     <section id="add-item" class="card p-5 sm:p-7">
       <h2 class="font-serif text-3xl text-charcoal">Add item</h2>
-      <p class="text-sm text-ink/55 mt-1 mb-5">Create the item in English first — you'll add photos and RU/HY translations on its card right after.</p>
+      <p class="text-sm text-ink/55 mt-1 mb-5">Create the item in English first — you'll add its parameters, photos, videos and RU/HY translations on its card right after.</p>
       <form method="POST" action="{{ url_for('admin_add_item') }}" class="grid sm:grid-cols-2 gap-3">
         <input name="name" required placeholder="Name" class="field sm:col-span-2">
         <select name="category" required class="field">
@@ -172,9 +176,6 @@
           </select>
           <input name="price" type="number" min="0" placeholder="Price ֏" class="field w-32">
         </div>
-        {% for key, label in attrs %}
-          <input name="{{ key }}" placeholder="{{ label }} (optional)" class="field {{ 'sm:col-span-2' if loop.last }}">
-        {% endfor %}
         <textarea name="description" rows="3" placeholder="Description (optional) — shown only on the product page" class="field sm:col-span-2 leading-relaxed"></textarea>
         <div class="sm:col-span-2">
           <button type="submit" class="btn btn-dark">+ Create item</button>
@@ -192,17 +193,28 @@
         <input id="item-search" type="search" placeholder="Search items…" class="field w-full sm:w-64">
       </div>
 
-      {# Fabric / Colour / Lace / Made to / Occasions — shown on the catalog card when filled in.
-         sfx is '' for English or '_ru' / '_hy'; translations show the English value as a hint. #}
-      {% macro attr_fields(item, sfx) %}
-        <div class="grid sm:grid-cols-2 gap-x-2.5 gap-y-2">
-          {% for key, label in attrs %}
-            <label class="flex flex-col gap-1 min-w-0 {{ 'sm:col-span-2' if loop.last }}">
-              <span class="text-[10px] uppercase tracking-wider text-ink/45">{{ label }}</span>
-              <input name="{{ key ~ sfx }}" value="{{ item[key ~ sfx] or '' }}"
-                     placeholder="{{ (item[key] or '') if sfx else 'Not shown if empty' }}" class="field !py-1.5">
-            </label>
-          {% endfor %}
+      {# One parameter (e.g. Fabric: Batiste), shown on the catalog card when it has a value.
+         sfx is '' for English or '_ru' / '_hy'; translations show the English text as a hint.
+         Row N in every language pane is the same parameter — the JS below keeps them in step. #}
+      {% macro param_row(a, sfx) %}
+        <div class="param-row flex gap-1.5 items-center">
+          <input name="p_label{{ sfx }}" value="{{ a['label' ~ sfx] or '' }}" {{ 'list=param-labels' if not sfx }}
+                 placeholder="{{ (a.label or 'Parameter') if sfx else 'Parameter, e.g. Fabric' }}" class="field !py-1.5 w-32 sm:w-40 shrink-0 min-w-0">
+          <input name="p_value{{ sfx }}" value="{{ a['value' ~ sfx] or '' }}"
+                 placeholder="{{ (a.value or 'Value') if sfx else 'Value — not shown if empty' }}" class="field !py-1.5 flex-1 min-w-0">
+          <button type="button" class="icon-btn danger js-param-del shrink-0" title="Remove parameter">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          </button>
+        </div>
+      {% endmacro %}
+
+      {% macro param_fields(item, sfx) %}
+        <div>
+          <p class="text-[10px] uppercase tracking-wider text-ink/45 mb-1.5">Parameters · shown on the card</p>
+          <div class="params flex flex-col gap-1.5" data-sfx="{{ sfx }}">
+            {% for a in item.attrs %}{{ param_row(a, sfx) }}{% endfor %}
+          </div>
+          <button type="button" class="js-param-add text-xs text-ink/60 hover:text-charcoal mt-1.5 px-1">+ Add parameter</button>
         </div>
       {% endmacro %}
 
@@ -212,8 +224,8 @@
                  data-name="{{ (item.name ~ ' ' ~ (item.name_ru or '') ~ ' ' ~ (item.name_hy or ''))|lower }}">
           <summary class="flex items-center gap-4 p-3 pr-4">
             <div class="w-12 h-14 shrink-0 rounded-md overflow-hidden bg-cream-dark flex items-center justify-center">
-              {% if item.photos %}
-                <img src="{{ url_for('static', filename='img/products/' ~ item.photos[0].filename) }}" class="w-full h-full object-cover" alt="" loading="lazy">
+              {% if item.thumb %}
+                <img src="{{ url_for('static', filename='img/products/' ~ item.thumb) }}" class="w-full h-full object-cover" alt="" loading="lazy">
               {% else %}
                 <svg class="w-5 h-5 text-ink/25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.5"/><path d="M21 16l-5-5-8 8"/></svg>
               {% endif %}
@@ -225,7 +237,7 @@
                 <span>·</span>
                 <span>{{ ('{:,}'.format(item.price)).replace(',', ' ') ~ ' ֏' if item.price is not none else 'Price on request' }}</span>
                 <span>·</span>
-                <span>{{ item.photos|length }} photo{{ '' if item.photos|length == 1 else 's' }}</span>
+                <span>{{ item.photo_count }} photo{{ '' if item.photo_count == 1 else 's' }}{% if item.video_count %}, {{ item.video_count }} video{{ '' if item.video_count == 1 else 's' }}{% endif %}</span>
                 {% if missing %}
                   <span>·</span>
                   <span class="text-[#9b2c2c]/80">no {{ missing|join(' / ')|upper }}</span>
@@ -238,17 +250,24 @@
           <div class="item-body px-4 pb-5 pt-2 border-t border-charcoal/10 mx-3">
             <div class="grid md:grid-cols-[1fr_1.25fr] gap-6 mt-3">
 
-              <!-- Photos -->
+              <!-- Photos & videos -->
               <div>
                 <p class="text-[11px] uppercase tracking-widest text-ink/45 mb-2">
-                  Photos {{ item.photos|length }}/{{ max_photos }} · drag to reorder
+                  Photos {{ item.photo_count }}/{{ max_photos }} · videos {{ item.video_count }}/{{ max_videos }} · drag to reorder
                 </p>
                 <div class="photo-list flex flex-wrap gap-2 mb-3" data-item-id="{{ item.id }}">
-                  {% for photo in item.photos %}
+                  {% set main_id = (item.media|rejectattr('video')|first or {}).id %}
+                  {% for photo in item.media %}
+                    {% set src = url_for('static', filename='img/products/' ~ photo.filename) %}
                     <div class="photo-thumb relative w-[4.5rem] h-[5.5rem] shrink-0 rounded-lg bg-cream-dark overflow-hidden group cursor-grab"
-                         draggable="true" data-photo-id="{{ photo.id }}">
-                      <img src="{{ url_for('static', filename='img/products/' ~ photo.filename) }}" class="w-full h-full object-cover pointer-events-none" alt="" loading="lazy">
-                      {% if loop.first %}
+                         draggable="true" data-photo-id="{{ photo.id }}" {{ 'data-video' if photo.video }}>
+                      {% if photo.video %}
+                        <video src="{{ src }}#t=0.1" muted playsinline preload="metadata" class="w-full h-full object-cover pointer-events-none"></video>
+                        <span class="absolute bottom-1 right-1 rounded bg-charcoal/85 text-cream text-[8px] uppercase tracking-wide px-1 py-0.5">▶ Video</span>
+                      {% else %}
+                        <img src="{{ src }}" class="w-full h-full object-cover pointer-events-none" alt="" loading="lazy">
+                      {% endif %}
+                      {% if photo.id == main_id %}
                         <span class="main-badge absolute top-1 left-1 rounded bg-charcoal/85 text-cream text-[8px] uppercase tracking-wide px-1 py-0.5">Main</span>
                       {% endif %}
                       <form method="POST" action="{{ url_for('admin_remove_photo', photo_id=photo.id) }}"
@@ -258,17 +277,20 @@
                     </div>
                   {% endfor %}
                 </div>
-                {% if item.photos|length < max_photos %}
+                {% if item.photo_count < max_photos or item.video_count < max_videos %}
                   <form method="POST" action="{{ url_for('admin_upload', item_id=item.id) }}" enctype="multipart/form-data">
                     <label class="btn btn-ghost">
                       <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 16V4M7 9l5-5 5 5M4 20h16"/></svg>
-                      <span class="upload-label">Add photos</span>
-                      <input type="file" name="photos" accept=".jpg,.jpeg,.png,.webp" multiple class="hidden js-autoupload">
+                      <span class="upload-label">Add photos or video</span>
+                      <input type="file" name="photos" accept=".jpg,.jpeg,.png,.webp,.mp4,.webm,.mov" multiple class="hidden js-autoupload">
                     </label>
-                    <p class="text-[11px] text-ink/40 mt-1.5">JPG, PNG or WEBP. The first photo is the main one.</p>
+                    <p class="upload-hint text-[11px] text-ink/40 mt-1.5">
+                      Photos: JPG, PNG or WEBP — the first photo is the main one.<br>
+                      Video: MP4 (best), WEBM or MOV, up to {{ max_video_mb }} MB each.
+                    </p>
                   </form>
                 {% else %}
-                  <p class="text-xs text-ink/45">Limit reached — remove a photo to add another.</p>
+                  <p class="text-xs text-ink/45">Limit reached — remove a photo or video to add another.</p>
                 {% endif %}
               </div>
 
@@ -284,13 +306,13 @@
                 </div>
                 <div class="lang-pane flex flex-col gap-2.5" data-lang="en">
                   <input name="name" value="{{ item.name }}" required placeholder="Name" class="field">
-                  {{ attr_fields(item, '') }}
+                  {{ param_fields(item, '') }}
                   <textarea name="description" rows="5" placeholder="Description — shown only on the product page" class="field leading-relaxed">{{ item.description or '' }}</textarea>
                 </div>
                 {% for l, label in [('ru', 'Russian'), ('hy', 'Armenian')] %}
                   <div class="lang-pane hidden flex-col gap-2.5" data-lang="{{ l }}">
                     <input name="name_{{ l }}" value="{{ item['name_' ~ l] or '' }}" placeholder="Name in {{ label }} — empty shows English" class="field">
-                    {{ attr_fields(item, '_' ~ l) }}
+                    {{ param_fields(item, '_' ~ l) }}
                     <textarea name="description_{{ l }}" rows="5" placeholder="Description in {{ label }} — empty shows English" class="field leading-relaxed">{{ item['description_' ~ l] or '' }}</textarea>
                   </div>
                 {% endfor %}
@@ -396,8 +418,14 @@
     </form>
   </dialog>
 
+  <datalist id="param-labels">
+    {% for label in known_labels %}<option value="{{ label }}">{% endfor %}
+  </datalist>
+
   <script>
     window.SECTIONS = {{ categories|tojson }};
+    window.KNOWN_LABELS = {{ known_labels|tojson }};
+    window.MAX_VIDEO_MB = {{ max_video_mb }};
 
     // ---- Toasts fade away on their own ----
     document.querySelectorAll(".toast").forEach(function (t, i) {
@@ -451,14 +479,117 @@
       });
     });
 
-    // ---- Upload as soon as files are picked ----
+    // ---- Parameters: row N in the EN / RU / HY panes is the same parameter, so add/remove in all three ----
+    document.querySelectorAll(".lang-form").forEach(function (f) {
+      var lists = Array.prototype.slice.call(f.querySelectorAll(".params"));
+      var en = lists.filter(function (l) { return !l.getAttribute("data-sfx"); })[0];
+      var others = lists.filter(function (l) { return l !== en; });
+
+      function rowIndex(row) { return Array.prototype.indexOf.call(row.parentNode.children, row); }
+
+      function newRow(sfx) {
+        var row = document.createElement("div");
+        row.className = "param-row flex gap-1.5 items-center";
+        row.innerHTML =
+          '<input name="p_label' + sfx + '" class="field !py-1.5 w-32 sm:w-40 shrink-0 min-w-0">' +
+          '<input name="p_value' + sfx + '" class="field !py-1.5 flex-1 min-w-0">' +
+          '<button type="button" class="icon-btn danger js-param-del shrink-0" title="Remove parameter">' +
+          '<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 6l12 12M18 6L6 18"/></svg></button>';
+        var inputs = row.querySelectorAll("input");
+        if (sfx) {
+          inputs[0].placeholder = "Parameter"; inputs[1].placeholder = "Value";
+        } else {
+          inputs[0].setAttribute("list", "param-labels");
+          inputs[0].placeholder = "Parameter, e.g. Fabric"; inputs[1].placeholder = "Value — not shown if empty";
+        }
+        return row;
+      }
+
+      f.querySelectorAll(".js-param-add").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          lists.forEach(function (l) { l.appendChild(newRow(l.getAttribute("data-sfx"))); });
+          btn.parentNode.querySelector(".params").lastElementChild.querySelector("input").focus();
+        });
+      });
+
+      f.addEventListener("click", function (e) {
+        var del = e.target.closest(".js-param-del");
+        if (!del) return;
+        var i = rowIndex(del.closest(".param-row"));
+        lists.forEach(function (l) { if (l.children[i]) l.children[i].remove(); });
+      });
+
+      // Translations show the English text as a hint; picking a known label fills in its translations.
+      en.addEventListener("input", function (e) {
+        var row = e.target.closest(".param-row");
+        if (!row) return;
+        var i = rowIndex(row), col = e.target === row.querySelector("input") ? 0 : 1;
+        var known = col === 0 && window.KNOWN_LABELS[e.target.value.trim()];
+        others.forEach(function (l) {
+          var input = l.children[i] && l.children[i].querySelectorAll("input")[col];
+          if (!input) return;
+          input.placeholder = e.target.value || (col === 0 ? "Parameter" : "Value");
+          var lang = l.getAttribute("data-sfx").slice(1);
+          if (known && known[lang] && !input.value) input.value = known[lang];
+        });
+      });
+    });
+
+    // ---- Upload as soon as files are picked (videos over the size limit are refused right away) ----
     document.querySelectorAll(".js-autoupload").forEach(function (input) {
       input.addEventListener("change", function () {
         if (!input.files.length) return;
-        input.closest("label").querySelector(".upload-label").textContent = "Uploading " + input.files.length + "…";
-        input.form.submit();
+        var tooBig = Array.prototype.filter.call(input.files, function (file) {
+          return /^video\//.test(file.type) || /\.(mp4|webm|mov)$/i.test(file.name)
+            ? file.size > window.MAX_VIDEO_MB * 1024 * 1024 : false;
+        });
+        var hint = input.form.querySelector(".upload-hint");
+        if (tooBig.length) {
+          hint.innerHTML = '<span class="text-[#9b2c2c]">' + tooBig.map(function (file) {
+            return file.name + " is " + Math.round(file.size / 1048576) + " MB";
+          }).join(", ") + " — videos can be up to " + window.MAX_VIDEO_MB +
+            " MB. Compress it first (e.g. HandBrake on a computer, or a “video compressor” app on the phone, 720p).</span>";
+          input.value = "";
+          return;
+        }
+        var label = input.closest("label").querySelector(".upload-label");
+        label.textContent = "Preparing " + input.files.length + "…";
+        Promise.all(Array.prototype.map.call(input.files, shrinkPhoto)).then(function (files) {
+          try {
+            var dt = new DataTransfer();
+            files.forEach(function (file) { dt.items.add(file); });
+            input.files = dt.files;
+          } catch (e) { /* very old browser — upload the originals */ }
+          label.textContent = "Uploading " + files.length + "…";
+          input.form.submit();
+        });
       });
     });
+
+    // Camera photos are often 10–40 MB; the site never shows them larger than ~2000 px, so scale
+    // them down to a JPEG of that size in the browser before uploading — saves disk space on the server.
+    var PHOTO_MAX_SIDE = 2000;
+    function shrinkPhoto(file) {
+      if (!/^image\/(jpeg|png|webp)$/.test(file.type) || file.size < 800 * 1024 || !window.createImageBitmap) {
+        return Promise.resolve(file);
+      }
+      return createImageBitmap(file).then(function (bmp) {
+        var scale = Math.min(1, PHOTO_MAX_SIDE / Math.max(bmp.width, bmp.height));
+        var canvas = document.createElement("canvas");
+        canvas.width = Math.round(bmp.width * scale);
+        canvas.height = Math.round(bmp.height * scale);
+        var ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#fff";  // transparent PNG areas become white, not black
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(bmp, 0, 0, canvas.width, canvas.height);
+        return new Promise(function (resolve) {
+          canvas.toBlob(function (blob) {
+            if (!blob || blob.size >= file.size) return resolve(file);
+            resolve(new File([blob], file.name.replace(/\.[^.]+$/, "") + ".jpg", { type: "image/jpeg" }));
+          }, "image/jpeg", 0.85);
+        });
+      }).catch(function () { return file; });
+    }
 
     // ---- Search ----
     var search = document.getElementById("item-search");
@@ -553,15 +684,16 @@
         var thumbs = Array.prototype.slice.call(list.querySelectorAll(".photo-thumb"));
         var order = thumbs.map(function (t) { return parseInt(t.getAttribute("data-photo-id"), 10); });
 
-        // Move the "Main" badge to whichever thumb is now first.
-        thumbs.forEach(function (t, i) {
+        // Move the "Main" badge to whichever photo (not video) is now first.
+        var main = thumbs.filter(function (t) { return !t.hasAttribute("data-video"); })[0];
+        thumbs.forEach(function (t) {
           var existingBadge = t.querySelector(".main-badge");
-          if (i === 0 && !existingBadge) {
+          if (t === main && !existingBadge) {
             var badge = document.createElement("span");
             badge.className = "main-badge absolute top-1 left-1 rounded bg-charcoal/85 text-cream text-[8px] uppercase tracking-wide px-1 py-0.5";
             badge.textContent = "Main";
             t.appendChild(badge);
-          } else if (i !== 0 && existingBadge) {
+          } else if (t !== main && existingBadge) {
             existingBadge.remove();
           }
         });
