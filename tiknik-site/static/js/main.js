@@ -410,7 +410,7 @@
   function closeProduct() {
     // The card was switched to another language: show the whole site in it.
     if (cardLang !== LANG) {
-      location.href = langUrl(cardLang) + "#catalog";
+      reloadInCardLang("#catalog");
       return;
     }
     overlay.classList.add("translate-x-full");
@@ -431,7 +431,7 @@
   document.getElementById("product-cta").addEventListener("click", function (e) {
     if (cardLang !== LANG) {
       e.preventDefault();
-      location.href = langUrl(cardLang) + "#contact";
+      reloadInCardLang("#contact");
       return;
     }
     closeProduct(); // then the link scrolls to the form
@@ -442,6 +442,13 @@
   // ------------------------------------------------------------------
   function langUrl(lang) {
     return lang === "en" ? "/?lang=en" : "/" + lang + "/";
+  }
+
+  // The address already shows the card's language (see setCardLang), so going "to" it would only
+  // change the #hash and not load anything: set the address, then reload.
+  function reloadInCardLang(anchor) {
+    history.replaceState(null, "", langUrl(cardLang) + anchor);
+    location.reload();
   }
 
   function loadLang(lang) {
