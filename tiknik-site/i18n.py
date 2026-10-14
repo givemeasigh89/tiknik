@@ -5,7 +5,7 @@ the database and is translated from /admin.
 """
 
 LANGS = ("en", "ru", "hy")
-LANG_LABELS = {"en": "EN", "ru": "RU", "hy": "HY"}
+LANG_LABELS = {"en": "EN", "ru": "RU", "hy": "ARM"}
 
 UI = {
     # <head>
@@ -117,6 +117,13 @@ UI = {
         "hy": "Մկնիկի անիվ կամ կրկնակի սեղմում՝ խոշորացնել · քաշել՝ տեղաշարժել · Esc՝ փակել",
     },
 
+    # The language / currency dial in the product view
+    "dial_hint": {
+        "en": "Turn the rings · language & currency",
+        "ru": "Поверните кольца · язык и валюта",
+        "hy": "Պտտեք օղակները · լեզու և արժույթ",
+    },
+
     # Used by static/js/main.js (passed in as window.TIKNIK_I18N)
     "price_on_request": {"en": "Price on request", "ru": "Цена по запросу", "hy": "Գինը՝ ըստ հարցման"},
     "per_day": {"en": " / day", "ru": " / сутки", "hy": " / օր"},
@@ -148,6 +155,7 @@ UI = {
 }
 
 JS_KEYS = (
+    "back_to_catalog", "prev_item", "next_item", "cta_book_quote", "dial_hint",
     "price_on_request", "per_day", "mode_Rent", "mode_Sale", "mode_Both", "mode_Custom",
     "load_error", "sending", "sent", "send_error", "required_error",
 )

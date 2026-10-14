@@ -51,6 +51,27 @@
   .currency-btn { transition: all .2s ease; color: #3A3A3A; }
   .currency-btn[data-active] { background-color: #2E2C29; color: #EFEEEA; }
 
+  /* Product view dial */
+  #product-dial { width: 112px; height: 134px; overflow: visible; touch-action: none; cursor: grab;
+                  -webkit-user-select: none; user-select: none; outline: none; }
+  @media (min-width: 640px) { #product-dial { width: 132px; height: 158px; } }
+  #product-dial.dragging { cursor: grabbing; }
+  #product-dial:focus-visible { filter: drop-shadow(0 0 3px rgba(164,143,102,.7)); }
+  #product-dial .dial-line { fill: none; stroke: #2E2C29; }
+  #product-dial .dial-faint { stroke: rgba(46,44,41,.35); }
+  #product-dial .dial-dot { fill: rgba(46,44,41,.35); }
+  #product-dial .dial-label { font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-size: 19px;
+                              letter-spacing: .08em; fill: rgba(46,44,41,.5); text-anchor: middle;
+                              dominant-baseline: central; cursor: pointer; transition: fill .35s ease;
+                              paint-order: stroke; stroke: #EFEEEA; stroke-width: 6px; stroke-linejoin: round; }
+  #product-dial .dial-label.cur { font-size: 21px; letter-spacing: 0; }
+  #product-dial .dial-label.active { fill: #A48F66; font-weight: 600; }
+  #product-dial .dial-key { transform-box: fill-box; transform-origin: 50% 0; animation: keySway 5.5s ease-in-out infinite; }
+  #product-dial .dial-key.turn { transform-origin: 50% 50%; animation: keyTurn .75s cubic-bezier(.45,0,.25,1); }
+  @keyframes keySway { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+  @keyframes keyTurn { 0% { transform: scaleX(1); } 50% { transform: scaleX(-1); } 100% { transform: scaleX(1); } }
+  @media (prefers-reduced-motion: reduce) { #product-dial .dial-key { animation: none; } }
+
   @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
   .fade-in { animation: fadeIn .35s ease both; }
 
@@ -231,20 +252,20 @@
   <div class="max-w-[1500px] mx-auto px-5 py-6 sm:py-8">
     <div class="flex items-center justify-between gap-4 mb-6">
       <button id="product-close" class="text-sm tracking-wide text-ink/70 hover:text-charcoal flex items-center gap-2 shrink-0">
-        <span aria-hidden="true">&larr;</span> {{ t('back_to_catalog') }}
+        <span aria-hidden="true">&larr;</span> <span data-t="back_to_catalog">{{ t('back_to_catalog') }}</span>
       </button>
       <div class="flex items-center gap-3 sm:gap-4 text-sm text-ink/70 shrink-0">
         <button id="product-item-prev" aria-label="{{ t('prev_item') }}" class="hidden hover:text-charcoal flex items-center gap-1">
-          <span aria-hidden="true">&#8249;</span> <span class="hidden sm:inline">{{ t('prev_item') }}</span>
+          <span aria-hidden="true">&#8249;</span> <span class="hidden sm:inline" data-t="prev_item">{{ t('prev_item') }}</span>
         </button>
         <span id="product-item-counter" class="text-xs text-ink/40 tracking-wide"></span>
         <button id="product-item-next" aria-label="{{ t('next_item') }}" class="hidden hover:text-charcoal flex items-center gap-1">
-          <span class="hidden sm:inline">{{ t('next_item') }}</span> <span aria-hidden="true">&#8250;</span>
+          <span class="hidden sm:inline" data-t="next_item">{{ t('next_item') }}</span> <span aria-hidden="true">&#8250;</span>
         </button>
       </div>
     </div>
 
-    <div class="grid md:grid-cols-[minmax(0,1fr)_96px_minmax(0,1fr)] lg:grid-cols-[minmax(0,1.6fr)_110px_minmax(0,1fr)] gap-6 lg:gap-10">
+    <div class="grid grid-cols-[minmax(0,1fr)] md:grid-cols-[minmax(0,1fr)_96px_minmax(0,1fr)] lg:grid-cols-[minmax(0,1.6fr)_110px_minmax(0,1fr)] gap-6 lg:gap-10">
 
       <!-- Main image -->
       <div id="product-main-image-wrap" class="relative aspect-[3/4] bg-cream-dark overflow-hidden order-1 cursor-zoom-in">
@@ -259,14 +280,45 @@
       <div id="product-thumbs" class="hidden order-2 flex md:flex-col gap-2 overflow-x-auto md:overflow-y-auto md:max-h-[640px] lg:max-h-[780px] pb-1 md:pb-0"></div>
 
       <!-- Details -->
-      <div class="order-3 pt-1">
-        <p id="product-category" class="text-xs uppercase tracking-widest text-gold mb-2"></p>
-        <h2 id="product-name" class="font-serif text-3xl sm:text-4xl text-charcoal leading-tight mb-3"></h2>
-        <p id="product-price" class="text-lg text-charcoal mb-5"></p>
+      <div class="order-3 md:col-start-3 md:row-start-1 pt-1">
+        <div class="flex items-start gap-4 mb-5">
+          <div class="flex-1 min-w-0">
+            <p id="product-category" class="text-xs uppercase tracking-widest text-gold mb-2"></p>
+            <h2 id="product-name" class="font-serif text-3xl sm:text-4xl text-charcoal leading-tight mb-3"></h2>
+            <p id="product-price" class="text-lg text-charcoal"></p>
+          </div>
+          <!-- Language / currency dial: the logo's key in its double oval. Outer ring = language,
+               inner ring = currency; labels and dots are placed by main.js. -->
+          <div class="shrink-0 flex flex-col items-center -mt-1">
+            <svg id="product-dial" viewBox="0 0 200 240" role="group" tabindex="0"
+                 aria-label="Language: ← →, currency: ↑ ↓">
+              <ellipse cx="100" cy="120" rx="96" ry="117" class="dial-line" stroke-width="1.9"/>
+              <ellipse cx="100" cy="120" rx="91" ry="112" class="dial-line" stroke-width="1.1"/>
+              <ellipse cx="100" cy="120" rx="72" ry="92" class="dial-line" stroke-width="1.2"/>
+              <ellipse cx="100" cy="120" rx="51" ry="68" class="dial-line dial-faint" stroke-width="1" stroke-dasharray="1 4"/>
+              <g class="dial-dots"></g>
+              <g class="dial-labels"></g>
+              <g class="dial-key-wrap" transform="translate(100 120) scale(.82) translate(-100 -122)">
+                <g class="dial-key">
+                  <circle cx="100" cy="60" r="3" class="dial-line" stroke-width="2"/>
+                  <circle cx="100" cy="71" r="8" class="dial-line" stroke-width="2"/>
+                  <circle cx="89" cy="82" r="8" class="dial-line" stroke-width="2"/>
+                  <circle cx="111" cy="82" r="8" class="dial-line" stroke-width="2"/>
+                  <circle cx="100" cy="93" r="8" class="dial-line" stroke-width="2"/>
+                  <path d="M100 74 L108 82 L100 90 L92 82 Z" class="dial-line" stroke-width="1.7"/>
+                  <path d="M100 101 V194 M96 106 H104 M96 109 H104" class="dial-line" stroke-width="2"/>
+                  <path d="M100 166 L104.5 170.5 L100 175 L95.5 170.5 Z" class="dial-line" stroke-width="1.9"/>
+                  <path d="M87 179 V192 M90.5 179 V192 M90.5 185.5 H100 M95 181 V190" class="dial-line" stroke-width="2"/>
+                </g>
+              </g>
+            </svg>
+            <p class="text-[9px] uppercase tracking-[.18em] text-ink/40 mt-1.5 text-center max-w-[136px] leading-snug" data-t="dial_hint">{{ t('dial_hint') }}</p>
+          </div>
+        </div>
         <dl id="product-attrs" class="hidden grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm mb-6 pb-6 border-b border-line/60"></dl>
         <p id="product-description" class="text-sm text-ink/70 leading-relaxed mb-8 whitespace-pre-line"></p>
-        <a href="#contact" onclick="document.getElementById('product-close').click()" class="inline-block bg-charcoal text-cream px-6 py-3 text-sm tracking-wide hover:bg-charcoal/90 transition">
-          ✨ {{ t('cta_book_quote') }}
+        <a id="product-cta" href="#contact" class="inline-block bg-charcoal text-cream px-6 py-3 text-sm tracking-wide hover:bg-charcoal/90 transition">
+          ✨ <span data-t="cta_book_quote">{{ t('cta_book_quote') }}</span>
         </a>
       </div>
     </div>
@@ -283,6 +335,8 @@
 <script>
   window.TIKNIK_LANG = {{ lang|tojson }};
   window.TIKNIK_I18N = {{ js_i18n|tojson }};
+  window.TIKNIK_LANGS = {{ langs|list|tojson }};
+  window.TIKNIK_LANG_LABELS = {{ lang_labels|tojson }};
   window.TIKNIK_CATEGORIES = {{ categories|tojson }};
   window.TIKNIK_RATES = { USD: {{ usd_rate|float }}, RUB: {{ rub_rate|float }} };
 </script>

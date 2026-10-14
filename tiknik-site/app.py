@@ -417,7 +417,8 @@ def index(lang=None):
         langs=LANGS,
         lang_labels=LANG_LABELS,
         t=t,
-        js_i18n={key: t(key) for key in JS_KEYS},
+        # Every language, so the product view's dial can switch language without a reload.
+        js_i18n={l: {key: translator(l)(key) for key in JS_KEYS} for l in LANGS},
         categories=public_categories(db, lang),
         usd_rate=get_setting(db, "usd_rate", "400"),
         rub_rate=get_setting(db, "rub_rate", "4.2"),
