@@ -52,30 +52,57 @@ UI = {
 
     # Process
     "how_it_works": {"en": "How It Works", "ru": "Как мы работаем", "hy": "Ինչպես ենք աշխատում"},
-    "process_title": {"en": "From Sketch to Fitting", "ru": "От эскиза до примерки", "hy": "Էսքիզից մինչև փորձ"},
-    "step1_title": {"en": "Consultation & Sketching", "ru": "Консультация и эскиз", "hy": "Խորհրդատվություն և էսքիզ"},
-    "step1_text": {
-        "en": "We talk through silhouette, fabric and occasion, then sketch your piece.",
-        "ru": "Обсуждаем силуэт, ткань и повод, затем рисуем эскиз вашего наряда.",
-        "hy": "Քննարկում ենք սիլուետը, կտորը և առիթը, ապա պատրաստում ձեր զգեստի էսքիզը։",
+    "process_title": {"en": "From Fabric to First Dance", "ru": "От ткани до первого танца", "hy": "Կտորից մինչև առաջին պար"},
+    "process_hint": {
+        "en": "Turn the ring to follow a piece from start to finish",
+        "ru": "Поверните кольцо, чтобы пройти весь путь вещи",
+        "hy": "Պտտեք օղակը՝ զգեստի ամբողջ ճանապարհն անցնելու համար",
     },
-    "step2_title": {"en": "Measurements & Toile", "ru": "Мерки и макет", "hy": "Չափսեր և մակետ"},
-    "step2_text": {
-        "en": "Precise measurements and a toile fitting before cutting final fabric.",
-        "ru": "Точные мерки и примерка макета перед раскроем основной ткани.",
-        "hy": "Ճշգրիտ չափսեր և մակետի փորձ՝ նախքան հիմնական կտորը ձևելը։",
+    "process_prev": {"en": "Previous", "ru": "Назад", "hy": "Նախորդը"},
+    "process_next": {"en": "Next", "ru": "Дальше", "hy": "Հաջորդը"},
+    # The five stages of the process ring (static/js/process.js); *_short is the label under the text.
+    "stage1_short": {"en": "Fabric", "ru": "Ткань", "hy": "Կտոր"},
+    "stage1_title": {"en": "Choosing the Fabric", "ru": "Выбор ткани", "hy": "Կտորի ընտրություն"},
+    "stage1_text": {
+        "en": "We choose the fabric together: colour, texture, the way it drapes. If you can't come in, "
+              "you get a detailed report with photos of every option.",
+        "ru": "Вместе выбираем ткань: цвет, фактуру, то, как она ложится. Если вы не можете приехать — "
+              "пришлём подробный отчёт с фото каждого варианта.",
+        "hy": "Միասին ընտրում ենք կտորը՝ գույնը, ֆակտուրան, թե ինչպես է այն իջնում։ Եթե չեք կարող գալ, "
+              "կուղարկենք մանրամասն հաշվետվություն՝ յուրաքանչյուր տարբերակի լուսանկարներով։",
     },
-    "step3_title": {"en": "Fittings", "ru": "Примерки", "hy": "Փորձեր"},
-    "step3_text": {
-        "en": "One or more fittings to perfect the fit and finish.",
-        "ru": "Одна или несколько примерок, чтобы посадка и отделка были безупречными.",
-        "hy": "Մեկ կամ մի քանի փորձ՝ կատարյալ նստվածքի և մշակման համար։",
+    "stage2_short": {"en": "Measure", "ru": "Мерки", "hy": "Չափսեր"},
+    "stage2_title": {"en": "Precise Measurements", "ru": "Точные мерки", "hy": "Ճշգրիտ չափսեր"},
+    "stage2_text": {
+        "en": "Exact measurements and a pattern drafted for your proportions alone, then checked at a fitting.",
+        "ru": "Снимаем точные мерки и строим выкройку только под ваши пропорции, затем проверяем её на примерке.",
+        "hy": "Վերցնում ենք ճշգրիտ չափսերը և կառուցում ձևվածք միայն ձեր համամասնություններով, "
+              "ապա ստուգում փորձի ժամանակ։",
     },
-    "step4_title": {"en": "Final Reveal", "ru": "Готовый наряд", "hy": "Պատրաստի զգեստը"},
-    "step4_text": {
-        "en": "Your piece, finished by hand and ready to wear. 2–4 months for bridal gowns, express on request.",
-        "ru": "Ваш наряд, доведённый вручную и готовый к выходу. Свадебное платье — 2–4 месяца, срочный пошив по запросу.",
-        "hy": "Ձեր զգեստը՝ ձեռքով ավարտված և պատրաստ։ Հարսանյաց զգեստը՝ 2–4 ամիս, շտապ պատվերը՝ ըստ պահանջի։",
+    "stage3_short": {"en": "Sewing", "ru": "Пошив", "hy": "Կարում"},
+    "stage3_title": {"en": "Sewing, Fully Reported", "ru": "Пошив под полным контролем", "hy": "Կարում՝ լիարժեք վերահսկողությամբ"},
+    "stage3_text": {
+        "en": "Every stage of sewing is documented: you get progress reports and see your piece come together.",
+        "ru": "Каждый этап пошива фиксируем: вы получаете отчёты и видите, как рождается ваша вещь.",
+        "hy": "Կարի յուրաքանչյուր փուլը փաստագրում ենք. դուք ստանում եք հաշվետվություններ "
+              "և տեսնում, թե ինչպես է ստեղծվում ձեր զգեստը։",
+    },
+    "stage4_short": {"en": "The Look", "ru": "Образ", "hy": "Կերպար"},
+    "stage4_title": {"en": "The Look Is Born", "ru": "Рождение образа", "hy": "Կերպարի ծնունդը"},
+    "stage4_text": {
+        "en": "Final fittings: the piece is almost ready and the look comes together, down to the last detail.",
+        "ru": "Финальные примерки: вещь почти готова, образ собирается до последней детали.",
+        "hy": "Վերջին փորձերը. զգեստը գրեթե պատրաստ է, կերպարն ամբողջանում է մինչև վերջին մանրուքը։",
+    },
+    "stage5_short": {"en": "Its Life", "ru": "Жизнь", "hy": "Կյանք"},
+    "stage5_title": {"en": "A Life of Its Own", "ru": "Новая жизнь наряда", "hy": "Զգեստի նոր կյանքը"},
+    "stage5_text": {
+        "en": "Your piece goes out into the world: the wedding, the party, the first dance. "
+              "2–4 months for bridal gowns, express on request.",
+        "ru": "Наряд выходит в свет: свадьба, праздник, первый танец. "
+              "Свадебное платье — 2–4 месяца, срочный пошив по запросу.",
+        "hy": "Զգեստը դուրս է գալիս աշխարհ՝ հարսանիք, տոն, առաջին պար։ "
+              "Հարսանյաց զգեստը՝ 2–4 ամիս, շտապ պատվերը՝ ըստ պահանջի։",
     },
 
     # Worldwide

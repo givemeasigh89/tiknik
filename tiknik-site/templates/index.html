@@ -51,6 +51,41 @@
   .currency-btn { transition: all .2s ease; color: #3A3A3A; }
   .currency-btn[data-active] { background-color: #2E2C29; color: #EFEEEA; }
 
+  /* Process ring ("How it works") */
+  .process-ring { --w: min(74vw, 450px); position: relative; width: var(--w); height: calc(var(--w) * 1.2);
+                  margin: calc(var(--w) * .2) calc(var(--w) * .16) calc(var(--w) * .12); flex-shrink: 0;
+                  cursor: grab; touch-action: pan-y; -webkit-user-select: none; user-select: none; outline: none; }
+  .process-ring.dragging { cursor: grabbing; }
+  .process-ring:focus-visible .process-svg { filter: drop-shadow(0 0 4px rgba(164,143,102,.8)); }
+  .process-frame { position: absolute; inset: 0; clip-path: ellipse(41% 42.5% at 50% 50%); background: #E4E1D8; overflow: hidden; }
+  .process-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0;
+                   will-change: opacity, transform; pointer-events: none; }
+  .process-leak { position: absolute; inset: -10%; opacity: 0; mix-blend-mode: screen; pointer-events: none;
+                  background: radial-gradient(circle at 18% 28%, rgba(255,176,96,.75), transparent 45%),
+                              radial-gradient(circle at 88% 78%, rgba(240,96,64,.5), transparent 42%); }
+  .process-grain { position: absolute; inset: -50%; opacity: .07; mix-blend-mode: overlay; pointer-events: none;
+                   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+  .process-vignette { position: absolute; inset: 0; pointer-events: none;
+                      background: radial-gradient(ellipse at 50% 50%, transparent 58%, rgba(46,44,41,.38) 100%); }
+  .process-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+  .process-svg .pr-line { fill: none; stroke: #2E2C29; stroke-linecap: round; }
+  .process-svg .pr-fill { fill: #EAE7E0; }
+  .process-svg .pr-progress { fill: none; stroke: #A48F66; stroke-width: 2.2; stroke-linecap: round; }
+  .process-svg .pr-dot { fill: rgba(46,44,41,.4); }
+  .process-svg .pr-dot.on { fill: #A48F66; }
+  .process-svg .pr-num { font-family: 'Cormorant Garamond', serif; font-size: 9px; font-weight: 600; fill: rgba(46,44,41,.55);
+                         text-anchor: middle; dominant-baseline: central; paint-order: stroke; stroke: #EAE7E0;
+                         stroke-width: 3.5px; stroke-linejoin: round; transition: fill .4s ease; }
+  .process-svg .pr-num.on { fill: #A48F66; }
+  .process-svg .pr-key-flip { transition: transform .26s ease-in-out; }
+  .process-stages { display: grid; }
+  .process-stage { grid-area: 1 / 1; opacity: 0; transform: translateY(8px); visibility: hidden;
+                   transition: opacity .5s ease, transform .5s ease, visibility 0s .5s; }
+  .process-stage.is-active { opacity: 1; transform: none; visibility: visible; transition: opacity .6s ease .1s, transform .6s ease .1s; }
+  .process-chip { color: rgba(58,58,58,.5); border-bottom: 1px solid transparent; transition: color .3s, border-color .3s; }
+  .process-chip:hover { color: #2E2C29; }
+  .process-chip.is-active { color: #2E2C29; border-color: #A48F66; }
+
   /* Product view dial */
   #product-dial { width: 112px; height: 134px; overflow: visible; touch-action: none; cursor: grab;
                   -webkit-user-select: none; user-select: none; outline: none; }
@@ -158,44 +193,73 @@
 </section>
 
 <!-- ============================== PROCESS ============================== -->
-<section id="process" class="bg-panel/60 py-16">
+<section id="process" class="bg-panel/60 py-16 sm:py-20 overflow-hidden">
   <div class="max-w-6xl mx-auto px-5">
     <p class="text-xs uppercase tracking-widest text-gold mb-2 text-center">{{ t('how_it_works') }}</p>
-    <h2 class="font-serif text-3xl sm:text-4xl text-charcoal text-center mb-12">{{ t('process_title') }}</h2>
-    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
-      <div>
-        <div class="aspect-square bg-cream-dark overflow-hidden mb-4">
-          <img src="{{ url_for('static', filename='img/crop-fabric-rolls.jpg') }}" alt="" class="w-full h-full object-cover">
+    <h2 class="font-serif text-3xl sm:text-4xl text-charcoal text-center mb-6 sm:mb-8">{{ t('process_title') }}</h2>
+
+    <!-- The process ring: the logo's double oval with the making of a piece inside it.
+         The key travels around the oval like a clock hand; drag it (or the photo) either way
+         and the photos follow, clockwise forward, anticlockwise back. Driven by static/js/process.js. -->
+    <div class="flex items-center justify-center gap-6 lg:gap-14">
+      <p class="hidden md:block text-2xl tracking-[.12em] text-charcoal/80 leading-snug select-none" aria-hidden="true">ES<br>TD</p>
+      <div id="process-ring" class="process-ring" tabindex="0" role="group" aria-label="{{ t('process_hint') }}">
+        <div class="process-frame">
+          {% for n in range(1, 13) %}
+            <img src="{{ url_for('static', filename='img/process/%02d.jpg' % n) }}" alt="" class="process-photo" draggable="false"{% if n > 2 %} loading="lazy"{% endif %}>
+          {% endfor %}
+          <div class="process-leak"></div>
+          <div class="process-grain"></div>
+          <div class="process-vignette"></div>
         </div>
-        <p class="text-xs uppercase tracking-widest text-gold mb-1">01</p>
-        <h3 class="font-serif text-lg text-charcoal mb-1">{{ t('step1_title') }}</h3>
-        <p class="text-sm text-ink/60 leading-relaxed">{{ t('step1_text') }}</p>
+        <svg class="process-svg" viewBox="0 0 200 240" aria-hidden="true">
+          <ellipse cx="100" cy="120" rx="97" ry="117" class="pr-line" stroke-width="1.1"/>
+          <ellipse cx="100" cy="120" rx="93" ry="113" class="pr-line" stroke-width=".55"/>
+          <ellipse cx="100" cy="120" rx="82" ry="102" class="pr-line" stroke-width=".7"/>
+          <path class="pr-progress" d=""/>
+          <g class="pr-marks"></g>
+          <g class="pr-key">
+            <g class="pr-key-flip">
+            <!-- the logo's key, drawn pointing down with its tip at (0, 0) -->
+            <g transform="scale(.34) translate(-100 -194)">
+              <circle cx="100" cy="60" r="3" class="pr-line" stroke-width="2.2"/>
+              <circle cx="100" cy="71" r="8" class="pr-line pr-fill" stroke-width="2.2"/>
+              <circle cx="89" cy="82" r="8" class="pr-line pr-fill" stroke-width="2.2"/>
+              <circle cx="111" cy="82" r="8" class="pr-line pr-fill" stroke-width="2.2"/>
+              <circle cx="100" cy="93" r="8" class="pr-line pr-fill" stroke-width="2.2"/>
+              <path d="M100 74 L108 82 L100 90 L92 82 Z" class="pr-line" stroke-width="2"/>
+              <path d="M100 101 V194 M96 106 H104 M96 109 H104" class="pr-line" stroke-width="2.2"/>
+              <path d="M100 166 L104.5 170.5 L100 175 L95.5 170.5 Z" class="pr-line pr-fill" stroke-width="2"/>
+              <path d="M87 179 V192 M90.5 179 V192 M90.5 185.5 H100 M95 181 V190" class="pr-line" stroke-width="2.2"/>
+            </g>
+            </g>
+          </g>
+        </svg>
       </div>
-      <div>
-        <div class="aspect-square bg-cream-dark overflow-hidden mb-4">
-          <img src="{{ url_for('static', filename='img/crop-scissors.jpg') }}" alt="" class="w-full h-full object-cover">
-        </div>
-        <p class="text-xs uppercase tracking-widest text-gold mb-1">02</p>
-        <h3 class="font-serif text-lg text-charcoal mb-1">{{ t('step2_title') }}</h3>
-        <p class="text-sm text-ink/60 leading-relaxed">{{ t('step2_text') }}</p>
-      </div>
-      <div>
-        <div class="aspect-square bg-cream-dark overflow-hidden mb-4">
-          <img src="{{ url_for('static', filename='img/crop-corset2.jpg') }}" alt="" class="w-full h-full object-cover">
-        </div>
-        <p class="text-xs uppercase tracking-widest text-gold mb-1">03</p>
-        <h3 class="font-serif text-lg text-charcoal mb-1">{{ t('step3_title') }}</h3>
-        <p class="text-sm text-ink/60 leading-relaxed">{{ t('step3_text') }}</p>
-      </div>
-      <div>
-        <div class="aspect-square bg-cream-dark overflow-hidden mb-4">
-          <img src="{{ url_for('static', filename='img/sewing-machine.jpg') }}" alt="" class="w-full h-full object-cover">
-        </div>
-        <p class="text-xs uppercase tracking-widest text-gold mb-1">04</p>
-        <h3 class="font-serif text-lg text-charcoal mb-1">{{ t('step4_title') }}</h3>
-        <p class="text-sm text-ink/60 leading-relaxed">{{ t('step4_text') }}</p>
-      </div>
+      <p class="hidden md:block text-2xl tracking-[.12em] text-charcoal/80 leading-snug select-none" aria-hidden="true">20<br>26</p>
     </div>
+
+    <!-- Stage text: the JS shows the one for the photo the key points at. -->
+    <div class="process-stages relative max-w-xl mx-auto text-center mt-8 sm:mt-10" aria-live="polite">
+      {% for i in range(1, 6) %}
+        <div class="process-stage{{ ' is-active' if i == 1 }}" data-stage="{{ i - 1 }}">
+          <p class="text-xs uppercase tracking-widest text-gold mb-2">{{ ['I', 'II', 'III', 'IV', 'V'][i - 1] }} · {{ t('stage%d_short' % i) }}</p>
+          <h3 class="font-serif text-2xl sm:text-3xl text-charcoal mb-3">{{ t('stage%d_title' % i) }}</h3>
+          <p class="text-sm sm:text-[15px] text-ink/65 leading-relaxed">{{ t('stage%d_text' % i) }}</p>
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="flex items-center justify-center gap-1 sm:gap-2 mt-7">
+      <button type="button" class="process-step w-9 h-9 rounded-full border border-charcoal/20 hover:border-charcoal text-charcoal flex items-center justify-center shrink-0" data-dir="-1" aria-label="{{ t('process_prev') }}">&#8249;</button>
+      <div class="flex flex-wrap justify-center">
+        {% for i in range(1, 6) %}
+          <button type="button" class="process-chip px-2 sm:px-3 py-1.5 text-[11px] sm:text-xs uppercase tracking-widest" data-stage="{{ i - 1 }}">{{ t('stage%d_short' % i) }}</button>
+        {% endfor %}
+      </div>
+      <button type="button" class="process-step w-9 h-9 rounded-full border border-charcoal/20 hover:border-charcoal text-charcoal flex items-center justify-center shrink-0" data-dir="1" aria-label="{{ t('process_next') }}">&#8250;</button>
+    </div>
+    <p class="text-[10px] uppercase tracking-[.2em] text-ink/35 text-center mt-4">{{ t('process_hint') }}</p>
   </div>
 </section>
 
@@ -341,5 +405,6 @@
   window.TIKNIK_RATES = { USD: {{ usd_rate|float }}, RUB: {{ rub_rate|float }} };
 </script>
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script src="{{ url_for('static', filename='js/process.js') }}"></script>
 </body>
 </html>
