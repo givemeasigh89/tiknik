@@ -136,18 +136,62 @@
     return "/static/img/products/" + filename;
   }
 
+  // Photos (not videos) of an item, as filenames.
+  function cardPhotos(item) {
+    return (item.media || [])
+      .filter(function (m) {
+        return !m.video;
+      })
+      .map(function (m) {
+        return m.file;
+      });
+  }
+
+  // Which photo each catalog card is showing (by item id), so re-rendering keeps it.
+  var cardPhotoIndex = {};
+
+  var CHEVRON_LEFT = '<svg viewBox="0 0 24 24" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M15 5l-7 7 7 7"/></svg>';
+  var CHEVRON_RIGHT = '<svg viewBox="0 0 24 24" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 5l7 7-7 7"/></svg>';
+
+  function cardDotsHtml(count, index) {
+    if (count > 8) return '<span class="card-count">' + (index + 1) + " / " + count + "</span>";
+    var dots = "";
+    for (var i = 0; i < count; i++) dots += '<span class="card-dot' + (i === index ? " on" : "") + '"></span>';
+    return dots;
+  }
+
+  function cardMediaHtml(item) {
+    var photos = cardPhotos(item);
+    if (!photos.length) return iconSvg(item.category);
+    if (photos.length === 1) {
+      return '<img src="' + photoUrl(photos[0]) + '" alt="' + esc(item.name) + '" class="w-full h-full object-cover">';
+    }
+    var index = Math.min(cardPhotoIndex[item.id] || 0, photos.length - 1);
+    return (
+      '<div class="card-track" style="transform:translateX(' + -index * 100 + '%)">' +
+      photos
+        .map(function (file, i) {
+          // Only the shown photo and its neighbours load straight away.
+          var lazy = Math.abs(i - index) > 1 ? ' loading="lazy"' : "";
+          return '<img src="' + photoUrl(file) + '" alt="' + (i ? "" : esc(item.name)) + '"' + lazy + ' draggable="false">';
+        })
+        .join("") +
+      "</div>" +
+      '<button type="button" class="card-nav left-2" data-dir="-1" aria-label="‹">' + CHEVRON_LEFT + "</button>" +
+      '<button type="button" class="card-nav right-2" data-dir="1" aria-label="›">' + CHEVRON_RIGHT + "</button>" +
+      '<div class="card-dots">' + cardDotsHtml(photos.length, index) + "</div>"
+    );
+  }
+
   function cardHtml(item) {
-    var thumb = mainPhoto(item);
-    var media = thumb
-      ? '<img src="' + photoUrl(thumb) + '" alt="' + esc(item.name) + '" class="w-full h-full object-cover">'
-      : iconSvg(item.category);
+    var media = cardMediaHtml(item);
     return (
       '<div class="fade-in group border border-charcoal/15 bg-cream hover:border-charcoal/40 transition flex flex-col cursor-pointer" data-cat="' +
       item.category +
       '" data-id="' +
       item.id +
       '">' +
-      '<div class="aspect-[3/4] bg-cream-dark flex items-center justify-center text-charcoal/25 group-hover:text-charcoal/40 transition relative overflow-hidden">' +
+      '<div class="card-media aspect-[3/4] bg-cream-dark flex items-center justify-center text-charcoal/25 group-hover:text-charcoal/40 transition relative overflow-hidden">' +
       media +
       '<span class="absolute top-2 right-2 text-[10px] tracking-wide uppercase bg-cream/90 border border-charcoal/20 text-ink/70 px-2 py-1">' +
       modeLabel(item.mode) +
@@ -209,9 +253,73 @@
     });
   });
 
+  // ---- Catalog cards: arrows (desktop) or a swipe (phone) flip through an item's photos
+  // right on the card; a plain click/tap still opens the item, at the photo being shown. ----
+  function showCardPhoto(card, index, animate) {
+    var id = parseInt(card.getAttribute("data-id"), 10);
+    var track = card.querySelector(".card-track");
+    if (!track) return;
+    var imgs = track.querySelectorAll("img");
+    var n = imgs.length;
+    index = ((index % n) + n) % n;
+    cardPhotoIndex[id] = index;
+    [index - 1, index + 1].forEach(function (i) {
+      var img = imgs[(i + n) % n];
+      if (img) img.removeAttribute("loading");
+    });
+    track.style.transition = animate === false ? "none" : "";
+    track.style.transform = "translateX(" + -index * 100 + "%)";
+    card.querySelector(".card-dots").innerHTML = cardDotsHtml(n, index);
+  }
+
+  var suppressClickUntil = 0;
   grid.addEventListener("click", function (e) {
     var card = e.target.closest("[data-id]");
-    if (card) openProduct(parseInt(card.getAttribute("data-id"), 10));
+    if (!card) return;
+    var nav = e.target.closest(".card-nav");
+    if (nav) {
+      var id = parseInt(card.getAttribute("data-id"), 10);
+      showCardPhoto(card, (cardPhotoIndex[id] || 0) + parseInt(nav.getAttribute("data-dir"), 10));
+      return;
+    }
+    if (Date.now() < suppressClickUntil) return; // that tap was the end of a swipe
+    var itemId = parseInt(card.getAttribute("data-id"), 10);
+    var it = findItem(items, itemId);
+    var photos = it ? cardPhotos(it) : [];
+    openProduct(itemId, false, photos[cardPhotoIndex[itemId] || 0]);
+  });
+
+  var swipe = null;
+  grid.addEventListener("touchstart", function (e) {
+    var media = e.target.closest(".card-media");
+    var track = media && media.querySelector(".card-track");
+    if (!track || e.touches.length !== 1) return;
+    swipe = { card: media.closest("[data-id]"), track: track, width: media.clientWidth,
+              x: e.touches[0].clientX, y: e.touches[0].clientY, dx: 0, horizontal: null };
+  }, { passive: true });
+  grid.addEventListener("touchmove", function (e) {
+    if (!swipe) return;
+    var dx = e.touches[0].clientX - swipe.x;
+    var dy = e.touches[0].clientY - swipe.y;
+    if (swipe.horizontal === null && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) {
+      swipe.horizontal = Math.abs(dx) > Math.abs(dy);
+    }
+    if (!swipe.horizontal) return;
+    swipe.dx = dx;
+    var index = cardPhotoIndex[parseInt(swipe.card.getAttribute("data-id"), 10)] || 0;
+    swipe.track.style.transition = "none";
+    swipe.track.style.transform = "translateX(calc(" + -index * 100 + "% + " + dx + "px))";
+  }, { passive: true });
+  grid.addEventListener("touchend", function () {
+    if (!swipe) return;
+    var s = swipe;
+    swipe = null;
+    if (!s.horizontal) return;
+    suppressClickUntil = Date.now() + 400;
+    var index = cardPhotoIndex[parseInt(s.card.getAttribute("data-id"), 10)] || 0;
+    var dir = Math.abs(s.dx) > Math.min(40, s.width * 0.15) ? (s.dx < 0 ? 1 : -1) : 0;
+    s.track.style.transition = "";
+    showCardPhoto(s.card, index + dir);
   });
 
   fetch("/api/items?lang=" + encodeURIComponent(LANG))
@@ -372,7 +480,7 @@
     document.getElementById("product-description").textContent = item.description || "";
   }
 
-  function openProduct(id, keepList) {
+  function openProduct(id, keepList, startPhoto) {
     var item = findItem(items, id);
     if (!item) return;
     var wasClosed = overlay.classList.contains("translate-x-full");
@@ -390,7 +498,9 @@
 
     currentOpenItem = findItem(itemsByLang[cardLang], id) || item;
     galleryPhotos = item.media || [];
-    galleryIndex = 0;
+    galleryIndex = Math.max(0, galleryPhotos.findIndex(function (m) {
+      return m.file === startPhoto;
+    }));
 
     fillProductText(currentOpenItem);
     mainIconWrap.innerHTML = iconSvg(item.category, "w-20 h-20");

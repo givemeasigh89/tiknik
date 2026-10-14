@@ -54,9 +54,9 @@ UI = {
     "how_it_works": {"en": "How It Works", "ru": "Как мы работаем", "hy": "Ինչպես ենք աշխատում"},
     "process_title": {"en": "From Fabric to First Dance", "ru": "От ткани до первого танца", "hy": "Կտորից մինչև առաջին պար"},
     "process_hint": {
-        "en": "Turn the ring to follow a piece from start to finish",
-        "ru": "Поверните кольцо, чтобы пройти весь путь вещи",
-        "hy": "Պտտեք օղակը՝ զգեստի ամբողջ ճանապարհն անցնելու համար",
+        "en": "Turn the key to follow a piece from start to finish",
+        "ru": "Поверните ключ, чтобы пройти весь путь вещи",
+        "hy": "Պտտեք բանալին՝ զգեստի ամբողջ ճանապարհն անցնելու համար",
     },
     "process_prev": {"en": "Previous", "ru": "Назад", "hy": "Նախորդը"},
     "process_next": {"en": "Next", "ru": "Дальше", "hy": "Հաջորդը"},

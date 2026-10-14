@@ -52,10 +52,48 @@
   .currency-btn[data-active] { background-color: #2E2C29; color: #EFEEEA; }
 
   /* Process ring ("How it works") */
-  .process-ring { --w: min(74vw, 450px); position: relative; width: var(--w); height: calc(var(--w) * 1.2);
-                  margin: calc(var(--w) * .2) calc(var(--w) * .16) calc(var(--w) * .12); flex-shrink: 0;
+  /* --w is the oval's width. It comes from the screen height, so that the heading, the ring
+     (1.2 tall plus ~.34 for the key's swing) and the stage text with its buttons fit on one screen. */
+  .process-ring { --w: clamp(150px, min(76vw, calc((100vh - 400px) / 1.54)), 450px);
+                  position: relative; width: var(--w); height: calc(var(--w) * 1.2);
+                  margin: calc(var(--w) * .24) calc(var(--w) * .15) calc(var(--w) * .1); flex-shrink: 0;
                   cursor: grab; touch-action: pan-y; -webkit-user-select: none; user-select: none; outline: none; }
+  @supports (height: 100svh) {
+    .process-ring { --w: clamp(150px, min(76vw, calc((100svh - 400px) / 1.54)), 450px); }
+  }
+  @media (min-width: 1024px) {
+    .process-ring { --w: clamp(240px, calc((100vh - 200px) / 1.54), 450px); }
+    @supports (height: 100svh) { .process-ring { --w: clamp(240px, calc((100svh - 200px) / 1.54), 450px); } }
+  }
   .process-ring.dragging { cursor: grabbing; }
+  .process-svg .pr-key { pointer-events: auto; cursor: grab; touch-action: none; }
+  .process-ring.dragging .pr-key { cursor: grabbing; }
+  .process-svg .pr-key-hit { fill: transparent; pointer-events: all; }
+  .process-svg .pr-key-pulse { fill: rgba(164,143,102,.18); stroke: #A48F66; stroke-width: .8; transform-box: fill-box;
+                               transform-origin: center; animation: keyPulse 2.2s ease-in-out infinite; pointer-events: none; }
+  .process-ring.touched .pr-key-pulse { animation: none; opacity: 0; transition: opacity .4s; }
+  .process-svg .pr-key:hover .pr-line { stroke: #8a7652; }
+  @keyframes keyPulse { 0%, 100% { transform: scale(.85); opacity: .25; } 50% { transform: scale(1.35); opacity: .9; } }
+  @media (prefers-reduced-motion: reduce) { .process-svg .pr-key-pulse { animation: none; opacity: .6; } }
+
+  /* Catalog card photo slider */
+  .card-media { touch-action: pan-y; }
+  .card-track { position: absolute; inset: 0; display: flex; transition: transform .45s cubic-bezier(.25,.8,.3,1); }
+  .card-track img { width: 100%; height: 100%; flex-shrink: 0; object-fit: cover; -webkit-user-drag: none; }
+  .card-nav { position: absolute; top: 50%; transform: translateY(-50%); z-index: 2; width: 30px; height: 30px;
+              border-radius: 9999px; display: flex; align-items: center; justify-content: center; color: #2E2C29;
+              background: rgba(239,238,234,.72); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+              opacity: 0; transition: opacity .25s ease, background .2s ease; }
+  .group:hover .card-nav { opacity: .8; }
+  .card-nav:hover { opacity: 1 !important; background: rgba(239,238,234,.95); }
+  @media (hover: none) { .card-nav { display: none; } }
+  .card-dots { position: absolute; left: 0; right: 0; bottom: 8px; z-index: 2; display: flex; justify-content: center;
+               align-items: center; gap: 4px; pointer-events: none; }
+  .card-dot { width: 5px; height: 5px; border-radius: 9999px; background: rgba(255,255,255,.55);
+              box-shadow: 0 0 2px rgba(0,0,0,.25); transition: background .25s, transform .25s; }
+  .card-dot.on { background: #fff; transform: scale(1.25); }
+  .card-count { font-size: 10px; letter-spacing: .08em; color: #fff; background: rgba(46,44,41,.35);
+                padding: 1px 7px; border-radius: 9999px; }
   .process-ring:focus-visible .process-svg { filter: drop-shadow(0 0 4px rgba(164,143,102,.8)); }
   .process-frame { position: absolute; inset: 0; clip-path: ellipse(41% 42.5% at 50% 50%); background: #E4E1D8; overflow: hidden; }
   .process-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0;
@@ -193,15 +231,18 @@
 </section>
 
 <!-- ============================== PROCESS ============================== -->
-<section id="process" class="bg-panel/60 py-16 sm:py-20 overflow-hidden">
+<section id="process" class="bg-panel/60 py-8 sm:py-14 lg:py-16 overflow-hidden">
   <div class="max-w-6xl mx-auto px-5">
     <p class="text-xs uppercase tracking-widest text-gold mb-2 text-center">{{ t('how_it_works') }}</p>
-    <h2 class="font-serif text-3xl sm:text-4xl text-charcoal text-center mb-6 sm:mb-8">{{ t('process_title') }}</h2>
+    <h2 class="font-serif text-[1.7rem] leading-tight sm:text-4xl text-charcoal text-center sm:mb-2">{{ t('process_title') }}</h2>
 
     <!-- The process ring: the logo's double oval with the making of a piece inside it.
          The key travels around the oval like a clock hand; drag it (or the photo) either way
-         and the photos follow, clockwise forward, anticlockwise back. Driven by static/js/process.js. -->
-    <div class="flex items-center justify-center gap-6 lg:gap-14">
+         and the photos follow, clockwise forward, anticlockwise back. Driven by static/js/process.js.
+         Sized from the screen height (see .process-ring) so ring, text and buttons fit on one screen;
+         on wide screens the text sits beside the ring. -->
+    <div class="flex flex-col lg:flex-row items-center justify-center lg:gap-12">
+    <div class="flex items-center justify-center gap-6 lg:gap-8">
       <p class="hidden md:block text-2xl tracking-[.12em] text-charcoal/80 leading-snug select-none" aria-hidden="true">ES<br>TD</p>
       <div id="process-ring" class="process-ring" tabindex="0" role="group" aria-label="{{ t('process_hint') }}">
         <div class="process-frame">
@@ -219,9 +260,11 @@
           <path class="pr-progress" d=""/>
           <g class="pr-marks"></g>
           <g class="pr-key">
+            <!-- a soft gold pulse round the key's bow until someone first turns it -->
+            <circle class="pr-key-pulse" cx="0" cy="-36" r="11"/>
             <g class="pr-key-flip">
             <!-- the logo's key, drawn pointing down with its tip at (0, 0) -->
-            <g transform="scale(.34) translate(-100 -194)">
+            <g transform="scale(.32) translate(-100 -194)">
               <circle cx="100" cy="60" r="3" class="pr-line" stroke-width="2.2"/>
               <circle cx="100" cy="71" r="8" class="pr-line pr-fill" stroke-width="2.2"/>
               <circle cx="89" cy="82" r="8" class="pr-line pr-fill" stroke-width="2.2"/>
@@ -233,33 +276,38 @@
               <path d="M87 179 V192 M90.5 179 V192 M90.5 185.5 H100 M95 181 V190" class="pr-line" stroke-width="2.2"/>
             </g>
             </g>
+            <!-- a generous invisible handle, so the key is easy to grab with a finger -->
+            <rect class="pr-key-hit" x="-16" y="-54" width="32" height="62" rx="10"/>
           </g>
         </svg>
       </div>
       <p class="hidden md:block text-2xl tracking-[.12em] text-charcoal/80 leading-snug select-none" aria-hidden="true">20<br>26</p>
     </div>
 
+    <div class="w-full lg:w-[470px] shrink-0">
     <!-- Stage text: the JS shows the one for the photo the key points at. -->
-    <div class="process-stages relative max-w-xl mx-auto text-center mt-8 sm:mt-10" aria-live="polite">
+    <div class="process-stages relative max-w-xl mx-auto lg:mx-0 text-center lg:text-left" aria-live="polite">
       {% for i in range(1, 6) %}
         <div class="process-stage{{ ' is-active' if i == 1 }}" data-stage="{{ i - 1 }}">
-          <p class="text-xs uppercase tracking-widest text-gold mb-2">{{ ['I', 'II', 'III', 'IV', 'V'][i - 1] }} · {{ t('stage%d_short' % i) }}</p>
-          <h3 class="font-serif text-2xl sm:text-3xl text-charcoal mb-3">{{ t('stage%d_title' % i) }}</h3>
-          <p class="text-sm sm:text-[15px] text-ink/65 leading-relaxed">{{ t('stage%d_text' % i) }}</p>
+          <p class="text-[11px] sm:text-xs uppercase tracking-widest text-gold mb-1 sm:mb-2">{{ ['I', 'II', 'III', 'IV', 'V'][i - 1] }} · {{ t('stage%d_short' % i) }}</p>
+          <h3 class="font-serif text-[1.45rem] sm:text-3xl leading-tight text-charcoal mb-1.5 sm:mb-3">{{ t('stage%d_title' % i) }}</h3>
+          <p class="text-[13px] sm:text-[15px] text-ink/65 leading-relaxed">{{ t('stage%d_text' % i) }}</p>
         </div>
       {% endfor %}
     </div>
 
-    <div class="flex items-center justify-center gap-1 sm:gap-2 mt-7">
-      <button type="button" class="process-step w-9 h-9 rounded-full border border-charcoal/20 hover:border-charcoal text-charcoal flex items-center justify-center shrink-0" data-dir="-1" aria-label="{{ t('process_prev') }}">&#8249;</button>
-      <div class="flex flex-wrap justify-center">
+    <div class="flex items-center justify-center lg:justify-start gap-1 sm:gap-2 mt-3 sm:mt-6">
+      <button type="button" class="process-step w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-charcoal/20 hover:border-charcoal text-charcoal hidden min-[400px]:flex items-center justify-center shrink-0" data-dir="-1" aria-label="{{ t('process_prev') }}">&#8249;</button>
+      <div class="flex flex-wrap justify-center lg:justify-start">
         {% for i in range(1, 6) %}
-          <button type="button" class="process-chip px-2 sm:px-3 py-1.5 text-[11px] sm:text-xs uppercase tracking-widest" data-stage="{{ i - 1 }}">{{ t('stage%d_short' % i) }}</button>
+          <button type="button" class="process-chip px-1.5 sm:px-2.5 py-1.5 text-[11px] sm:text-xs uppercase tracking-wider" data-stage="{{ i - 1 }}">{{ t('stage%d_short' % i) }}</button>
         {% endfor %}
       </div>
-      <button type="button" class="process-step w-9 h-9 rounded-full border border-charcoal/20 hover:border-charcoal text-charcoal flex items-center justify-center shrink-0" data-dir="1" aria-label="{{ t('process_next') }}">&#8250;</button>
+      <button type="button" class="process-step w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-charcoal/20 hover:border-charcoal text-charcoal hidden min-[400px]:flex items-center justify-center shrink-0" data-dir="1" aria-label="{{ t('process_next') }}">&#8250;</button>
     </div>
-    <p class="text-[10px] uppercase tracking-[.2em] text-ink/35 text-center mt-4">{{ t('process_hint') }}</p>
+    <p class="text-[10px] uppercase tracking-[.2em] text-ink/40 text-center lg:text-left mt-2 sm:mt-4">{{ t('process_hint') }}</p>
+    </div>
+    </div>
   </div>
 </section>
 

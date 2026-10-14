@@ -199,8 +199,9 @@
     wake();
   }
 
-  // ---- Dragging: mouse/pen turn the key round the oval; on touch a sideways swipe turns it
-  // (vertical swipes still scroll the page). ----
+  // ---- Dragging: grab the key (finger or mouse) and turn it round the oval; with a mouse the
+  // photo can be dragged round too. On touch, a sideways swipe over the photo also turns it,
+  // while vertical swipes there still scroll the page. ----
   function toSvg(e) {
     var pt = svg.createSVGPoint();
     pt.x = e.clientX;
@@ -214,7 +215,8 @@
   var drag = null;
   ring.addEventListener("pointerdown", function (e) {
     if (e.button !== undefined && e.button !== 0) return;
-    drag = { touch: e.pointerType === "touch", lastAngle: angleOf(toSvg(e)), lastX: e.clientX };
+    var onKey = !!(e.target.closest && e.target.closest(".pr-key"));
+    drag = { touch: e.pointerType === "touch" && !onKey, lastAngle: angleOf(toSvg(e)), lastX: e.clientX };
     dragging = true;
     pauseAutoplay();
     if (!drag.touch) {
@@ -244,6 +246,10 @@
     target = Math.round((angle + velocity * 6) / STEP) * STEP;
     wake();
   }
+  // iOS ignores touch-action on SVG, so stop the page from scrolling when the key is grabbed.
+  key.addEventListener("touchstart", function (e) {
+    e.preventDefault();
+  }, { passive: false });
   ring.addEventListener("pointerup", endDrag);
   ring.addEventListener("pointercancel", endDrag);
 
@@ -279,13 +285,14 @@
   }, 4200);
   function pauseAutoplay() {
     resumeAt = Date.now() + 9000;
+    ring.classList.add("touched"); // the key's "grab me" pulse has done its job
   }
   ring.addEventListener("mouseenter", function () {
     hovering = true;
   });
   ring.addEventListener("mouseleave", function () {
     hovering = false;
-    pauseAutoplay();
+    resumeAt = Date.now() + 9000;
   });
   if ("IntersectionObserver" in window) {
     new IntersectionObserver(function (entries) {
