@@ -184,6 +184,27 @@
     );
   }
 
+  // The small bag button on a catalog card (items that can be bought or rented).
+  var BAG_ICON =
+    '<svg viewBox="0 0 24 24" class="card-cart-bag" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round">' +
+    '<path d="M5 8h14l-1.2 12H6.2L5 8z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></svg>' +
+    '<svg viewBox="0 0 24 24" class="card-cart-check" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">' +
+    '<path d="M5 8h14l-1.2 12H6.2L5 8z" stroke-width="1.4"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8" stroke-width="1.4"/><path d="M9.3 14l2 2 3.6-4"/></svg>';
+
+  function canCart(item) {
+    return item.mode === "Sale" || item.mode === "Rent" || item.mode === "Both";
+  }
+
+  function cardCartButton(item) {
+    if (!canCart(item)) return "";
+    var inCart = itemInCart(item.id);
+    return (
+      '<button type="button" class="card-cart' + (inCart ? " in-cart" : "") + '" data-cart-id="' + item.id + '" aria-label="' +
+      esc(inCart ? t("in_cart", "In your cart") : t("add_to_cart", "Add to Cart")) + '" title="' +
+      esc(inCart ? t("in_cart", "In your cart") : t("add_to_cart", "Add to Cart")) + '">' + BAG_ICON + "</button>"
+    );
+  }
+
   function cardHtml(item) {
     var media = cardMediaHtml(item);
     return (
@@ -218,9 +239,12 @@
         })
         .join("") +
       "</dl>" +
+      '<div class="flex items-center justify-between gap-3">' +
       '<p class="text-sm text-charcoal font-medium">' +
       formatPrice(item) +
       "</p>" +
+      cardCartButton(item) +
+      "</div>" +
       "</div>" +
       "</div>"
     );
@@ -277,6 +301,17 @@
   grid.addEventListener("click", function (e) {
     var card = e.target.closest("[data-id]");
     if (!card) return;
+    var bag = e.target.closest(".card-cart");
+    if (bag) {
+      var bagId = parseInt(bag.getAttribute("data-cart-id"), 10);
+      if (itemInCart(bagId)) {
+        openCart();
+      } else {
+        var bagItem = findItem(items, bagId);
+        addToCart(bagId, bagItem.mode === "Rent" ? "rent" : "buy");
+      }
+      return;
+    }
     var nav = e.target.closest(".card-nav");
     if (nav) {
       var id = parseInt(card.getAttribute("data-id"), 10);
@@ -1203,6 +1238,28 @@
       /* private mode etc. — the cart still works for this visit */
     }
     updateCartCount();
+    refreshCardCartButtons();
+  }
+
+  function itemInCart(id) {
+    return cart.some(function (l) {
+      return l.id === id;
+    });
+  }
+
+  function refreshCardCartButtons() {
+    grid.querySelectorAll(".card-cart").forEach(function (btn) {
+      var inCart = itemInCart(parseInt(btn.getAttribute("data-cart-id"), 10));
+      var label = inCart ? t("in_cart", "In your cart") : t("add_to_cart", "Add to Cart");
+      if (inCart && !btn.classList.contains("in-cart")) {
+        btn.classList.remove("pop");
+        void btn.offsetWidth;
+        btn.classList.add("pop");
+      }
+      btn.classList.toggle("in-cart", inCart);
+      btn.setAttribute("aria-label", label);
+      btn.setAttribute("title", label);
+    });
   }
 
   function updateCartCount(bump) {
@@ -1284,7 +1341,13 @@
           (thumb ? '<img src="' + photoUrl(thumb) + '" alt="" class="w-full h-full object-cover">' : "") +
           "</div>" +
           '<div class="flex-1 min-w-0">' +
-          '<p class="text-[10px] uppercase tracking-widest text-gold">' + esc(t(line.kind === "buy" ? "cart_buy_label" : "cart_rent_label", "")) + "</p>" +
+          (item.mode === "Both"
+            ? '<div class="kind-switch" role="group">' +
+              ["buy", "rent"].map(function (k) {
+                return '<button type="button" class="js-kind' + (line.kind === k ? " on" : "") + '" data-i="' + i + '" data-k="' + k + '">' +
+                  esc(t(k === "buy" ? "cart_buy_label" : "cart_rent_label", k)) + "</button>";
+              }).join("") + "</div>"
+            : '<p class="text-[10px] uppercase tracking-widest text-gold">' + esc(t(line.kind === "buy" ? "cart_buy_label" : "cart_rent_label", "")) + "</p>") +
           '<p class="font-serif text-lg text-charcoal leading-snug truncate">' + esc(item.name) + "</p>" +
           days +
           '<button type="button" class="js-remove text-[11px] text-ink/45 hover:text-charcoal underline underline-offset-2 mt-2" data-i="' + i + '">' + esc(t("cart_remove", "Remove")) + "</button>" +
@@ -1306,10 +1369,20 @@
   }
 
   cartLinesEl.addEventListener("click", function (e) {
-    var btn = e.target.closest(".js-days, .js-remove");
+    var btn = e.target.closest(".js-days, .js-remove, .js-kind");
     if (!btn) return;
     var i = parseInt(btn.getAttribute("data-i"), 10);
-    if (btn.classList.contains("js-remove")) {
+    if (btn.classList.contains("js-kind")) {
+      var kind = btn.getAttribute("data-k");
+      if (cart[i].kind === kind) return;
+      var other = cartIndex(cart[i].id, kind);
+      if (other !== -1) {
+        cart.splice(i, 1); // that option is already in the cart: keep just the one line
+      } else {
+        cart[i].kind = kind;
+        cart[i].days = cart[i].days || 1;
+      }
+    } else if (btn.classList.contains("js-remove")) {
       cart.splice(i, 1);
     } else {
       cart[i].days = Math.max(1, Math.min(60, cart[i].days + parseInt(btn.getAttribute("data-d"), 10)));

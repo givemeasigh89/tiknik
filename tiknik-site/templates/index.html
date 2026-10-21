@@ -61,6 +61,23 @@
   .contact-link:hover { background: #2E2C29; color: #EFEEEA; border-color: #2E2C29; }
 
   /* Cart */
+  .card-cart { position: relative; flex-shrink: 0; width: 34px; height: 34px; border-radius: 9999px; display: inline-flex;
+               align-items: center; justify-content: center; color: #2E2C29; border: 1px solid rgba(46,44,41,.22);
+               transition: background .2s ease, color .2s ease, border-color .2s ease, transform .2s ease; }
+  .card-cart svg { position: absolute; width: 17px; height: 17px; transition: opacity .25s ease, transform .25s ease; }
+  .card-cart .card-cart-check { opacity: 0; transform: scale(.6); }
+  .card-cart:hover { background: #2E2C29; color: #EFEEEA; border-color: #2E2C29; }
+  .card-cart:active { transform: scale(.92); }
+  .card-cart.in-cart { background: #A48F66; border-color: #A48F66; color: #EFEEEA; }
+  .card-cart.in-cart .card-cart-bag { opacity: 0; transform: scale(.6); }
+  .card-cart.in-cart .card-cart-check { opacity: 1; transform: none; }
+  @keyframes cardCartPop { 0% { transform: scale(1); } 40% { transform: scale(1.18); } 100% { transform: scale(1); } }
+  .card-cart.pop { animation: cardCartPop .4s ease; }
+  .kind-switch { display: inline-flex; border: 1px solid rgba(46,44,41,.2); margin-bottom: 2px; }
+  .kind-switch button { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; padding: 3px 9px; color: rgba(58,58,58,.55);
+                        transition: background .2s, color .2s; }
+  .kind-switch button.on { background: #2E2C29; color: #EFEEEA; }
+  .kind-switch button:not(.on):hover { color: #2E2C29; }
   body.cart-open #cart-panel { transform: none; box-shadow: -20px 0 50px -25px rgba(46,44,41,.5); }
   body.cart-open #cart-backdrop { opacity: 1; pointer-events: auto; }
   @keyframes cartBump { 0%, 100% { transform: scale(1); } 40% { transform: scale(1.35); } }
