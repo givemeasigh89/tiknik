@@ -71,14 +71,17 @@
         <span class="font-serif text-2xl text-charcoal">Tiknik</span>
         <span class="text-[11px] uppercase tracking-[.2em] text-gold">Admin</span>
       </div>
-      <nav class="hidden md:flex items-center gap-6 text-sm text-ink/70">
+      <nav class="hidden md:flex items-center gap-4 lg:gap-5 text-sm text-ink/70 whitespace-nowrap">
+        <a href="#inbox" class="hover:text-charcoal">Inbox</a>
         <a href="#sections" class="hover:text-charcoal">Sections</a>
         <a href="#add-item" class="hover:text-charcoal">Add item</a>
         <a href="#items" class="hover:text-charcoal">Items</a>
         <a href="#rates" class="hover:text-charcoal">Rates</a>
+        <a href="#reviews" class="hover:text-charcoal">Reviews</a>
+        <a href="#contacts" class="hover:text-charcoal">Contacts</a>
       </nav>
       <div class="flex items-center gap-1 text-sm">
-        <span class="hidden sm:inline text-xs mr-2 {{ 'text-[#9b2c2c]' if uploads_mb > 350 else 'text-ink/45' }}"
+        <span class="hidden lg:inline whitespace-nowrap text-xs mr-2 {{ 'text-[#9b2c2c]' if uploads_mb > 350 else 'text-ink/45' }}"
               title="Photos and videos take {{ '%.0f'|format(uploads_mb) }} MB. The free PythonAnywhere plan has 512 MB in total, including the site's code.">
           Uploads {{ '%.0f'|format(uploads_mb) }} MB / 512
         </span>
@@ -104,6 +107,79 @@
   {% endwith %}
 
   <main class="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-10 flex flex-col gap-8">
+
+    <!-- ===================== Inbox: cart orders and fitting requests ===================== -->
+    {% set new_orders = orders|selectattr('status', 'equalto', 'new')|list %}
+    {% set new_inquiries = inquiries|selectattr('status', 'equalto', 'new')|list %}
+    <section id="inbox" class="card p-5 sm:p-7">
+      <div class="mb-5">
+        <h2 class="font-serif text-3xl text-charcoal">Inbox
+          {% if new_orders or new_inquiries %}<span class="text-base align-middle ml-1 rounded-full bg-gold text-cream px-2.5 py-0.5">{{ new_orders|length + new_inquiries|length }} new</span>{% endif %}
+        </h2>
+        <p class="text-sm text-ink/55 mt-1">Orders from the cart and fitting / quote requests from the contact form. Nothing is paid on the site — reply to confirm size, dates and payment.</p>
+      </div>
+
+      <h3 class="text-[11px] uppercase tracking-[.2em] text-ink/50 mb-2.5">Orders · {{ orders|length }}</h3>
+      {% if orders %}
+        <div class="flex flex-col gap-2 mb-8">
+          {% for o in orders %}
+            <details class="item card !rounded-xl {{ 'opacity-60' if o.status in ('done', 'cancelled') }}" {{ 'open' if o.status == 'new' }}>
+              <summary class="flex items-center gap-3 p-3 pr-4">
+                <span class="text-xs rounded-full px-2 py-0.5 {{ {'new': 'bg-gold text-cream', 'confirmed': 'bg-charcoal text-cream', 'done': 'bg-cream-dark text-ink/60', 'cancelled': 'bg-cream-dark text-ink/40 line-through'}[o.status] }}">{{ o.status }}</span>
+                <span class="text-[15px] text-charcoal">№{{ o.id }} · {{ o.name }}</span>
+                <span class="text-xs text-ink/50 ml-auto">{{ (o.created_at or '')[:16] }} UTC</span>
+              </summary>
+              <div class="px-4 pb-4 pt-1 border-t border-charcoal/10 mx-3 text-sm">
+                <p class="mt-3"><span class="text-ink/50">Contact:</span> <span class="text-charcoal select-all">{{ o.contact }}</span></p>
+                {% if o.note %}<p class="mt-1 whitespace-pre-line"><span class="text-ink/50">Note:</span> {{ o.note }}</p>{% endif %}
+                <ul class="mt-3 divide-y divide-charcoal/10 border-y border-charcoal/10">
+                  {% for l in o.lines %}
+                    <li class="flex justify-between gap-3 py-1.5">
+                      <span><a href="#item-{{ l.id }}" class="hover:underline">{{ l.name }}</a> <span class="text-ink/50">· {{ 'purchase' if l.kind == 'buy' else 'rental, ' ~ l.days ~ ' day' ~ ('' if l.days == 1 else 's') }}</span></span>
+                      <span class="whitespace-nowrap">{{ ('{:,}'.format(l.amount)).replace(',', ' ') ~ ' ֏' if l.amount is not none else 'price on request' }}</span>
+                    </li>
+                  {% endfor %}
+                </ul>
+                <p class="mt-2 text-right">Total <b>{{ ('{:,}'.format(o.total or 0)).replace(',', ' ') }} ֏</b></p>
+                <div class="flex flex-wrap gap-2 mt-3">
+                  {% for st in order_statuses if st != o.status %}
+                    <form method="POST" action="{{ url_for('admin_order', order_id=o.id, action=st) }}"><button class="btn btn-ghost !py-1.5">Mark {{ st }}</button></form>
+                  {% endfor %}
+                  <form method="POST" action="{{ url_for('admin_order', order_id=o.id, action='delete') }}" onsubmit="return confirm('Delete order №{{ o.id }}?')" class="ml-auto"><button class="btn btn-danger !py-1.5">Delete</button></form>
+                </div>
+              </div>
+            </details>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-sm text-ink/40 mb-8">No orders yet.</p>
+      {% endif %}
+
+      <h3 class="text-[11px] uppercase tracking-[.2em] text-ink/50 mb-2.5">Fitting & quote requests · {{ inquiries|length }}</h3>
+      {% if inquiries %}
+        <ul class="flex flex-col divide-y divide-charcoal/10 border-y border-charcoal/10">
+          {% for q in inquiries %}
+            <li class="py-3 flex gap-3 items-start {{ 'opacity-55' if q.status == 'done' }}">
+              <span class="mt-1.5 w-2 h-2 rounded-full shrink-0 {{ 'bg-gold' if q.status == 'new' else 'bg-charcoal/15' }}"></span>
+              <div class="flex-1 min-w-0 text-sm">
+                <p><span class="text-charcoal">{{ q.name }}</span> · <span class="select-all">{{ q.contact }}</span>
+                  {% if q.category %}<span class="text-ink/50">· {{ category_names.get(q.category, q.category) }}</span>{% endif %}</p>
+                {% if q.message %}<p class="text-ink/70 mt-1 whitespace-pre-line">{{ q.message }}</p>{% endif %}
+                <p class="text-[11px] text-ink/40 mt-1">{{ (q.created_at or '')[:16] }} UTC</p>
+              </div>
+              <form method="POST" action="{{ url_for('admin_inquiry', inquiry_id=q.id, action='new' if q.status == 'done' else 'done') }}">
+                <button class="btn btn-ghost !py-1">{{ 'Reopen' if q.status == 'done' else 'Done' }}</button>
+              </form>
+              <form method="POST" action="{{ url_for('admin_inquiry', inquiry_id=q.id, action='delete') }}" onsubmit="return confirm('Delete this request?')">
+                <button class="icon-btn danger" title="Delete"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 7h16M10 11v6M14 11v6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg></button>
+              </form>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="text-sm text-ink/40">No requests yet.</p>
+      {% endif %}
+    </section>
 
     <!-- ===================== Sections ===================== -->
     <section id="sections" class="card p-5 sm:p-7">
@@ -405,6 +481,61 @@
           <input name="rub_rate" type="number" step="0.01" min="0.01" value="{{ rub_rate }}" required class="field w-28"> ֏
         </label>
         <button type="submit" class="btn btn-dark">Save rates</button>
+      </form>
+    </section>
+
+    <!-- ===================== Reviews ===================== -->
+    {% set pending = reviews|selectattr('status', 'equalto', 'pending')|list %}
+    <section id="reviews" class="card p-5 sm:p-7">
+      <h2 class="font-serif text-3xl text-charcoal">Reviews
+        {% if pending %}<span class="text-base align-middle ml-1 rounded-full bg-gold text-cream px-2.5 py-0.5">{{ pending|length }} to check</span>{% endif %}
+      </h2>
+      <p class="text-sm text-ink/55 mt-1 mb-5">Clients send reviews from the site. They appear there only after you publish them.</p>
+      {% if reviews %}
+        <ul class="flex flex-col divide-y divide-charcoal/10 border-y border-charcoal/10">
+          {% for r in reviews %}
+            <li class="py-4 flex gap-4 items-start">
+              <div class="flex gap-1.5 shrink-0">
+                {% for ph in r.photos %}
+                  <a href="{{ url_for('static', filename='img/reviews/' ~ ph) }}" target="_blank" class="block w-14 h-[4.5rem] bg-cream-dark overflow-hidden rounded-md">
+                    <img src="{{ url_for('static', filename='img/reviews/' ~ ph) }}" class="w-full h-full object-cover" alt="" loading="lazy">
+                  </a>
+                {% endfor %}
+              </div>
+              <div class="flex-1 min-w-0 text-sm">
+                <p class="flex items-center gap-2">
+                  <span class="text-charcoal">{{ r.name }}</span>
+                  <span class="text-[10px] uppercase tracking-wider rounded-full px-2 py-0.5 {{ 'bg-gold text-cream' if r.status == 'pending' else 'bg-cream-dark text-ink/60' }}">{{ 'waiting' if r.status == 'pending' else 'on the site' }}</span>
+                  <span class="text-[11px] text-ink/40">{{ (r.created_at or '')[:10] }}</span>
+                </p>
+                <p class="text-ink/75 mt-1 whitespace-pre-line">{{ r.text }}</p>
+              </div>
+              <div class="flex flex-col gap-1.5 shrink-0">
+                <form method="POST" action="{{ url_for('admin_review', review_id=r.id, action='pending' if r.status == 'approved' else 'approved') }}">
+                  <button class="btn {{ 'btn-ghost' if r.status == 'approved' else 'btn-dark' }} !py-1.5 w-full">{{ 'Hide' if r.status == 'approved' else 'Publish' }}</button>
+                </form>
+                <form method="POST" action="{{ url_for('admin_review', review_id=r.id, action='delete') }}" onsubmit="return confirm('Delete this review and its photos?')">
+                  <button class="btn btn-danger !py-1.5 w-full">Delete</button>
+                </form>
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="text-sm text-ink/40">No reviews yet.</p>
+      {% endif %}
+    </section>
+
+    <!-- ===================== Contacts ===================== -->
+    <section id="contacts" class="card p-5 sm:p-7">
+      <h2 class="font-serif text-3xl text-charcoal">Contacts</h2>
+      <p class="text-sm text-ink/55 mt-1 mb-5">Shown in the site's contact section and footer. Leave WhatsApp empty to hide it.</p>
+      <form method="POST" action="{{ url_for('admin_contacts') }}" class="grid sm:grid-cols-[1fr_1fr_auto] gap-3 items-end">
+        <label class="flex flex-col gap-1 text-sm"><span class="text-[10px] uppercase tracking-wider text-ink/45">Instagram link or @name</span>
+          <input name="instagram" value="{{ instagram }}" class="field"></label>
+        <label class="flex flex-col gap-1 text-sm"><span class="text-[10px] uppercase tracking-wider text-ink/45">WhatsApp number, with country code</span>
+          <input name="whatsapp" value="{{ whatsapp }}" placeholder="e.g. 374 99 123456" inputmode="tel" class="field"></label>
+        <button type="submit" class="btn btn-dark">Save contacts</button>
       </form>
     </section>
   </main>

@@ -91,6 +91,15 @@ A built-in admin page handles everything — no PythonAnywhere file editing, no 
    - **Parameters** — each item has its own list of parameters (Fabric: Batiste, Length: Midi, …). Add or remove them on the item's card with "+ Add parameter" / ×; the Add item form starts with Fabric, Colour, Lace, Made to and Occasions — keep the ones the item needs, remove the rest, or add your own. Only parameters with a value are shown on the catalog card and product page; the description is shown only on the product page. Typing a label already used on another item fills in its RU / HY translation.
    - **Translations** — each section has EN / RU / HY name fields; each item has EN / RU / HY tabs. An empty translation falls back to English on the site, and items still missing a translation are marked "no RU / HY".
 
+## Cart, reviews and the inbox
+
+- **Cart** — no accounts and no online payment. Visitors add items (Buy, and/or Rent with a number of days) to a cart kept in their own browser, then send it with their name and a phone / WhatsApp / Instagram. Orders land in `/admin` → **Inbox** with what was asked for at the prices in the database (prices sent by the browser are ignored). Mark them confirmed / done / cancelled as you go.
+- **Fitting & quote requests** from the contact form are in the same Inbox.
+- **Reviews** — anyone can send a review with up to 3 photos (scaled down in their browser; only real JPG/PNG/WEBP files are kept, under random names in `static/img/reviews/`). Nothing appears on the site until you press **Publish** in `/admin` → Reviews.
+- Both public forms have a hidden anti-bot field and a per-visitor limit (5 orders per 10 minutes, 3 reviews per hour).
+- **Contacts** (Instagram link, WhatsApp number) are set in `/admin` → Contacts.
+- **About us** text is `about_*` in `i18n.py`; its photos are `static/img/about/1–3.jpg`.
+
 ## Languages
 
 The site is in English (`/`), Russian (`/ru/`) and Armenian (`/hy/`). First-time visitors are sent to their browser's language; after that the language they pick in the header is remembered.

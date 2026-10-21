@@ -101,6 +101,7 @@
       document.getElementById("product-price").textContent = formatPrice(currentOpenItem);
     }
     if (dial) dial.set("cur", code, true);
+    if (document.body.classList.contains("cart-open")) renderCart();
   }
 
   currencyBtns.forEach(function (btn) {
@@ -478,6 +479,7 @@
       .join("");
     attrsEl.classList.toggle("hidden", !pairs.length);
     document.getElementById("product-description").textContent = item.description || "";
+    renderProductCart(item);
   }
 
   function openProduct(id, keepList, startPhoto) {
@@ -1141,4 +1143,236 @@
         });
     });
   }
+  // ------------------------------------------------------------------
+  // Header: catalog section links (drop-down and phone menu) and the phone menu itself
+  // ------------------------------------------------------------------
+  var menuToggle = document.getElementById("menu-toggle");
+  var mobileMenu = document.getElementById("mobile-menu");
+
+  function setMenu(open) {
+    if (!mobileMenu) return;
+    mobileMenu.classList.toggle("hidden", !open);
+    menuToggle.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+  if (menuToggle) {
+    menuToggle.addEventListener("click", function () {
+      setMenu(mobileMenu.classList.contains("hidden"));
+    });
+    mobileMenu.addEventListener("click", function (e) {
+      if (e.target.closest("a")) setMenu(false);
+    });
+  }
+
+  // "Catalog → Corsets" opens the catalog with that tab chosen (the link itself scrolls there).
+  document.querySelectorAll(".js-cat-link").forEach(function (link) {
+    link.addEventListener("click", function () {
+      var tab = document.querySelector('.tab-btn[data-category="' + link.getAttribute("data-cat") + '"]');
+      if (tab) tab.click();
+    });
+  });
+
+  // ------------------------------------------------------------------
+  // Cart — no accounts: it's kept in this browser and sent as an order
+  // request; prices are checked again on the server.
+  // ------------------------------------------------------------------
+  var CART_KEY = "tiknik_cart";
+  var cartPanel = document.getElementById("cart-panel");
+  var cartLinesEl = document.getElementById("cart-lines");
+  var cartForm = document.getElementById("cart-form");
+  var cartStatus = document.getElementById("cart-status");
+  var cartCount = document.getElementById("cart-count");
+  var cart = loadCart();
+
+  function loadCart() {
+    try {
+      var stored = JSON.parse(localStorage.getItem(CART_KEY) || "[]");
+      return Array.isArray(stored)
+        ? stored.filter(function (l) {
+            return l && typeof l.id === "number" && (l.kind === "buy" || l.kind === "rent");
+          })
+        : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function saveCart() {
+    try {
+      localStorage.setItem(CART_KEY, JSON.stringify(cart));
+    } catch (e) {
+      /* private mode etc. — the cart still works for this visit */
+    }
+    updateCartCount();
+  }
+
+  function updateCartCount(bump) {
+    cartCount.textContent = cart.length;
+    cartCount.classList.toggle("hidden", !cart.length);
+    if (bump) {
+      cartCount.classList.remove("bump");
+      void cartCount.offsetWidth;
+      cartCount.classList.add("bump");
+    }
+  }
+
+  function cartIndex(id, kind) {
+    return cart.findIndex(function (l) {
+      return l.id === id && l.kind === kind;
+    });
+  }
+
+  function addToCart(id, kind) {
+    if (cartIndex(id, kind) === -1) cart.push({ id: id, kind: kind, days: 1 });
+    saveCart();
+    updateCartCount(true);
+    if (currentOpenItem) renderProductCart(currentOpenItem);
+  }
+
+  function lineAmount(item, line) {
+    if (line.kind === "buy") return item.price || null;
+    return item.rent_price ? item.rent_price * line.days : null;
+  }
+
+  // Buttons in the product view: Buy / Rent depending on the item's mode.
+  function renderProductCart(item) {
+    var box = document.getElementById("product-cart");
+    var kinds = { Sale: ["buy"], Rent: ["rent"], Both: ["buy", "rent"] }[item.mode] || [];
+    var cls = "border border-charcoal text-charcoal px-5 py-3 text-sm tracking-wide hover:bg-charcoal hover:text-cream transition";
+    box.innerHTML = kinds
+      .map(function (kind) {
+        var label = kinds.length === 1 && kind === "buy" ? t("add_to_cart", "Add to Cart") : t("add_" + kind, kind);
+        if (cartIndex(item.id, kind) !== -1) {
+          return '<button type="button" class="js-view-cart ' + cls.replace("border-charcoal text-charcoal", "border-gold text-gold") + '">' +
+            (kinds.length > 1 ? esc(label) + " · " : "") + esc(t("in_cart", "In your cart ✓")) + "</button>";
+        }
+        return '<button type="button" class="js-add-cart ' + cls + '" data-kind="' + kind + '">' + esc(label) + "</button>";
+      })
+      .join("");
+  }
+
+  document.getElementById("product-cart").addEventListener("click", function (e) {
+    var add = e.target.closest(".js-add-cart");
+    if (add && currentOpenItem) addToCart(currentOpenItem.id, add.getAttribute("data-kind"));
+    if (e.target.closest(".js-view-cart")) openCart();
+  });
+
+  function renderCart() {
+    var list = itemsByLang[cardLang] || items;
+    if (list.length) {
+      // Forget items that no longer exist on the site.
+      cart = cart.filter(function (l) {
+        return findItem(items, l.id);
+      });
+    }
+    var total = 0;
+    cartLinesEl.innerHTML = cart
+      .map(function (line, i) {
+        var item = findItem(list, line.id);
+        if (!item) return "";
+        var amount = lineAmount(item, line);
+        total += amount || 0;
+        var thumb = mainPhoto(item);
+        var days = line.kind === "rent"
+          ? '<div class="flex items-center gap-2 mt-2 text-xs text-ink/60">' +
+            '<button type="button" class="qty-btn js-days" data-i="' + i + '" data-d="-1">−</button>' +
+            '<span class="min-w-[3.5rem] text-center">' + line.days + " " + esc(t(line.days === 1 ? "cart_day" : "cart_days", "days")) + "</span>" +
+            '<button type="button" class="qty-btn js-days" data-i="' + i + '" data-d="1">+</button></div>'
+          : "";
+        return (
+          '<li class="flex gap-4 py-4">' +
+          '<div class="w-16 h-20 shrink-0 bg-cream-dark overflow-hidden">' +
+          (thumb ? '<img src="' + photoUrl(thumb) + '" alt="" class="w-full h-full object-cover">' : "") +
+          "</div>" +
+          '<div class="flex-1 min-w-0">' +
+          '<p class="text-[10px] uppercase tracking-widest text-gold">' + esc(t(line.kind === "buy" ? "cart_buy_label" : "cart_rent_label", "")) + "</p>" +
+          '<p class="font-serif text-lg text-charcoal leading-snug truncate">' + esc(item.name) + "</p>" +
+          days +
+          '<button type="button" class="js-remove text-[11px] text-ink/45 hover:text-charcoal underline underline-offset-2 mt-2" data-i="' + i + '">' + esc(t("cart_remove", "Remove")) + "</button>" +
+          "</div>" +
+          '<p class="text-sm text-charcoal whitespace-nowrap">' + (amount ? formatAmount(amount) : esc(t("price_on_request", "Price on request"))) + "</p>" +
+          "</li>"
+        );
+      })
+      .join("");
+    var empty = !cart.length;
+    document.getElementById("cart-empty").classList.toggle("hidden", !empty || !cartDoneHidden());
+    cartForm.classList.toggle("hidden", empty);
+    document.getElementById("cart-total").textContent = total ? formatAmount(total) : "—";
+    updateCartCount();
+  }
+
+  function cartDoneHidden() {
+    return document.getElementById("cart-done").classList.contains("hidden");
+  }
+
+  cartLinesEl.addEventListener("click", function (e) {
+    var btn = e.target.closest(".js-days, .js-remove");
+    if (!btn) return;
+    var i = parseInt(btn.getAttribute("data-i"), 10);
+    if (btn.classList.contains("js-remove")) {
+      cart.splice(i, 1);
+    } else {
+      cart[i].days = Math.max(1, Math.min(60, cart[i].days + parseInt(btn.getAttribute("data-d"), 10)));
+    }
+    saveCart();
+    renderCart();
+    if (currentOpenItem) renderProductCart(currentOpenItem);
+  });
+
+  function openCart() {
+    document.getElementById("cart-done").classList.add("hidden");
+    cartStatus.classList.add("hidden");
+    renderCart();
+    document.body.classList.add("cart-open");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeCart() {
+    document.body.classList.remove("cart-open");
+    if (overlay.classList.contains("translate-x-full")) document.body.style.overflow = "";
+  }
+
+  document.getElementById("cart-open").addEventListener("click", openCart);
+  document.getElementById("cart-close").addEventListener("click", closeCart);
+  document.getElementById("cart-backdrop").addEventListener("click", closeCart);
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && document.body.classList.contains("cart-open")) {
+      e.stopImmediatePropagation();
+      closeCart();
+    }
+  }, true);
+
+  cartForm.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var data = Object.fromEntries(new FormData(cartForm).entries());
+    data.items = cart;
+    var btn = cartForm.querySelector("button[type=submit]");
+    btn.disabled = true;
+    cartStatus.classList.add("hidden");
+    fetch("/api/order", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) })
+      .then(function (res) {
+        return res.json();
+      })
+      .then(function (body) {
+        if (!body.ok) throw new Error(body.error || "error");
+        cart = [];
+        saveCart();
+        cartForm.reset();
+        renderCart();
+        document.getElementById("cart-done-text").textContent = t("cart_sent", "Thank you!").replace("{n}", body.number || "");
+        document.getElementById("cart-done").classList.remove("hidden");
+        document.getElementById("cart-empty").classList.add("hidden");
+        if (currentOpenItem) renderProductCart(currentOpenItem);
+      })
+      .catch(function (err) {
+        var key = { name_contact: "required_error", busy: "busy_error" }[err.message] || "send_error";
+        cartStatus.textContent = t(key, "Something went wrong. Please try again.");
+        cartStatus.className = "text-sm text-center text-red-700";
+      })
+      .then(function () {
+        btn.disabled = false;
+      });
+  });
+
+  updateCartCount();
 })();

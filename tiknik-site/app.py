@@ -1,9 +1,12 @@
 import hmac
 import itertools
+import json
 import os
 import re
+import secrets
 import sqlite3
 import subprocess
+import time
 
 from flask import Flask, abort, g, jsonify, make_response, redirect, render_template, request, session, url_for, flash
 from werkzeug.utils import secure_filename
@@ -14,6 +17,7 @@ from i18n import JS_KEYS, LANG_LABELS, LANGS, translator
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "tiknik.db")
 PRODUCTS_DIR = os.path.join(BASE_DIR, "static", "img", "products")
+REVIEWS_DIR = os.path.join(BASE_DIR, "static", "img", "reviews")
 WSGI_FILE = "/var/www/tiknik_pythonanywhere_com_wsgi.py"
 
 # The fixed item attributes the catalog used to have (columns on `items`). Item parameters
@@ -35,6 +39,12 @@ MAX_PHOTOS = 20
 MAX_VIDEOS = 3
 # Free PythonAnywhere accounts get 512 MB of disk in total (code included), so videos are capped.
 MAX_VIDEO_MB = 30
+
+MAX_REVIEW_PHOTOS = 3
+MAX_REVIEW_PHOTO_MB = 6  # the site shrinks photos in the browser first, so real ones are far smaller
+MAX_REVIEW_CHARS = 800
+ORDER_STATUSES = ("new", "confirmed", "done", "cancelled")
+DEFAULT_INSTAGRAM = "https://www.instagram.com/tiknik.yvn/"
 MODES = ("Sale", "Rent", "Both", "Custom")
 
 # Set in the PythonAnywhere WSGI file (never commit them). Empty ADMIN_PASSWORD disables admin login.
@@ -115,6 +125,7 @@ def _table_columns(db, table):
 
 def init_db():
     os.makedirs(PRODUCTS_DIR, exist_ok=True)
+    os.makedirs(REVIEWS_DIR, exist_ok=True)
     db = sqlite3.connect(DB_PATH)
     db.row_factory = sqlite3.Row
 
@@ -194,6 +205,35 @@ def init_db():
         )"""
     )
 
+    if "status" not in _table_columns(db, "inquiries"):
+        db.execute("ALTER TABLE inquiries ADD COLUMN status TEXT NOT NULL DEFAULT 'new'")
+
+    # Cart orders: who, how to reach them, and a snapshot of what they asked for at what price.
+    db.execute(
+        """CREATE TABLE IF NOT EXISTS orders (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            contact TEXT NOT NULL,
+            note TEXT,
+            items TEXT NOT NULL,
+            total INTEGER,
+            status TEXT NOT NULL DEFAULT 'new',
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )"""
+    )
+
+    # Client reviews; shown on the site only once approved in /admin.
+    db.execute(
+        """CREATE TABLE IF NOT EXISTS reviews (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            text TEXT NOT NULL,
+            photos TEXT,
+            status TEXT NOT NULL DEFAULT 'pending',
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )"""
+    )
+
     db.execute(
         """CREATE TABLE IF NOT EXISTS settings (
             key TEXT PRIMARY KEY,
@@ -202,6 +242,8 @@ def init_db():
     )
     db.execute("INSERT OR IGNORE INTO settings (key, value) VALUES ('usd_rate', '400')")
     db.execute("INSERT OR IGNORE INTO settings (key, value) VALUES ('rub_rate', '4.2')")
+    db.execute("INSERT OR IGNORE INTO settings (key, value) VALUES ('instagram', ?)", (DEFAULT_INSTAGRAM,))
+    db.execute("INSERT OR IGNORE INTO settings (key, value) VALUES ('whatsapp', '')")
 
     if db.execute("SELECT COUNT(*) AS c FROM items").fetchone()["c"] == 0:
         for name, category, description, mode, price in SEED_ITEMS:
@@ -422,6 +464,8 @@ def index(lang=None):
         categories=public_categories(db, lang),
         usd_rate=get_setting(db, "usd_rate", "400"),
         rub_rate=get_setting(db, "rub_rate", "4.2"),
+        instagram=get_setting(db, "instagram", DEFAULT_INSTAGRAM),
+        whatsapp=get_setting(db, "whatsapp", ""),
     ))
     resp.set_cookie("lang", lang, max_age=365 * 24 * 3600, samesite="Lax")
     return resp
@@ -489,6 +533,136 @@ def api_inquiry():
         "INSERT INTO inquiries (name, contact, category, message) VALUES (?,?,?,?)",
         (name, contact, category, message),
     )
+    db.commit()
+    return jsonify({"ok": True})
+
+
+# ---------------------------------------------------------------------------
+# Cart orders and reviews (public, no accounts)
+#
+# Nobody signs up and nothing is paid on the site: a cart order is a request with a name and a
+# way to reach the person, and Tiknik confirms size, dates and payment with them directly.
+# Prices are always taken from the database, never from what the browser sends.
+# ---------------------------------------------------------------------------
+
+_recent_posts = {}  # (ip, kind) -> [timestamps], a small brake on spam
+
+
+def too_many_posts(kind, limit, window_seconds):
+    ip = request.headers.get("X-Real-IP") or request.remote_addr or "?"
+    now = time.time()
+    stamps = [t for t in _recent_posts.get((ip, kind), []) if now - t < window_seconds]
+    if len(stamps) >= limit:
+        _recent_posts[(ip, kind)] = stamps
+        return True
+    stamps.append(now)
+    _recent_posts[(ip, kind)] = stamps
+    return False
+
+
+def clean_text(value, max_len):
+    return (value or "").strip()[:max_len]
+
+
+@app.route("/api/order", methods=["POST"])
+def api_order():
+    data = request.get_json(silent=True) or {}
+    if data.get("website"):  # hidden field only bots fill in
+        return jsonify({"ok": True})
+    name = clean_text(data.get("name"), 120)
+    contact = clean_text(data.get("contact"), 160)
+    note = clean_text(data.get("note"), 1500)
+    lines_in = data.get("items") or []
+    if not name or not contact:
+        return jsonify({"ok": False, "error": "name_contact"}), 400
+    if not isinstance(lines_in, list) or not lines_in or len(lines_in) > 30:
+        return jsonify({"ok": False, "error": "empty"}), 400
+    if too_many_posts("order", 5, 600):
+        return jsonify({"ok": False, "error": "busy"}), 429
+
+    db = get_db()
+    lines, total = [], 0
+    for line in lines_in:
+        if not isinstance(line, dict):
+            continue
+        try:
+            item_id = int(line.get("id"))
+            days = max(1, min(60, int(line.get("days") or 1)))
+        except (TypeError, ValueError):
+            continue
+        kind = line.get("kind")
+        it = db.execute("SELECT id, name, mode, price, rent_price FROM items WHERE id = ?", (item_id,)).fetchone()
+        if not it:
+            continue
+        if kind == "buy" and it["mode"] in ("Sale", "Both"):
+            price = it["price"]
+            amount = price
+        elif kind == "rent" and it["mode"] in ("Rent", "Both"):
+            price = it["rent_price"]
+            amount = price * days if price is not None else None
+        else:
+            continue
+        lines.append({"id": it["id"], "name": it["name"], "kind": kind,
+                      "days": days if kind == "rent" else None, "price": price, "amount": amount})
+        total += amount or 0
+    if not lines:
+        return jsonify({"ok": False, "error": "empty"}), 400
+
+    cur = db.execute(
+        "INSERT INTO orders (name, contact, note, items, total) VALUES (?,?,?,?,?)",
+        (name, contact, note, json.dumps(lines, ensure_ascii=False), total),
+    )
+    db.commit()
+    return jsonify({"ok": True, "number": cur.lastrowid})
+
+
+# Only real images are accepted, recognised by their first bytes (not by the file name).
+IMAGE_SIGNATURES = ((b"\xff\xd8\xff", "jpg"), (b"\x89PNG\r\n\x1a\n", "png"))
+
+
+def image_kind(head):
+    for sig, ext in IMAGE_SIGNATURES:
+        if head.startswith(sig):
+            return ext
+    if head[:4] == b"RIFF" and head[8:12] == b"WEBP":
+        return "webp"
+    return None
+
+
+@app.route("/api/reviews")
+def api_reviews():
+    db = get_db()
+    rows = db.execute("SELECT id, name, text, photos, created_at FROM reviews WHERE status = 'approved' "
+                      "ORDER BY created_at DESC, id DESC").fetchall()
+    return jsonify([{"id": r["id"], "name": r["name"], "text": r["text"], "photos": json.loads(r["photos"] or "[]"),
+                     "date": (r["created_at"] or "")[:10]} for r in rows])
+
+
+@app.route("/api/review", methods=["POST"])
+def api_review():
+    if request.form.get("website"):
+        return jsonify({"ok": True})
+    name = clean_text(request.form.get("name"), 80)
+    text = clean_text(request.form.get("text"), MAX_REVIEW_CHARS)
+    if not name or not text:
+        return jsonify({"ok": False, "error": "name_text"}), 400
+    files = [f for f in request.files.getlist("photos") if f and f.filename][:MAX_REVIEW_PHOTOS]
+    if too_many_posts("review", 3, 3600):
+        return jsonify({"ok": False, "error": "busy"}), 429
+
+    saved = []
+    for f in files:
+        data = f.read(MAX_REVIEW_PHOTO_MB * 1024 * 1024 + 1)
+        ext = image_kind(data[:16])
+        if not ext or len(data) > MAX_REVIEW_PHOTO_MB * 1024 * 1024:
+            continue
+        filename = f"review-{secrets.token_hex(8)}.{ext}"
+        with open(os.path.join(REVIEWS_DIR, filename), "wb") as out:
+            out.write(data)
+        saved.append(filename)
+
+    db = get_db()
+    db.execute("INSERT INTO reviews (name, text, photos) VALUES (?,?,?)", (name, text, json.dumps(saved)))
     db.commit()
     return jsonify({"ok": True})
 
@@ -567,8 +741,28 @@ def admin():
             counts[it["category"]] += 1
     unsorted = [it for it in item_list if it["category"] not in known_slugs]
 
+    orders = []
+    for o in db.execute("SELECT * FROM orders ORDER BY id DESC LIMIT 200"):
+        d = dict(o)
+        d["lines"] = json.loads(o["items"] or "[]")
+        orders.append(d)
+    inquiries = [dict(r) for r in db.execute("SELECT * FROM inquiries ORDER BY id DESC LIMIT 200")]
+    category_names = {c["slug"]: c["name"] for c in categories}
+    reviews = []
+    for r in db.execute("SELECT * FROM reviews ORDER BY status = 'approved', id DESC"):
+        d = dict(r)
+        d["photos"] = json.loads(r["photos"] or "[]")
+        reviews.append(d)
+
     return render_template(
         "admin.html",
+        orders=orders,
+        inquiries=inquiries,
+        category_names=category_names,
+        order_statuses=ORDER_STATUSES,
+        reviews=reviews,
+        instagram=get_setting(db, "instagram", DEFAULT_INSTAGRAM),
+        whatsapp=get_setting(db, "whatsapp", ""),
         items=item_list,
         unsorted=unsorted,
         counts=counts,
@@ -944,6 +1138,72 @@ def admin_settings():
     db.commit()
     flash(f"Rates updated — {usd_rate} ֏ per $1, {rub_rate} ֏ per ₽1.", "ok")
     return back_to_admin("rates")
+
+
+@app.route("/admin/order/<int:order_id>/<action>", methods=["POST"])
+def admin_order(order_id, action):
+    if not admin_logged_in():
+        return redirect(url_for("admin_login"))
+    db = get_db()
+    if action in ORDER_STATUSES:
+        db.execute("UPDATE orders SET status = ? WHERE id = ?", (action, order_id))
+    elif action == "delete":
+        db.execute("DELETE FROM orders WHERE id = ?", (order_id,))
+    db.commit()
+    return back_to_admin("inbox")
+
+
+@app.route("/admin/inquiry/<int:inquiry_id>/<action>", methods=["POST"])
+def admin_inquiry(inquiry_id, action):
+    if not admin_logged_in():
+        return redirect(url_for("admin_login"))
+    db = get_db()
+    if action == "done":
+        db.execute("UPDATE inquiries SET status = 'done' WHERE id = ?", (inquiry_id,))
+    elif action == "new":
+        db.execute("UPDATE inquiries SET status = 'new' WHERE id = ?", (inquiry_id,))
+    elif action == "delete":
+        db.execute("DELETE FROM inquiries WHERE id = ?", (inquiry_id,))
+    db.commit()
+    return back_to_admin("inbox")
+
+
+@app.route("/admin/review/<int:review_id>/<action>", methods=["POST"])
+def admin_review(review_id, action):
+    if not admin_logged_in():
+        return redirect(url_for("admin_login"))
+    db = get_db()
+    review = db.execute("SELECT * FROM reviews WHERE id = ?", (review_id,)).fetchone()
+    if review:
+        if action in ("approved", "pending"):
+            db.execute("UPDATE reviews SET status = ? WHERE id = ?", (action, review_id))
+            flash("Review published." if action == "approved" else "Review hidden from the site.", "ok")
+        elif action == "delete":
+            for filename in json.loads(review["photos"] or "[]"):
+                path = os.path.join(REVIEWS_DIR, os.path.basename(filename))
+                if os.path.exists(path):
+                    os.remove(path)
+            db.execute("DELETE FROM reviews WHERE id = ?", (review_id,))
+            flash("Review deleted.", "ok")
+        db.commit()
+    return back_to_admin("reviews")
+
+
+@app.route("/admin/contacts", methods=["POST"])
+def admin_contacts():
+    if not admin_logged_in():
+        return redirect(url_for("admin_login"))
+    db = get_db()
+    instagram = (request.form.get("instagram") or "").strip()
+    if instagram and not instagram.startswith(("https://", "http://")):
+        instagram = "https://www.instagram.com/" + instagram.lstrip("@").strip("/") + "/"
+    whatsapp = re.sub(r"[^\d]", "", request.form.get("whatsapp") or "")
+    for key, value in (("instagram", instagram), ("whatsapp", whatsapp)):
+        db.execute("INSERT INTO settings (key, value) VALUES (?, ?) "
+                   "ON CONFLICT(key) DO UPDATE SET value = excluded.value", (key, value))
+    db.commit()
+    flash("Contacts saved.", "ok")
+    return back_to_admin("contacts")
 
 
 # ---------------------------------------------------------------------------

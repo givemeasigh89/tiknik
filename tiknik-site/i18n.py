@@ -125,7 +125,7 @@ UI = {
         "hy": "Գրանցում փորձի կամ գնի հարցում",
     },
     "form_name": {"en": "Your name", "ru": "Ваше имя", "hy": "Ձեր անունը"},
-    "form_contact": {"en": "Email, phone or Instagram", "ru": "Email, телефон или Instagram", "hy": "Email, հեռախոս կամ Instagram"},
+    "form_contact": {"en": "Phone, WhatsApp or Instagram", "ru": "Телефон, WhatsApp или Instagram", "hy": "Հեռախոս, WhatsApp կամ Instagram"},
     "form_interest": {"en": "What are you interested in?", "ru": "Что вас интересует?", "hy": "Ի՞նչն է ձեզ հետաքրքրում"},
     "form_message": {
         "en": "Tell us a little about what you're looking for",
@@ -150,6 +150,89 @@ UI = {
         "ru": "Поверните кольца · язык и валюта",
         "hy": "Պտտեք օղակները · լեզու և արժույթ",
     },
+
+    # Navigation (new sections)
+    "nav_about": {"en": "About", "ru": "О нас", "hy": "Մեր մասին"},
+    "nav_reviews": {"en": "Reviews", "ru": "Отзывы", "hy": "Կարծիքներ"},
+    "nav_delivery": {"en": "Delivery", "ru": "Доставка", "hy": "Առաքում"},
+    "nav_menu": {"en": "Menu", "ru": "Меню", "hy": "Մենյու"},
+    "delivery": {"en": "Delivery & Shipping", "ru": "Доставка", "hy": "Առաքում"},
+
+    # About us (a first draft; the atelier's own text replaces it)
+    "about_eyebrow": {"en": "About Us", "ru": "О нас", "hy": "Մեր մասին"},
+    "about_title": {"en": "A Small Atelier in Yerevan", "ru": "Маленькое ателье в Ереване", "hy": "Փոքրիկ արվեստանոց Երևանում"},
+    "about_p1": {
+        "en": "Tiknik is a small bespoke atelier in Yerevan. We make bridal gowns, corsets and evening pieces by hand, "
+              "each one for a single person, from the fabric we choose together to the last stitch.",
+        "ru": "Tiknik — небольшое ателье в Ереване. Мы вручную создаём свадебные платья, корсеты и вечерние наряды — "
+              "каждый для одного человека, от выбора ткани до последнего стежка.",
+        "hy": "Tiknik-ը փոքրիկ արվեստանոց է Երևանում։ Մենք ձեռքով ստեղծում ենք հարսանյաց զգեստներ, կորսետներ "
+              "և երեկոյան զգեստներ՝ յուրաքանչյուրը մեկ մարդու համար, կտորի ընտրությունից մինչև վերջին կարը։",
+    },
+    "about_p2": {
+        "en": "We love vintage lace, honest materials and quiet details, and we believe a dress should live on "
+              "long after the wedding day.",
+        "ru": "Мы любим винтажное кружево, честные материалы и тихие детали и верим, что платье должно жить "
+              "и после свадьбы.",
+        "hy": "Մենք սիրում ենք վինտաժային ժանյակը, բնական նյութերը և նուրբ մանրուքները և հավատում ենք, "
+              "որ զգեստը պետք է ապրի նաև հարսանիքից հետո։",
+    },
+
+    # Reviews
+    "reviews_eyebrow": {"en": "Reviews", "ru": "Отзывы", "hy": "Կարծիքներ"},
+    "reviews_title": {"en": "In Their Words", "ru": "Словами наших клиентов", "hy": "Մեր հաճախորդների խոսքերով"},
+    "reviews_empty": {
+        "en": "Wore a Tiknik piece? We'd love to see it.",
+        "ru": "Носили вещь от Tiknik? Нам очень хочется это увидеть.",
+        "hy": "Կրե՞լ եք Tiknik-ի զգեստ։ Մենք շատ կուզենայինք տեսնել։",
+    },
+    "review_add": {"en": "Leave a Review", "ru": "Оставить отзыв", "hy": "Թողնել կարծիք"},
+    "review_text": {"en": "A few words about your piece", "ru": "Пара слов о вашем наряде", "hy": "Մի քանի խոսք ձեր զգեստի մասին"},
+    "review_photos": {"en": "Add photos · up to 3", "ru": "Добавить фото · до 3", "hy": "Ավելացնել լուսանկար · մինչև 3"},
+    "review_send": {"en": "Send", "ru": "Отправить", "hy": "Ուղարկել"},
+    "review_thanks": {
+        "en": "Thank you! Your review will appear on the site once we've seen it.",
+        "ru": "Спасибо! Отзыв появится на сайте после проверки.",
+        "hy": "Շնորհակալություն։ Կարծիքը կհայտնվի կայքում ստուգումից հետո։",
+    },
+
+    # Cart
+    "cart": {"en": "Cart", "ru": "Корзина", "hy": "Զամբյուղ"},
+    "add_to_cart": {"en": "Add to Cart", "ru": "В корзину", "hy": "Ավելացնել զամբյուղ"},
+    "add_buy": {"en": "Buy", "ru": "Купить", "hy": "Գնել"},
+    "add_rent": {"en": "Rent", "ru": "Арендовать", "hy": "Վարձել"},
+    "in_cart": {"en": "In your cart ✓", "ru": "В корзине ✓", "hy": "Զամբյուղում է ✓"},
+    "cart_empty": {"en": "Your cart is empty.", "ru": "Корзина пуста.", "hy": "Զամբյուղը դատարկ է։"},
+    "cart_buy_label": {"en": "Purchase", "ru": "Покупка", "hy": "Գնում"},
+    "cart_rent_label": {"en": "Rental", "ru": "Аренда", "hy": "Վարձույթ"},
+    "cart_day": {"en": "day", "ru": "дн.", "hy": "օր"},
+    "cart_days": {"en": "days", "ru": "дн.", "hy": "օր"},
+    "cart_total": {"en": "Total", "ru": "Итого", "hy": "Ընդամենը"},
+    "cart_note": {
+        "en": "Dates, sizes, wishes (optional)",
+        "ru": "Даты, размеры, пожелания (необязательно)",
+        "hy": "Ամսաթվեր, չափսեր, ցանկություններ (ըստ ցանկության)",
+    },
+    "cart_send": {"en": "Send Order", "ru": "Отправить заказ", "hy": "Ուղարկել պատվերը"},
+    "cart_no_signup": {
+        "en": "No sign-up and no prepayment. We'll contact you to confirm size, dates and payment.",
+        "ru": "Без регистрации и предоплаты. Мы свяжемся с вами, чтобы уточнить размер, даты и оплату.",
+        "hy": "Առանց գրանցման և կանխավճարի։ Մենք կկապվենք ձեզ հետ՝ չափսը, ամսաթվերը և վճարումը ճշտելու համար։",
+    },
+    "cart_sent": {
+        "en": "Thank you! Order №{n} is with us — we'll be in touch shortly.",
+        "ru": "Спасибо! Заказ №{n} у нас — скоро свяжемся с вами.",
+        "hy": "Շնորհակալություն։ №{n} պատվերը ստացել ենք, շուտով կկապվենք ձեզ հետ։",
+    },
+    "cart_remove": {"en": "Remove", "ru": "Убрать", "hy": "Հեռացնել"},
+    "busy_error": {
+        "en": "Too many requests — please try again in a few minutes.",
+        "ru": "Слишком много запросов — попробуйте через несколько минут.",
+        "hy": "Չափազանց շատ հարցումներ, փորձեք մի քանի րոպեից։",
+    },
+
+    # Contact links
+    "contact_direct": {"en": "Or write to us directly", "ru": "Или напишите нам напрямую", "hy": "Կամ գրեք մեզ անմիջապես"},
 
     # Used by static/js/main.js (passed in as window.TIKNIK_I18N)
     "price_on_request": {"en": "Price on request", "ru": "Цена по запросу", "hy": "Գինը՝ ըստ հարցման"},
@@ -183,6 +266,8 @@ UI = {
 
 JS_KEYS = (
     "back_to_catalog", "prev_item", "next_item", "cta_book_quote", "dial_hint",
+    "add_to_cart", "add_buy", "add_rent", "in_cart", "cart_buy_label", "cart_rent_label", "cart_day", "cart_days",
+    "cart_sent", "cart_remove", "busy_error", "review_thanks",
     "price_on_request", "per_day", "mode_Rent", "mode_Sale", "mode_Both", "mode_Custom",
     "load_error", "sending", "sent", "send_error", "required_error",
 )
