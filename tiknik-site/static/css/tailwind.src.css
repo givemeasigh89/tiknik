@@ -1,3 +1,36 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Browser surfaces in the site's own palette: scrollbars, text selection, the caret, focus rings.
+   Left alone they are the operating system's grey — the parts of a page nobody designed. */
+@layer base {
+  :root {
+    --tk-cream: #EFEEEA;
+    --tk-ink: #2E2C29;
+    --tk-gold: #A48F66;
+  }
+
+  /* Chrome, Edge, Safari: a slim ink bar on cream with no arrow buttons, gold under the pointer. */
+  ::-webkit-scrollbar { width: 9px; height: 9px; }
+  ::-webkit-scrollbar-track { background: var(--tk-cream); }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(46, 44, 41, .26);
+    border: 2.5px solid var(--tk-cream);
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover { background: var(--tk-gold); }
+  ::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+  ::-webkit-scrollbar-corner { background: var(--tk-cream); }
+
+  /* Firefox only (in Chrome these standard properties would switch the bar above off). */
+  @supports (-moz-appearance: none) {
+    html { scrollbar-width: thin; scrollbar-color: rgba(46, 44, 41, .32) var(--tk-cream); }
+  }
+
+  ::selection { background: rgba(164, 143, 102, .3); color: var(--tk-ink); }
+
+  input, textarea, select { caret-color: var(--tk-gold); accent-color: var(--tk-ink); }
+
+  :focus-visible { outline: 1.5px solid var(--tk-gold); outline-offset: 3px; }
+}

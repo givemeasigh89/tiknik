@@ -235,8 +235,8 @@ UI = {
     "contact_direct": {"en": "Or write to us directly", "ru": "Или напишите нам напрямую", "hy": "Կամ գրեք մեզ անմիջապես"},
 
     # Prices on cards and in the product view (when an item can be both bought and rented)
-    "price_label_buy": {"en": "to buy", "ru": "покупка", "hy": "գնում"},
-    "price_label_rent": {"en": "to rent", "ru": "аренда", "hy": "վարձույթ"},
+    "price_dt_buy": {"en": "Buy", "ru": "Покупка", "hy": "Գնում"},
+    "price_dt_rent": {"en": "Rent per day", "ru": "Аренда / сутки", "hy": "Վարձույթ / օր"},
 
     # Handmade facts in the product view ({n} is a number set per item in /admin)
     "handmade_hours": {
@@ -307,7 +307,7 @@ JS_KEYS = (
     "back_to_catalog", "prev_item", "next_item", "cta_book_quote", "dial_hint",
     "add_to_cart", "add_buy", "add_rent", "in_cart", "cart_buy_label", "cart_rent_label", "cart_day", "cart_days",
     "cart_sent", "cart_remove", "busy_error", "review_thanks",
-    "price_label_buy", "price_label_rent", "handmade_hours", "edition_one", "edition_n", "share", "link_copied",
+    "price_dt_buy", "price_dt_rent", "handmade_hours", "edition_one", "edition_n", "share", "link_copied",
     "price_on_request", "per_day", "mode_Rent", "mode_Sale", "mode_Both", "mode_Custom",
     "load_error", "sending", "sent", "send_error", "required_error",
 )

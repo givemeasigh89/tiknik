@@ -74,20 +74,26 @@
     return amd.toLocaleString("en-US") + " ֏";
   }
 
-  // Sale price and/or rent price per day, depending on the item's mode. When an item can be both
-  // bought and rented, each price gets its own line with a short note ("$510 to buy", "$55 / day to rent").
+  // Prices as small labelled columns: "Buy / $510" and "Rent per day / $55", side by side when an
+  // item can be both bought and rented. Used on catalog cards and, larger, in the product view.
   function priceHtml(item) {
-    var buy = (item.mode === "Sale" || item.mode === "Both") && item.price;
-    var rent = (item.mode === "Rent" || item.mode === "Both") && item.rent_price;
-    var lines = [];
-    if (buy) lines.push([formatAmount(item.price), rent ? t("price_label_buy", "to buy") : ""]);
-    if (rent) lines.push([formatAmount(item.rent_price) + t("per_day", " / day"), buy ? t("price_label_rent", "to rent") : ""]);
-    if (!lines.length) return '<span class="price-line">' + esc(t("price_on_request", "Price on request")) + "</span>";
-    return lines
-      .map(function (l) {
-        return '<span class="price-line">' + esc(l[0]) + (l[1] ? ' <span class="price-note">' + esc(l[1]) + "</span>" : "") + "</span>";
-      })
-      .join("");
+    var cols = [];
+    if ((item.mode === "Sale" || item.mode === "Both") && item.price) {
+      cols.push([t("price_dt_buy", "Buy"), formatAmount(item.price)]);
+    }
+    if ((item.mode === "Rent" || item.mode === "Both") && item.rent_price) {
+      cols.push([t("price_dt_rent", "Rent per day"), formatAmount(item.rent_price)]);
+    }
+    if (!cols.length) return '<span class="price-request">' + esc(t("price_on_request", "Price on request")) + "</span>";
+    return (
+      '<span class="prices">' +
+      cols
+        .map(function (c) {
+          return '<span class="price"><span class="price-label">' + esc(c[0]) + '</span><span class="price-amount">' + esc(c[1]) + "</span></span>";
+        })
+        .join("") +
+      "</span>"
+    );
   }
 
   function setCurrency(code) {
@@ -230,17 +236,15 @@
       '<span class="card-badge">' +
       esc(modeLabel(item.mode)) +
       "</span>" +
+      cardCartButton(item) +
       "</div>" +
       '<div class="px-3 sm:px-4 pt-3 pb-3 sm:pb-4 flex-1 flex flex-col">' +
       '<h3 class="font-serif text-[1.3rem] sm:text-[1.45rem] text-charcoal leading-tight">' +
       esc(item.name) +
       "</h3>" +
       cardAttrsLine(item) +
-      '<div class="flex items-end justify-between gap-2 mt-auto pt-3">' +
-      '<p class="card-price">' +
+      '<div class="card-price mt-auto pt-3">' +
       priceHtml(item) +
-      "</p>" +
-      cardCartButton(item) +
       "</div>" +
       "</div>" +
       "</div>"
@@ -460,18 +464,80 @@
       .join("");
     thumbsWrap.querySelectorAll(".thumb-btn").forEach(function (btn) {
       btn.addEventListener("click", function () {
-        galleryIndex = parseInt(btn.getAttribute("data-i"), 10);
-        renderGalleryMain();
-        renderThumbs();
+        var i = parseInt(btn.getAttribute("data-i"), 10);
+        slideTo(i, i > galleryIndex ? 1 : -1);
       });
     });
   }
 
   function goTo(delta) {
     if (!galleryPhotos.length) return;
-    galleryIndex = (galleryIndex + delta + galleryPhotos.length) % galleryPhotos.length;
-    renderGalleryMain();
-    renderThumbs();
+    slideTo((galleryIndex + delta + galleryPhotos.length) % galleryPhotos.length, delta > 0 ? 1 : -1);
+  }
+
+  // Change the large photo with a short slide: the current one leaves quickly towards where the
+  // finger went (or the arrow pointed), the next arrives from the other side and settles softly
+  // once it has loaded. Videos and reduced-motion just switch.
+  var EASE_OUT = "cubic-bezier(.16, 1, .3, 1)";
+  var sliding = false;
+  var reduceGalleryMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function resetMainImageStyle() {
+    mainImage.style.transition = "";
+    mainImage.style.transform = "";
+    mainImage.style.opacity = "";
+  }
+
+  function slideTo(index, dir) {
+    if (index === galleryIndex || !galleryPhotos.length) {
+      settleDrag();
+      return;
+    }
+    var current = galleryPhotos[galleryIndex];
+    var next = galleryPhotos[index];
+    if (sliding || reduceGalleryMotion || current.video || next.video || mainImage.classList.contains("hidden")) {
+      galleryIndex = index;
+      resetMainImageStyle();
+      renderGalleryMain();
+      renderThumbs();
+      return;
+    }
+    sliding = true;
+    new Image().src = photoUrl(next.file); // start loading while the current photo leaves
+    mainImage.style.transition = "transform .2s cubic-bezier(.4, 0, 1, 1), opacity .2s linear";
+    mainImage.style.transform = "translateX(" + -dir * 22 + "%)";
+    mainImage.style.opacity = "0";
+    setTimeout(function () {
+      galleryIndex = index;
+      renderGalleryMain();
+      renderThumbs();
+      mainImage.style.transition = "none";
+      mainImage.style.transform = "translateX(" + dir * 18 + "%)";
+      var arrived = false;
+      var arrive = function () {
+        if (arrived) return;
+        arrived = true;
+        requestAnimationFrame(function () {
+          mainImage.style.transition = "transform .55s " + EASE_OUT + ", opacity .45s " + EASE_OUT;
+          mainImage.style.transform = "";
+          mainImage.style.opacity = "";
+          sliding = false;
+        });
+      };
+      if (mainImage.complete && mainImage.naturalWidth) arrive();
+      else {
+        mainImage.addEventListener("load", arrive, { once: true });
+        setTimeout(arrive, 700);
+      }
+    }, 200);
+  }
+
+  // A drag that didn't go far enough: the photo slides back into place.
+  function settleDrag() {
+    if (sliding) return;
+    mainImage.style.transition = "transform .35s " + EASE_OUT + ", opacity .35s " + EASE_OUT;
+    mainImage.style.transform = "";
+    mainImage.style.opacity = "";
   }
 
   function computeProductList() {
@@ -551,6 +617,8 @@
 
     currentOpenItem = findItem(itemsByLang[cardLang], id) || item;
     galleryPhotos = item.media || [];
+    sliding = false;
+    resetMainImageStyle();
     galleryIndex = Math.max(0, galleryPhotos.findIndex(function (m) {
       return m.file === startPhoto;
     }));
@@ -989,15 +1057,60 @@
   });
 
   // Touch swipe on the main image (mobile) — only when not zoomed.
-  var touchStartX = null;
+  // Touch on the large photo. A swipe (the finger moved sideways) drags the photo and changes it;
+  // a tap is a touch that barely moved; two taps close together open the zoom view. Swipes never
+  // count as taps, so flicking through photos can't open the zoom by accident.
+  var touch = null;
+  var lastTap = { time: 0, x: 0, y: 0 };
   mainImageWrap.addEventListener("touchstart", function (e) {
-    touchStartX = e.touches[0].clientX;
-  });
+    if (e.touches.length !== 1) {
+      touch = null;
+      return;
+    }
+    touch = { x: e.touches[0].clientX, y: e.touches[0].clientY, t: Date.now(), dx: 0, horizontal: null };
+  }, { passive: true });
+  mainImageWrap.addEventListener("touchmove", function (e) {
+    if (!touch) return;
+    touch.dx = e.touches[0].clientX - touch.x;
+    var dy = e.touches[0].clientY - touch.y;
+    if (touch.horizontal === null && (Math.abs(touch.dx) > 8 || Math.abs(dy) > 8)) {
+      touch.horizontal = Math.abs(touch.dx) > Math.abs(dy);
+    }
+    if (!touch.horizontal || sliding || galleryPhotos.length < 2 || currentIsVideo()) return;
+    var w = mainImageWrap.clientWidth || 1;
+    mainImage.style.transition = "none";
+    mainImage.style.transform = "translateX(" + touch.dx + "px)";
+    mainImage.style.opacity = String(1 - Math.min(0.5, Math.abs(touch.dx) / w));
+  }, { passive: true });
   mainImageWrap.addEventListener("touchend", function (e) {
-    if (touchStartX === null) return;
-    var dx = e.changedTouches[0].clientX - touchStartX;
-    if (Math.abs(dx) > 40) goTo(dx < 0 ? 1 : -1);
-    touchStartX = null;
+    if (!touch) return;
+    var t = touch;
+    touch = null;
+    var end = e.changedTouches[0];
+    var moved = Math.max(Math.abs(end.clientX - t.x), Math.abs(end.clientY - t.y));
+    if (t.horizontal) {
+      lastTap.time = 0;
+      var w = mainImageWrap.clientWidth || 1;
+      if (Math.abs(t.dx) > Math.min(60, w * 0.18) && galleryPhotos.length > 1) goTo(t.dx < 0 ? 1 : -1);
+      else settleDrag();
+      return;
+    }
+    if (moved > 10 || Date.now() - t.t > 350) {
+      lastTap.time = 0;
+      return;
+    }
+    var now = Date.now();
+    var near = Math.abs(end.clientX - lastTap.x) < 40 && Math.abs(end.clientY - lastTap.y) < 40;
+    if (now - lastTap.time < 320 && near) {
+      lastTap.time = 0;
+      openZoom();
+    } else {
+      lastTap = { time: now, x: end.clientX, y: end.clientY };
+    }
+  });
+  mainImageWrap.addEventListener("touchcancel", function () {
+    touch = null;
+    settleDrag();
   });
 
   // ------------------------------------------------------------------
@@ -1103,15 +1216,6 @@
     openZoom();
   });
 
-  // Double-tap detection for touch devices.
-  var lastTapTime = 0;
-  mainImageWrap.addEventListener("touchend", function () {
-    var now = Date.now();
-    if (now - lastTapTime < 300) {
-      openZoom();
-    }
-    lastTapTime = now;
-  });
 
   zoomCloseBtn.addEventListener("click", closeZoom);
   zoomOverlay.addEventListener("click", function (e) {

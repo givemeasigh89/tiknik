@@ -65,14 +65,28 @@
                 background: rgba(239,238,234,.9); padding: .2rem .55rem; }
   .card-attrs { margin-top: .2rem; font-size: 13px; line-height: 1.4; color: rgba(58,58,58,.75);
                 display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-  .card-price { font-size: .875rem; line-height: 1.35; color: #2E2C29; font-weight: 500; }
-  .price-line { display: block; }
-  .price-note { font-weight: 400; color: rgba(58,58,58,.75); font-size: .85em; }
-  .product-price .price-line + .price-line { margin-top: .15rem; }
+  /* Prices: small label over the amount; two prices sit side by side with a hairline between. */
+  .prices { display: flex; align-items: flex-end; flex-wrap: wrap; row-gap: .5rem; }
+  .price { display: flex; flex-direction: column; min-width: 0; }
+  .price + .price { margin-left: .9rem; padding-left: .9rem; border-left: 1px solid rgba(46,44,41,.16); }
+  .price-label { font-size: 11px; line-height: 1.2; color: rgba(58,58,58,.75); white-space: nowrap; }
+  .price-amount { font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-size: 1.25rem; line-height: 1.15;
+                  font-weight: 600; color: #2E2C29; font-variant-numeric: lining-nums tabular-nums; white-space: nowrap; }
+  .price-request { font-size: .875rem; color: rgba(58,58,58,.85); }
+  .card-price { border-top: 1px solid rgba(46,44,41,.1); }
+  .product-price .price-label { font-size: 12px; }
+  .product-price .price-amount { font-size: 1.75rem; }
+  .product-price .price + .price { margin-left: 1.4rem; padding-left: 1.4rem; }
+  .product-price .price-request { font-size: 1.05rem; }
+  @media (max-width: 400px) {
+    .price-amount { font-size: 1.1rem; }
+    .price + .price { margin-left: .6rem; padding-left: .6rem; }
+  }
 
   /* Cart */
-  .card-cart { position: relative; flex-shrink: 0; width: 40px; height: 40px; border-radius: 9999px; display: inline-flex;
-               align-items: center; justify-content: center; color: #2E2C29; border: 1px solid rgba(46,44,41,.22);
+  .card-cart { position: absolute; right: .6rem; bottom: .6rem; z-index: 3; width: 40px; height: 40px; border-radius: 9999px;
+               display: inline-flex; align-items: center; justify-content: center; color: #2E2C29;
+               background: rgba(239,238,234,.92); border: 1px solid transparent; box-shadow: 0 6px 18px -8px rgba(46,44,41,.45);
                transition: background .2s ease, color .2s ease, border-color .2s ease, transform .2s ease; }
   .card-cart::after { content: ""; position: absolute; inset: -4px; }
   .card-cart svg { position: absolute; width: 17px; height: 17px; transition: opacity .25s ease, transform .25s ease; }
@@ -608,7 +622,7 @@
           <div class="flex-1 min-w-0">
             <p id="product-category" class="text-sm text-gold mb-2"></p>
             <h2 id="product-name" class="font-serif text-3xl sm:text-4xl text-charcoal leading-tight mb-3"></h2>
-            <p id="product-price" class="product-price text-lg text-charcoal"></p>
+            <div id="product-price" class="product-price text-charcoal"></div>
             <p id="product-craft" class="hidden mt-3 font-serif text-[17px] text-charcoal/80 leading-snug"></p>
           </div>
           <!-- Language / currency dial: the logo's key in its double oval. Outer ring = language,
