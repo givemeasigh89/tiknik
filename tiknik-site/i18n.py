@@ -146,9 +146,9 @@ UI = {
 
     # The language / currency dial in the product view
     "dial_hint": {
-        "en": "Turn the rings for language and currency",
-        "ru": "Поверните кольца: язык и валюта",
-        "hy": "Պտտեք օղակները՝ լեզուն և արժույթը փոխելու համար",
+        "en": "Turn the rings to change them",
+        "ru": "Поверните кольца, чтобы сменить",
+        "hy": "Պտտեք օղակները՝ փոխելու համար",
     },
 
     # Navigation (new sections)
@@ -247,6 +247,8 @@ UI = {
     "edition_one": {"en": "One of a kind", "ru": "Единственный экземпляр", "hy": "Միակ օրինակ"},
     "edition_n": {"en": "Only {n} made", "ru": "Тираж: {n} шт.", "hy": "Ընդամենը {n} օրինակ"},
     "share": {"en": "Share", "ru": "Поделиться", "hy": "Կիսվել"},
+    "dial_lang": {"en": "Language", "ru": "Язык", "hy": "Լեզու"},
+    "dial_cur": {"en": "Currency", "ru": "Валюта", "hy": "Արժույթ"},
     "toast_added": {"en": "Added to your cart", "ru": "Добавлено в корзину", "hy": "Ավելացվեց զամբյուղ"},
     "toast_view": {"en": "View cart", "ru": "Открыть", "hy": "Բացել"},
     "pdp_piece": {"en": "The piece", "ru": "Об изделии", "hy": "Զգեստի մասին"},
@@ -312,7 +314,7 @@ JS_KEYS = (
     "back_to_catalog", "prev_item", "next_item", "cta_book_quote", "dial_hint",
     "add_to_cart", "add_buy", "add_rent", "in_cart", "cart_buy_label", "cart_rent_label", "cart_day", "cart_days",
     "cart_sent", "cart_remove", "busy_error", "review_thanks",
-    "card_or_rent", "card_rental", "collection", "pdp_piece", "pdp_details", "pdp_delivery", "toast_added", "toast_view",
+    "card_or_rent", "card_rental", "collection", "pdp_piece", "pdp_details", "pdp_delivery", "toast_added", "toast_view", "dial_lang", "dial_cur",
     "delivery_f1_title", "delivery_f1_text", "delivery_f2_title", "delivery_f2_text", "delivery_f3_title", "delivery_f3_text",
     "handmade_hours", "edition_one", "edition_n", "share", "link_copied",
     "price_on_request", "per_day", "mode_Rent", "mode_Sale", "mode_Both", "mode_Custom",

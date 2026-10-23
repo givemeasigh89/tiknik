@@ -97,6 +97,7 @@
       renderProductCart(currentOpenItem);
     }
     if (dial) dial.set("cur", code, true);
+    updateDialLegend();
     if (document.body.classList.contains("cart-open")) renderCart();
   }
 
@@ -798,6 +799,7 @@
           link.href = "https://fonts.googleapis.com/css2?family=Noto+Sans+Armenian:wght@300;400;500&family=Noto+Serif+Armenian:wght@400;500;600&display=swap";
           document.head.appendChild(link);
         }
+        updateDialLegend();
         if (currentOpenItem) {
           currentOpenItem = findItem(itemsByLang[lang], currentOpenItem.id) || currentOpenItem;
           fillProductText(currentOpenItem);
@@ -1057,6 +1059,17 @@
     dial.set("lang", LANG, false);
     dial.set("cur", activeCurrency, false);
   }
+
+  // Under the dial, in words: which language and currency the rings are set to.
+  var LANG_NAMES = { en: "English", ru: "Русский", hy: "Հայերեն" };
+  var CURRENCY_NAMES = { USD: "USD $", RUB: "RUB ₽", AMD: "AMD ֏" };
+  function updateDialLegend() {
+    var l = document.getElementById("dial-lang-name");
+    var c = document.getElementById("dial-cur-name");
+    if (l) l.textContent = LANG_NAMES[cardLang] || cardLang;
+    if (c) c.textContent = CURRENCY_NAMES[activeCurrency] || activeCurrency;
+  }
+  updateDialLegend();
   prevBtn.addEventListener("click", function () {
     goTo(-1);
   });
@@ -1497,9 +1510,12 @@
     saveCart();
     updateCartCount(true);
     if (currentOpenItem) renderProductCart(currentOpenItem);
-    showCartToast();
-    threadsToCart(fromEl);
-    chime();
+    var target = cartTarget();
+    var flight = threadsToCart(fromEl, target);
+    stitchSound();
+    // product view: the bar comes up for the thread to land in; catalog: it appears once it has landed
+    if (target.rising) showCartToast();
+    else setTimeout(showCartToast, flight);
   }
 
   // ---- "Added to your cart": a bar at the bottom (also over the product view) with View cart ----
@@ -1517,72 +1533,134 @@
     openCart();
   });
 
-  // Three fine gold threads drawn from the button that was pressed into the bag on the bar —
-  // the atelier's needle and thread, barely there. Skipped for reduced motion.
-  function threadsToCart(fromEl) {
-    var target = document.getElementById("cart-toast-icon");
-    if (!fromEl || reduceGalleryMotion || !target.animate) return;
+  // Adding to the cart: two threads twisted round each other travel along a soft arc from the
+  // button into the cart — the header bag in the catalog, the bag on the bottom bar in the product
+  // view — drawn as they go and pulled through after, like thread through a needle's eye.
+  // Normal pace (about 1.4 s), not a flash. Skipped for reduced motion.
+  function cartTarget() {
+    var header = document.getElementById("cart-open");
+    var r = header.getBoundingClientRect();
+    var overlayOpen = !overlay.classList.contains("translate-x-full");
+    if (!overlayOpen && r.width && r.bottom > 0) return { el: header, rect: r };
+    var icon = document.getElementById("cart-toast-icon");
+    return { el: icon, rect: icon.getBoundingClientRect(), rising: true };
+  }
+
+  function threadsToCart(fromEl, target) {
+    if (!fromEl || reduceGalleryMotion || !document.body.animate) return 0;
     var a = fromEl.getBoundingClientRect();
-    var b = target.getBoundingClientRect();
-    var sx = a.left + a.width / 2, sy = a.top + a.height / 2;
-    var ex = b.left + b.width / 2, ey = b.top + b.height / 2 - 14; // the bar is still rising 14px
+    var b = target.rect;
+    var p0 = [a.left + a.width / 2, a.top + a.height / 2];
+    var p3 = [b.left + b.width / 2, b.top + b.height / 2 - (target.rising ? 14 : 0)];
+    // a soft S-curve that stays on screen: out to the side from the button, then up into the bag
+    // from below (the cart is near the top in the catalog, near the bottom in the product view)
+    var dy = p3[1] - p0[1];
+    var side = (p3[0] >= p0[0] ? 1 : -1) * Math.min(160, Math.abs(p3[0] - p0[0]) * 0.35 + 60);
+    var p1 = [p0[0] + side, p0[1] + dy * 0.15];
+    var p2 = [p3[0] - side * 0.4, p3[1] - dy * 0.45];
+    p1[1] = Math.max(16, Math.min(window.innerHeight - 16, p1[1]));
+    p2[1] = Math.max(16, Math.min(window.innerHeight - 16, p2[1]));
+    function bez(t, i) {
+      var u = 1 - t;
+      return u * u * u * p0[i] + 3 * u * u * t * p1[i] + 3 * u * t * t * p2[i] + t * t * t * p3[i];
+    }
+    // two strands twisted round the arc (offset along its normal), the twist fading at both ends
+    function strand(phase, turns, amp) {
+      var d = "", n = 90;
+      for (var k = 0; k <= n; k++) {
+        var t = k / n, e = 0.001;
+        var x = bez(t, 0), y = bez(t, 1);
+        var dx = bez(Math.min(1, t + e), 0) - bez(Math.max(0, t - e), 0);
+        var dy = bez(Math.min(1, t + e), 1) - bez(Math.max(0, t - e), 1);
+        var len = Math.sqrt(dx * dx + dy * dy) || 1;
+        var off = amp * Math.sin(Math.PI * t) * Math.sin(phase + t * Math.PI * 2 * turns);
+        d += (k ? "L" : "M") + (x - (dy / len) * off).toFixed(1) + " " + (y + (dx / len) * off).toFixed(1);
+      }
+      return d;
+    }
     var NS = "http://www.w3.org/2000/svg";
     var svg = document.createElementNS(NS, "svg");
     svg.setAttribute("class", "thread-layer");
     document.body.appendChild(svg);
-    for (var i = 0; i < 3; i++) {
-      var bend = (i - 1) * 70 + (Math.random() * 30 - 15);
+    var duration = 1400;
+    [[0, "#A48F66", 1.1], [Math.PI, "#C9B48A", 0.9], [Math.PI / 2, "#2E2C29", 0.5]].forEach(function (s, i) {
       var path = document.createElementNS(NS, "path");
-      path.setAttribute("d", "M" + sx + " " + sy +
-        " C" + (sx + bend) + " " + (sy - 140 - Math.random() * 60) + " " +
-        (ex - bend * 1.4) + " " + (ey - 180 + Math.random() * 60) + " " + ex + " " + ey);
+      path.setAttribute("d", strand(s[0], 4.5, i === 2 ? 3 : 7));
       path.setAttribute("fill", "none");
-      path.setAttribute("stroke", "#A48F66");
-      path.setAttribute("stroke-width", String(0.8 + i * 0.25));
+      path.setAttribute("stroke", s[1]);
+      path.setAttribute("stroke-width", String(s[2]));
       path.setAttribute("stroke-linecap", "round");
+      path.setAttribute("opacity", i === 2 ? "0.45" : "0.95");
       svg.appendChild(path);
       var len = path.getTotalLength();
-      path.style.strokeDasharray = len + " " + len;
-      // drawn out from the button, then pulled through into the bag
-      path.animate(
-        [
-          { strokeDashoffset: len, opacity: 0.95 },
-          { strokeDashoffset: 0, opacity: 0.95, offset: 0.55 },
-          { strokeDashoffset: -len, opacity: 0.2 },
-        ],
-        { duration: 1150 + i * 140, delay: i * 80, easing: "cubic-bezier(.16, 1, .3, 1)", fill: "forwards" }
-      );
-    }
+      var seg = len * 0.42; // a length of thread travelling along the arc
+      path.style.strokeDasharray = seg + " " + (len + seg);
+      path.animate([{ strokeDashoffset: seg }, { strokeDashoffset: -len }], {
+        duration: duration, delay: i * 40, easing: "cubic-bezier(.55, 0, .25, 1)", fill: "forwards",
+      });
+    });
     setTimeout(function () {
-      target.classList.remove("pulse");
-      void target.offsetWidth;
-      target.classList.add("pulse");
-    }, 900);
+      target.el.classList.remove("cart-catch");
+      void target.el.offsetWidth;
+      target.el.classList.add("cart-catch");
+    }, duration - 120);
     setTimeout(function () {
       svg.remove();
-    }, 1700);
+    }, duration + 200);
+    return duration;
   }
 
-  // A soft two-note chime (synthesised, so there's no sound file to load), quiet on purpose.
+  // Sound: a short run of a sewing machine — soft needle ticks speeding up and slowing down over a
+  // whisper of fabric — synthesised with Web Audio (no file to load), deliberately quiet.
   var audioCtx = null;
-  function chime() {
+  function noiseBuffer(ctx) {
+    var buf = ctx.createBuffer(1, ctx.sampleRate * 0.6, ctx.sampleRate);
+    var data = buf.getChannelData(0);
+    for (var i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+    return buf;
+  }
+  function stitchSound() {
     try {
       audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-      var now = audioCtx.currentTime;
-      [[1046.5, 0], [1567.98, 0.1]].forEach(function (note) {
-        var osc = audioCtx.createOscillator();
-        var gain = audioCtx.createGain();
-        osc.type = "sine";
-        osc.frequency.value = note[0];
-        var t0 = now + note[1];
-        gain.gain.setValueAtTime(0.0001, t0);
-        gain.gain.exponentialRampToValueAtTime(0.04, t0 + 0.012);
-        gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.9);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start(t0);
-        osc.stop(t0 + 1);
-      });
+      var ctx = audioCtx, now = ctx.currentTime + 0.02;
+      var noise = noiseBuffer(ctx);
+      var master = ctx.createGain();
+      master.gain.value = 0.55;
+      master.connect(ctx.destination);
+      // fabric: filtered noise swelling and fading
+      var rustle = ctx.createBufferSource();
+      rustle.buffer = noise;
+      var bp = ctx.createBiquadFilter();
+      bp.type = "bandpass"; bp.frequency.value = 5200; bp.Q.value = 0.7;
+      var rg = ctx.createGain();
+      rg.gain.setValueAtTime(0.0001, now);
+      rg.gain.exponentialRampToValueAtTime(0.035, now + 0.18);
+      rg.gain.exponentialRampToValueAtTime(0.0001, now + 0.6);
+      rustle.connect(bp); bp.connect(rg); rg.connect(master);
+      rustle.start(now); rustle.stop(now + 0.6);
+      // needle: 9 ticks, quicker in the middle — a light click and a low soft knock each
+      var t = now + 0.12;
+      for (var k = 0; k < 9; k++) {
+        var tick = ctx.createBufferSource();
+        tick.buffer = noise;
+        var hp = ctx.createBiquadFilter();
+        hp.type = "bandpass"; hp.frequency.value = 2600; hp.Q.value = 1.4;
+        var tg = ctx.createGain();
+        tg.gain.setValueAtTime(0.0001, t);
+        tg.gain.exponentialRampToValueAtTime(0.09, t + 0.003);
+        tg.gain.exponentialRampToValueAtTime(0.0001, t + 0.035);
+        tick.connect(hp); hp.connect(tg); tg.connect(master);
+        tick.start(t, Math.random() * 0.4, 0.05);
+        var knock = ctx.createOscillator();
+        knock.type = "sine"; knock.frequency.setValueAtTime(150, t); knock.frequency.exponentialRampToValueAtTime(70, t + 0.05);
+        var kg = ctx.createGain();
+        kg.gain.setValueAtTime(0.0001, t);
+        kg.gain.exponentialRampToValueAtTime(0.05, t + 0.004);
+        kg.gain.exponentialRampToValueAtTime(0.0001, t + 0.06);
+        knock.connect(kg); kg.connect(master);
+        knock.start(t); knock.stop(t + 0.07);
+        t += 0.075 - Math.sin((k / 8) * Math.PI) * 0.03;
+      }
     } catch (e) {
       /* no Web Audio: silent */
     }
@@ -1652,7 +1730,7 @@
             '<button type="button" class="qty-btn js-days" data-i="' + i + '" data-d="1">+</button></div>'
           : "";
         return (
-          '<li class="flex gap-4 py-4">' +
+          '<li class="cart-line flex gap-4 py-4" style="--i:' + i + '">' +
           '<div class="w-16 h-20 shrink-0 bg-cream-dark overflow-hidden">' +
           (thumb ? '<img src="' + smallUrl(thumb) + '" alt="" class="w-full h-full object-cover">' : "") +
           "</div>" +
@@ -1712,6 +1790,11 @@
     document.getElementById("cart-done").classList.add("hidden");
     cartStatus.classList.add("hidden");
     renderCart();
+    // opening: a gold stitch runs down the panel's edge and the lines arrive one by one
+    cartPanel.classList.add("opening");
+    setTimeout(function () {
+      cartPanel.classList.remove("opening");
+    }, 1400);
     document.body.classList.add("cart-open");
     document.body.style.overflow = "hidden";
   }

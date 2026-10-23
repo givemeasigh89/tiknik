@@ -169,7 +169,30 @@
                                             linear-gradient(#2E2C29, #2E2C29) center / 1px 12px no-repeat; }
   .pdp-section[open] summary::after { background: linear-gradient(#2E2C29, #2E2C29) center / 12px 1px no-repeat; }
   .pdp-body { padding-bottom: 1.4rem; font-size: .92rem; line-height: 1.75; color: rgba(58,58,58,.85); }
-  .pdp-info #product-dial { width: 92px; height: 110px; }
+  /* Dial at the top right of the details, with a legend under it */
+  .pdp-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1.25rem; }
+  .pdp-dial { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; text-align: center; margin-top: .25rem; }
+  .pdp-dial #product-dial { width: 92px; height: 110px; }
+  .pdp-dial #product-dial .dial-line { transition: stroke .35s ease; }
+  .pdp-dial:hover #product-dial .dial-line { stroke: #8a7652; }
+  .dial-legend { margin-top: .6rem; display: grid; gap: .3rem; font-size: 12px; line-height: 1.25; }
+  .dial-legend dt { font-size: 10.5px; color: rgba(58,58,58,.75); }
+  .dial-legend dd { color: #2E2C29; }
+  .dial-hint { margin-top: .45rem; font-size: 10.5px; color: rgba(58,58,58,.75); max-width: 7.5rem; }
+  @media (max-width: 420px) { .pdp-dial #product-dial { width: 78px; height: 94px; } }
+
+  /* Thread landing: the bag gives a little catch */
+  @keyframes cartCatch { 0% { transform: none; } 35% { transform: rotate(-9deg) scale(1.16); } 70% { transform: rotate(4deg) scale(.97); } 100% { transform: none; } }
+  .cart-catch { animation: cartCatch .65s cubic-bezier(.16,1,.3,1); }
+
+  /* Cart opening: a gold stitch runs down the panel's left edge; lines arrive one by one */
+  .cart-stitch { position: absolute; left: 11px; top: 16px; bottom: 16px; width: 1px; pointer-events: none;
+                 background: repeating-linear-gradient(to bottom, #A48F66 0 7px, transparent 7px 12px);
+                 clip-path: inset(0 0 100% 0); opacity: .9; }
+  body.cart-open .cart-stitch { clip-path: inset(0 0 0 0); transition: clip-path 1.1s cubic-bezier(.65,0,.35,1) .2s; }
+  @keyframes cartLineIn { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
+  #cart-panel.opening .cart-line { animation: cartLineIn .6s cubic-bezier(.16,1,.3,1) both; animation-delay: calc(var(--i) * 80ms + 250ms); }
+  @media (prefers-reduced-motion: reduce) { body.cart-open .cart-stitch { transition: none; } #cart-panel.opening .cart-line { animation: none; } }
 
   /* Added to cart: bottom bar, and gold threads drawn from the button into its bag */
   .cart-toast { position: fixed; left: 50%; bottom: 1.25rem; z-index: 80; display: flex; align-items: center; gap: .85rem;
@@ -630,6 +653,7 @@
 <!-- No accounts: the cart lives in this browser (localStorage) and is sent as an order request. -->
 <div id="cart-backdrop" class="fixed inset-0 z-[85] bg-charcoal/30 backdrop-blur-[2px] opacity-0 pointer-events-none transition-opacity duration-300"></div>
 <aside id="cart-panel" class="fixed top-0 right-0 bottom-0 z-[86] w-full sm:w-[420px] bg-cream translate-x-full transition-transform duration-300 ease-out flex flex-col" aria-label="{{ t('cart') }}">
+  <span class="cart-stitch" aria-hidden="true"></span>
   <div class="flex items-center justify-between px-6 py-5 border-b border-line/60">
     <h2 class="font-serif text-2xl text-charcoal">{{ t('cart') }}</h2>
     <button type="button" id="cart-close" class="w-9 h-9 -mr-2 flex items-center justify-center text-ink/60 hover:text-charcoal text-2xl" aria-label="×">&times;</button>
@@ -722,9 +746,44 @@
 
       <!-- Details -->
       <div class="pdp-info">
-        <h2 id="product-name" class="font-serif text-[2.3rem] sm:text-[3rem] leading-[1.05] text-charcoal"></h2>
-        <div id="product-price" class="product-price mt-3"></div>
-        <p id="product-craft" class="hidden mt-4 font-serif text-[17px] text-charcoal/80 leading-snug"></p>
+        <div class="pdp-head">
+          <div class="min-w-0">
+            <h2 id="product-name" class="font-serif text-[2.3rem] sm:text-[3rem] leading-[1.05] text-charcoal"></h2>
+            <div id="product-price" class="product-price mt-3"></div>
+            <p id="product-craft" class="hidden mt-4 font-serif text-[17px] text-charcoal/80 leading-snug"></p>
+          </div>
+          <!-- Language / currency dial (the logo's key in its double oval): outer ring = language,
+               inner ring = currency, drawn by main.js; the legend says what they're set to. -->
+          <div class="pdp-dial">
+            <svg id="product-dial" viewBox="0 0 200 240" role="group" tabindex="0"
+                   aria-label="Language: ← →, currency: ↑ ↓">
+                <ellipse cx="100" cy="120" rx="96" ry="117" class="dial-line" stroke-width="1.9"/>
+                <ellipse cx="100" cy="120" rx="91" ry="112" class="dial-line" stroke-width="1.1"/>
+                <ellipse cx="100" cy="120" rx="72" ry="92" class="dial-line" stroke-width="1.2"/>
+                <ellipse cx="100" cy="120" rx="51" ry="68" class="dial-line dial-faint" stroke-width="1" stroke-dasharray="1 4"/>
+                <g class="dial-dots"></g>
+                <g class="dial-labels"></g>
+                <g class="dial-key-wrap" transform="translate(100 120) scale(.82) translate(-100 -122)">
+                  <g class="dial-key">
+                    <circle cx="100" cy="60" r="3" class="dial-line" stroke-width="2"/>
+                    <circle cx="100" cy="71" r="8" class="dial-line" stroke-width="2"/>
+                    <circle cx="89" cy="82" r="8" class="dial-line" stroke-width="2"/>
+                    <circle cx="111" cy="82" r="8" class="dial-line" stroke-width="2"/>
+                    <circle cx="100" cy="93" r="8" class="dial-line" stroke-width="2"/>
+                    <path d="M100 74 L108 82 L100 90 L92 82 Z" class="dial-line" stroke-width="1.7"/>
+                    <path d="M100 101 V194 M96 106 H104 M96 109 H104" class="dial-line" stroke-width="2"/>
+                    <path d="M100 166 L104.5 170.5 L100 175 L95.5 170.5 Z" class="dial-line" stroke-width="1.9"/>
+                    <path d="M87 179 V192 M90.5 179 V192 M90.5 185.5 H100 M95 181 V190" class="dial-line" stroke-width="2"/>
+                  </g>
+                </g>
+              </svg>
+            <dl class="dial-legend">
+              <div><dt data-t="dial_lang">{{ t('dial_lang') }}</dt><dd id="dial-lang-name"></dd></div>
+              <div><dt data-t="dial_cur">{{ t('dial_cur') }}</dt><dd id="dial-cur-name"></dd></div>
+            </dl>
+            <p class="dial-hint" data-t="dial_hint">{{ t('dial_hint') }}</p>
+          </div>
+        </div>
 
         <div id="product-cart" class="pdp-actions mt-7"></div>
         <div class="flex flex-wrap items-center gap-x-6 gap-y-2 mt-4 text-sm">
@@ -756,33 +815,6 @@
           </details>
         </div>
 
-        <!-- Language / currency dial: the logo's key in its double oval. Outer ring = language,
-             inner ring = currency; labels and dots are placed by main.js. -->
-        <div class="flex items-center gap-4 mt-10">
-          <svg id="product-dial" viewBox="0 0 200 240" role="group" tabindex="0"
-               aria-label="Language: ← →, currency: ↑ ↓">
-            <ellipse cx="100" cy="120" rx="96" ry="117" class="dial-line" stroke-width="1.9"/>
-            <ellipse cx="100" cy="120" rx="91" ry="112" class="dial-line" stroke-width="1.1"/>
-            <ellipse cx="100" cy="120" rx="72" ry="92" class="dial-line" stroke-width="1.2"/>
-            <ellipse cx="100" cy="120" rx="51" ry="68" class="dial-line dial-faint" stroke-width="1" stroke-dasharray="1 4"/>
-            <g class="dial-dots"></g>
-            <g class="dial-labels"></g>
-            <g class="dial-key-wrap" transform="translate(100 120) scale(.82) translate(-100 -122)">
-              <g class="dial-key">
-                <circle cx="100" cy="60" r="3" class="dial-line" stroke-width="2"/>
-                <circle cx="100" cy="71" r="8" class="dial-line" stroke-width="2"/>
-                <circle cx="89" cy="82" r="8" class="dial-line" stroke-width="2"/>
-                <circle cx="111" cy="82" r="8" class="dial-line" stroke-width="2"/>
-                <circle cx="100" cy="93" r="8" class="dial-line" stroke-width="2"/>
-                <path d="M100 74 L108 82 L100 90 L92 82 Z" class="dial-line" stroke-width="1.7"/>
-                <path d="M100 101 V194 M96 106 H104 M96 109 H104" class="dial-line" stroke-width="2"/>
-                <path d="M100 166 L104.5 170.5 L100 175 L95.5 170.5 Z" class="dial-line" stroke-width="1.9"/>
-                <path d="M87 179 V192 M90.5 179 V192 M90.5 185.5 H100 M95 181 V190" class="dial-line" stroke-width="2"/>
-              </g>
-            </g>
-          </svg>
-          <p class="text-xs text-ink/75 leading-snug max-w-[11rem]" data-t="dial_hint">{{ t('dial_hint') }}</p>
-        </div>
       </div>
     </div>
   </div>
