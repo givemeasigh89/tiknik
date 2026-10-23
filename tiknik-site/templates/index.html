@@ -3,14 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{{ t('title') }}</title>
-<meta name="description" content="{{ t('meta_description') }}">
+<title>{{ preview.title }}</title>
+<meta name="description" content="{{ preview.description }}">
+<!-- Link previews (Instagram, WhatsApp, Telegram, Facebook) -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Tiknik">
+<meta property="og:title" content="{{ preview.title }}">
+<meta property="og:description" content="{{ preview.description }}">
+<meta property="og:image" content="{{ preview.image }}">
+<meta property="og:url" content="{{ preview.url }}">
+<meta property="og:locale" content="{{ {'en': 'en_US', 'ru': 'ru_RU', 'hy': 'hy_AM'}[lang] }}">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" sizes="48x48" href="{{ url_for('static', filename='img/icon-48.png') }}">
+<link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('static', filename='img/icon-192.png') }}">
+<link rel="apple-touch-icon" href="{{ url_for('static', filename='img/apple-touch-icon.png') }}">
+<meta name="theme-color" content="#EFEEEA">
+<link rel="preload" as="image" href="{{ url_for('static', filename='img/hero-bride.jpg') }}" fetchpriority="high">
 {% for l in langs %}
 <link rel="alternate" hreflang="{{ l }}" href="{{ url_for('index', lang=None if l == 'en' else l, _external=True) }}">
 {% endfor %}
 <link rel="alternate" hreflang="x-default" href="{{ url_for('index', _external=True) }}">
 
-<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/site.css') }}">
 {% if motion %}
 <script>
   // Animations are on (/admin): keep the hero hidden until static/js/motion.js reveals it —
@@ -21,27 +35,6 @@
   }
 </script>
 {% endif %}
-<script>
-  tailwind.config = {
-    theme: {
-      extend: {
-        colors: {
-          cream: '#EFEEEA',
-          'cream-dark': '#E4E1D8',
-          panel: '#E9E6DF',
-          charcoal: '#2E2C29',
-          ink: '#3A3A3A',
-          line: '#C9C3B4',
-          gold: '#A48F66',
-        },
-        fontFamily: {
-          serif: ['"Cormorant Garamond"', '"Noto Serif Armenian"', 'serif'],
-          sans: ['Jost', '"Noto Sans Armenian"', 'sans-serif'],
-        },
-      },
-    },
-  };
-</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
@@ -76,10 +69,21 @@
                   border: 1px solid rgba(46,44,41,.25); padding: .55rem 1.1rem; transition: background .2s, color .2s, border-color .2s; }
   .contact-link:hover { background: #2E2C29; color: #EFEEEA; border-color: #2E2C29; }
 
+  /* Catalog cards and prices */
+  .card-badge { position: absolute; top: .5rem; right: .5rem; font-size: 11px; line-height: 1.3; color: #3A3A3A;
+                background: rgba(239,238,234,.9); padding: .2rem .55rem; }
+  .card-attrs { margin-top: .2rem; font-size: 13px; line-height: 1.4; color: rgba(58,58,58,.65);
+                display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .card-price { font-size: .875rem; line-height: 1.35; color: #2E2C29; font-weight: 500; }
+  .price-line { display: block; }
+  .price-note { font-weight: 400; color: rgba(58,58,58,.6); font-size: .85em; }
+  .product-price .price-line + .price-line { margin-top: .15rem; }
+
   /* Cart */
-  .card-cart { position: relative; flex-shrink: 0; width: 34px; height: 34px; border-radius: 9999px; display: inline-flex;
+  .card-cart { position: relative; flex-shrink: 0; width: 40px; height: 40px; border-radius: 9999px; display: inline-flex;
                align-items: center; justify-content: center; color: #2E2C29; border: 1px solid rgba(46,44,41,.22);
                transition: background .2s ease, color .2s ease, border-color .2s ease, transform .2s ease; }
+  .card-cart::after { content: ""; position: absolute; inset: -4px; }
   .card-cart svg { position: absolute; width: 17px; height: 17px; transition: opacity .25s ease, transform .25s ease; }
   .card-cart .card-cart-check { opacity: 0; transform: scale(.6); }
   .card-cart:hover { background: #2E2C29; color: #EFEEEA; border-color: #2E2C29; }
@@ -90,7 +94,7 @@
   @keyframes cardCartPop { 0% { transform: scale(1); } 40% { transform: scale(1.18); } 100% { transform: scale(1); } }
   .card-cart.pop { animation: cardCartPop .4s ease; }
   .kind-switch { display: inline-flex; border: 1px solid rgba(46,44,41,.2); margin-bottom: 2px; }
-  .kind-switch button { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; padding: 3px 9px; color: rgba(58,58,58,.55);
+  .kind-switch button { font-size: 12px; padding: 3px 10px; color: rgba(58,58,58,.75);
                         transition: background .2s, color .2s; }
   .kind-switch button.on { background: #2E2C29; color: #EFEEEA; }
   .kind-switch button:not(.on):hover { color: #2E2C29; }
@@ -187,7 +191,7 @@
   .process-stage { grid-area: 1 / 1; opacity: 0; transform: translateY(8px); visibility: hidden;
                    transition: opacity .5s ease, transform .5s ease, visibility 0s .5s; }
   .process-stage.is-active { opacity: 1; transform: none; visibility: visible; transition: opacity .6s ease .1s, transform .6s ease .1s; }
-  .process-chip { color: rgba(58,58,58,.5); border-bottom: 1px solid transparent; transition: color .3s, border-color .3s; }
+  .process-chip { color: rgba(58,58,58,.78); border-bottom: 1px solid transparent; transition: color .3s, border-color .3s; }
   .process-chip:hover { color: #2E2C29; }
   .process-chip.is-active { color: #2E2C29; border-color: #A48F66; }
 
@@ -253,9 +257,8 @@
       <a href="#contact" class="hover:text-charcoal transition">{{ t('nav_contact') }}</a>
     </nav>
     <div class="flex items-center gap-2 sm:gap-4">
-      <div class="flex items-center gap-1 text-xs tracking-wider text-ink/45" aria-label="Language">
+      <div class="flex items-center gap-2.5 text-xs tracking-wider text-ink/70" aria-label="Language">
         {% for l in langs %}
-          {% if not loop.first %}<span class="text-ink/25">·</span>{% endif %}
           <a href="{{ url_for('index', lang=l) if l != 'en' else url_for('index', lang=None) ~ '?lang=en' }}"
              hreflang="{{ l }}" class="lang-btn px-0.5 hover:text-charcoal" {{ 'data-active' if l == lang }}>{{ lang_labels[l] }}</a>
         {% endfor %}
@@ -298,13 +301,12 @@
 
 <!-- ============================== HERO CTA STRIP ============================== -->
 <section id="intro" class="relative z-10 bg-cream text-charcoal text-center px-6 py-12 sm:py-14 border-b border-line/60">
-  <img src="{{ url_for('static', filename='img/logo-full.png') }}" alt="Tiknik" class="h-14 mx-auto mb-5">
   <p class="font-serif text-xl sm:text-2xl max-w-xl mx-auto mb-7 text-charcoal/90">
     {{ t('hero_tagline') }}
   </p>
   <div class="flex items-center justify-center gap-3 flex-wrap">
     <a href="#contact" class="bg-charcoal text-cream px-6 py-3 text-sm tracking-wide hover:bg-charcoal/90 transition">
-      ✨ {{ t('cta_book_quote') }}
+      {{ t('cta_book_quote') }}
     </a>
     <a href="#catalog" class="border border-charcoal/40 text-charcoal px-6 py-3 text-sm tracking-wide hover:bg-charcoal/5 transition">
       {{ t('cta_view_catalog') }}
@@ -316,8 +318,7 @@
 <section id="catalog" class="max-w-6xl mx-auto px-5 py-16">
   <div class="flex items-end justify-between flex-wrap gap-4 mb-8">
     <div>
-      <p class="text-xs uppercase tracking-widest text-gold mb-2">{{ t('collection') }}</p>
-      <h2 class="font-serif text-3xl sm:text-4xl text-charcoal">{{ t('catalog') }}</h2>
+      <h2 class="font-serif text-3xl sm:text-4xl text-charcoal">{{ t('collection') }}</h2>
     </div>
     <div id="currency-toggle" class="flex items-center border border-charcoal/20 text-xs tracking-wide overflow-hidden shrink-0">
       <button type="button" class="currency-btn px-3 py-2" data-currency="USD" data-active="true">USD $</button>
@@ -340,7 +341,6 @@
 <!-- ============================== PROCESS ============================== -->
 <section id="process" class="bg-panel/60 py-8 sm:py-14 lg:py-16 overflow-hidden">
   <div class="max-w-6xl mx-auto px-5">
-    <p class="text-xs uppercase tracking-widest text-gold mb-2 text-center">{{ t('how_it_works') }}</p>
     <h2 class="font-serif text-[1.7rem] leading-tight sm:text-4xl text-charcoal text-center sm:mb-2">{{ t('process_title') }}</h2>
 
     <!-- The process ring: the logo's double oval with the making of a piece inside it.
@@ -396,7 +396,7 @@
     <div class="process-stages relative max-w-xl mx-auto lg:mx-0 text-center lg:text-left" aria-live="polite">
       {% for i in range(1, 6) %}
         <div class="process-stage{{ ' is-active' if i == 1 }}" data-stage="{{ i - 1 }}">
-          <p class="text-[11px] sm:text-xs uppercase tracking-widest text-gold mb-1 sm:mb-2">{{ ['I', 'II', 'III', 'IV', 'V'][i - 1] }} · {{ t('stage%d_short' % i) }}</p>
+          <p class="font-serif text-xl sm:text-2xl text-gold leading-none mb-1 sm:mb-2">{{ ['I', 'II', 'III', 'IV', 'V'][i - 1] }}</p>
           <h3 class="font-serif text-[1.45rem] sm:text-3xl leading-tight text-charcoal mb-1.5 sm:mb-3">{{ t('stage%d_title' % i) }}</h3>
           <p class="text-[13px] sm:text-[15px] text-ink/65 leading-relaxed">{{ t('stage%d_text' % i) }}</p>
         </div>
@@ -407,12 +407,12 @@
       <button type="button" class="process-step w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-charcoal/20 hover:border-charcoal text-charcoal hidden min-[400px]:flex items-center justify-center shrink-0" data-dir="-1" aria-label="{{ t('process_prev') }}">&#8249;</button>
       <div class="flex flex-wrap justify-center lg:justify-start">
         {% for i in range(1, 6) %}
-          <button type="button" class="process-chip px-1.5 sm:px-2.5 py-1.5 text-[11px] sm:text-xs uppercase tracking-wider" data-stage="{{ i - 1 }}">{{ t('stage%d_short' % i) }}</button>
+          <button type="button" class="process-chip px-1.5 sm:px-2.5 py-2 text-[13px] sm:text-sm" data-stage="{{ i - 1 }}">{{ t('stage%d_short' % i) }}</button>
         {% endfor %}
       </div>
       <button type="button" class="process-step w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-charcoal/20 hover:border-charcoal text-charcoal hidden min-[400px]:flex items-center justify-center shrink-0" data-dir="1" aria-label="{{ t('process_next') }}">&#8250;</button>
     </div>
-    <p class="text-[10px] uppercase tracking-[.2em] text-ink/40 text-center lg:text-left mt-2 sm:mt-4">{{ t('process_hint') }}</p>
+    <p class="text-xs text-ink/60 text-center lg:text-left mt-2 sm:mt-3">{{ t('process_hint') }}</p>
     </div>
     </div>
   </div>
@@ -423,7 +423,6 @@
 <section id="about" class="py-16 sm:py-20">
   <div class="max-w-6xl mx-auto px-5 grid lg:grid-cols-[1fr_1.1fr] gap-10 lg:gap-16 items-center">
     <div class="order-2 lg:order-1 max-w-lg">
-      <p class="text-xs uppercase tracking-widest text-gold mb-2">{{ t('about_eyebrow') }}</p>
       <h2 class="font-serif text-3xl sm:text-4xl text-charcoal mb-6 leading-tight">{{ t('about_title') }}</h2>
       <p class="text-[15px] text-ink/70 leading-relaxed mb-4">{{ t('about_p1') }}</p>
       <p class="text-[15px] text-ink/70 leading-relaxed">{{ t('about_p2') }}</p>
@@ -447,7 +446,6 @@
 <!-- Cards come from /api/reviews (approved in /admin); static/js/reviews.js draws them and runs the form. -->
 <section id="reviews" class="bg-panel/60 py-16 sm:py-20 overflow-hidden">
   <div class="max-w-6xl mx-auto px-5 text-center mb-8 sm:mb-10">
-    <p class="text-xs uppercase tracking-widest text-gold mb-2">{{ t('reviews_eyebrow') }}</p>
     <h2 class="font-serif text-3xl sm:text-4xl text-charcoal mb-5">{{ t('reviews_title') }}</h2>
     <p id="reviews-empty" class="hidden font-serif text-lg text-ink/60 mb-5">{{ t('reviews_empty') }}</p>
     <button type="button" id="review-open" class="text-sm tracking-wide border border-charcoal/40 text-charcoal px-6 py-2.5 hover:bg-charcoal hover:text-cream transition">
@@ -460,17 +458,20 @@
 <!-- ============================== DELIVERY ============================== -->
 <section id="delivery" class="bg-charcoal text-cream py-16">
   <div class="max-w-4xl mx-auto px-5 text-center">
-    <p class="text-xs uppercase tracking-widest text-gold mb-2">{{ t('delivery') }}</p>
-    <h2 class="font-serif text-3xl sm:text-4xl mb-5">{{ t('worldwide_title') }}</h2>
-    <p class="text-cream/70 leading-relaxed max-w-xl mx-auto">
-      {{ t('worldwide_text') }}
-    </p>
+    <h2 class="font-serif text-3xl sm:text-4xl mb-10">{{ t('worldwide_title') }}</h2>
+    <div class="grid sm:grid-cols-3 gap-8 sm:gap-10 text-left sm:text-center">
+      {% for i in range(1, 4) %}
+        <div class="border-t border-cream/15 pt-5">
+          <p class="font-serif text-2xl text-cream mb-2">{{ t('delivery_f%d_title' % i) }}</p>
+          <p class="text-sm text-cream/70 leading-relaxed">{{ t('delivery_f%d_text' % i) }}</p>
+        </div>
+      {% endfor %}
+    </div>
   </div>
 </section>
 
 <!-- ============================== CONTACT ============================== -->
 <section id="contact" class="max-w-xl mx-auto px-5 py-16">
-  <p class="text-xs uppercase tracking-widest text-gold mb-2 text-center">{{ t('get_in_touch') }}</p>
   <h2 class="font-serif text-3xl sm:text-4xl text-charcoal text-center mb-5">{{ t('contact_title') }}</h2>
   <div class="flex items-center justify-center flex-wrap gap-3 mb-8">
     <a href="{{ instagram }}" target="_blank" rel="noopener" class="contact-link">
@@ -485,17 +486,19 @@
     {% endif %}
   </div>
   <form id="quote-form" class="grid sm:grid-cols-2 gap-4">
-    <input name="name" required placeholder="{{ t('form_name') }}"
+    <label class="sr-only" for="q-name">{{ t('form_name') }}</label>
+    <input id="q-name" name="name" required autocomplete="name" placeholder="{{ t('form_name') }}"
       class="border border-charcoal/25 bg-transparent px-3 py-3 text-sm focus:outline-none focus:border-charcoal">
-    <input name="contact" required placeholder="{{ t('form_contact') }}"
+    <label class="sr-only" for="q-contact">{{ t('form_contact') }}</label>
+    <input id="q-contact" name="contact" required autocomplete="tel" placeholder="{{ t('form_contact') }}"
       class="border border-charcoal/25 bg-transparent px-3 py-3 text-sm focus:outline-none focus:border-charcoal">
-    <select name="category" class="sm:col-span-2 border border-charcoal/25 bg-transparent px-3 py-3 text-sm focus:outline-none focus:border-charcoal">
+    <select name="category" aria-label="{{ t('form_interest') }}" class="sm:col-span-2 border border-charcoal/25 bg-transparent px-3 py-3 text-sm focus:outline-none focus:border-charcoal">
       <option value="">{{ t('form_interest') }}</option>
       {% for cat in categories %}
         <option value="{{ cat.slug }}">{{ cat.name }}</option>
       {% endfor %}
     </select>
-    <textarea name="message" rows="4" placeholder="{{ t('form_message') }}"
+    <textarea name="message" rows="4" aria-label="{{ t('form_message') }}" placeholder="{{ t('form_message') }}"
       class="sm:col-span-2 border border-charcoal/25 bg-transparent px-3 py-3 text-sm focus:outline-none focus:border-charcoal"></textarea>
     <button type="submit" class="sm:col-span-2 bg-charcoal text-cream px-6 py-3 text-sm tracking-wide hover:bg-charcoal/90 transition">
       {{ t('form_send') }}
@@ -506,13 +509,19 @@
 
 <!-- ============================== FOOTER ============================== -->
 <footer class="border-t border-line/60 py-10">
-  <div class="max-w-6xl mx-auto px-5 flex flex-col sm:flex-row items-center justify-between gap-4">
-    <img src="{{ url_for('static', filename='img/logo-nav.png') }}" alt="Tiknik" class="h-7 w-auto">
-    <div class="flex items-center gap-5 text-sm text-ink/60">
+  <div class="max-w-6xl mx-auto px-5 grid gap-8 sm:grid-cols-[1fr_auto_1fr] items-center text-center sm:text-left">
+    <div class="flex flex-col items-center sm:items-start gap-2">
+      <img src="{{ url_for('static', filename='img/logo-nav.png') }}" alt="Tiknik" class="h-9 w-auto">
+      <p class="font-serif text-lg text-charcoal/85">{{ t('handmade_in') }}</p>
+    </div>
+    <div class="flex items-center justify-center gap-6 text-sm text-ink/70">
       <a href="{{ instagram }}" target="_blank" rel="noopener" class="hover:text-charcoal transition">Instagram</a>
       {% if whatsapp %}<a href="https://wa.me/{{ whatsapp }}" target="_blank" rel="noopener" class="hover:text-charcoal transition">WhatsApp</a>{% endif %}
     </div>
-    <p class="text-xs text-ink/40">&copy; Tiknik</p>
+    <div class="text-sm text-ink/60 sm:text-right">
+      {% if hours %}<p>{{ t('hours_label') }}: {{ hours }}</p>{% endif %}
+      <p class="text-xs text-ink/50 mt-1">&copy; Tiknik</p>
+    </div>
   </div>
 </footer>
 
@@ -534,7 +543,7 @@
   </div>
   <form id="cart-form" class="hidden border-t border-line/60 px-6 py-5 flex flex-col gap-3 bg-cream">
     <div class="flex items-baseline justify-between">
-      <span class="text-xs uppercase tracking-widest text-ink/55">{{ t('cart_total') }}</span>
+      <span class="text-sm text-ink/65">{{ t('cart_total') }}</span>
       <span id="cart-total" class="font-serif text-2xl text-charcoal"></span>
     </div>
     <input name="name" required maxlength="120" placeholder="{{ t('form_name') }}" class="border border-charcoal/25 bg-transparent px-3 py-2.5 text-sm focus:outline-none focus:border-charcoal">
@@ -604,9 +613,10 @@
       <div class="order-3 md:col-start-3 md:row-start-1 pt-1">
         <div class="flex items-start gap-4 mb-5">
           <div class="flex-1 min-w-0">
-            <p id="product-category" class="text-xs uppercase tracking-widest text-gold mb-2"></p>
+            <p id="product-category" class="text-sm text-gold mb-2"></p>
             <h2 id="product-name" class="font-serif text-3xl sm:text-4xl text-charcoal leading-tight mb-3"></h2>
-            <p id="product-price" class="text-lg text-charcoal"></p>
+            <p id="product-price" class="product-price text-lg text-charcoal"></p>
+            <p id="product-craft" class="hidden mt-3 font-serif text-[17px] text-charcoal/80 leading-snug"></p>
           </div>
           <!-- Language / currency dial: the logo's key in its double oval. Outer ring = language,
                inner ring = currency; labels and dots are placed by main.js. -->
@@ -633,15 +643,21 @@
                 </g>
               </g>
             </svg>
-            <p class="text-[9px] uppercase tracking-[.18em] text-ink/40 mt-1.5 text-center max-w-[136px] leading-snug" data-t="dial_hint">{{ t('dial_hint') }}</p>
+            <p class="text-[11px] text-ink/60 mt-1.5 text-center max-w-[136px] leading-snug" data-t="dial_hint">{{ t('dial_hint') }}</p>
           </div>
         </div>
         <dl id="product-attrs" class="hidden grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm mb-6 pb-6 border-b border-line/60"></dl>
         <p id="product-description" class="text-sm text-ink/70 leading-relaxed mb-8 whitespace-pre-line"></p>
         <div id="product-cart" class="flex flex-wrap items-center gap-2 mb-3"></div>
-        <a id="product-cta" href="#contact" class="inline-block bg-charcoal text-cream px-6 py-3 text-sm tracking-wide hover:bg-charcoal/90 transition">
-          ✨ <span data-t="cta_book_quote">{{ t('cta_book_quote') }}</span>
-        </a>
+        <div class="flex flex-wrap items-center gap-x-5 gap-y-3">
+          <a id="product-cta" href="#contact" class="inline-block bg-charcoal text-cream px-6 py-3 text-sm tracking-wide hover:bg-charcoal/90 transition">
+            <span data-t="cta_book_quote">{{ t('cta_book_quote') }}</span>
+          </a>
+          <button type="button" id="product-share" class="inline-flex items-center gap-2 py-3 text-sm text-ink/70 hover:text-charcoal transition">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3M7.5 7.5L12 3l4.5 4.5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>
+            <span data-t="share">{{ t('share') }}</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -656,6 +672,7 @@
 
 <script>
   window.TIKNIK_LANG = {{ lang|tojson }};
+  window.TIKNIK_OPEN_ITEM = {{ open_item|tojson }};
   window.TIKNIK_I18N = {{ js_i18n|tojson }};
   window.TIKNIK_LANGS = {{ langs|list|tojson }};
   window.TIKNIK_LANG_LABELS = {{ lang_labels|tojson }};
@@ -669,7 +686,6 @@
 <!-- Animations (GSAP) — switched on/off in /admin; the site works the same without them. -->
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/ScrollTrigger.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/SplitText.min.js"></script>
 <script src="{{ url_for('static', filename='js/motion.js') }}"></script>
 {% endif %}
 </body>

@@ -74,16 +74,20 @@
     return amd.toLocaleString("en-US") + " ֏";
   }
 
-  // Sale price and/or rent price per day, depending on the item's mode — "$300 · $40 / day" for both.
-  function formatPrice(item) {
-    var parts = [];
-    if ((item.mode === "Sale" || item.mode === "Both") && item.price) {
-      parts.push(formatAmount(item.price));
-    }
-    if ((item.mode === "Rent" || item.mode === "Both") && item.rent_price) {
-      parts.push(formatAmount(item.rent_price) + t("per_day", " / day"));
-    }
-    return parts.length ? parts.join(" · ") : t("price_on_request", "Price on request");
+  // Sale price and/or rent price per day, depending on the item's mode. When an item can be both
+  // bought and rented, each price gets its own line with a short note ("$510 to buy", "$55 / day to rent").
+  function priceHtml(item) {
+    var buy = (item.mode === "Sale" || item.mode === "Both") && item.price;
+    var rent = (item.mode === "Rent" || item.mode === "Both") && item.rent_price;
+    var lines = [];
+    if (buy) lines.push([formatAmount(item.price), rent ? t("price_label_buy", "to buy") : ""]);
+    if (rent) lines.push([formatAmount(item.rent_price) + t("per_day", " / day"), buy ? t("price_label_rent", "to rent") : ""]);
+    if (!lines.length) return '<span class="price-line">' + esc(t("price_on_request", "Price on request")) + "</span>";
+    return lines
+      .map(function (l) {
+        return '<span class="price-line">' + esc(l[0]) + (l[1] ? ' <span class="price-note">' + esc(l[1]) + "</span>" : "") + "</span>";
+      })
+      .join("");
   }
 
   function setCurrency(code) {
@@ -98,7 +102,7 @@
     render("currency");
     // If a product detail view is open, refresh its price too.
     if (overlay && !overlay.classList.contains("translate-x-full") && currentOpenItem) {
-      document.getElementById("product-price").textContent = formatPrice(currentOpenItem);
+      document.getElementById("product-price").innerHTML = priceHtml(currentOpenItem);
     }
     if (dial) dial.set("cur", code, true);
     if (document.body.classList.contains("cart-open")) renderCart();
@@ -127,25 +131,23 @@
 
   // The first photo (not video) is the catalog thumbnail.
   function mainPhoto(item) {
-    var first = (item.media || []).find(function (m) {
-      return !m.video;
-    });
-    return first ? first.file : null;
+    return cardPhotos(item)[0] || null;
   }
 
   function photoUrl(filename) {
     return "/static/img/products/" + filename;
   }
 
-  // Photos (not videos) of an item, as filenames.
+  // The small copy of a photo for cards and thumbnails (the full photo if there's none yet).
+  function smallUrl(m) {
+    return m.thumb ? "/static/img/products/thumbs/" + m.thumb : photoUrl(m.file);
+  }
+
+  // Photos (not videos) of an item.
   function cardPhotos(item) {
-    return (item.media || [])
-      .filter(function (m) {
-        return !m.video;
-      })
-      .map(function (m) {
-        return m.file;
-      });
+    return (item.media || []).filter(function (m) {
+      return !m.video;
+    });
   }
 
   // Which photo each catalog card is showing (by item id), so re-rendering keeps it.
@@ -165,16 +167,18 @@
     var photos = cardPhotos(item);
     if (!photos.length) return iconSvg(item.category);
     if (photos.length === 1) {
-      return '<img src="' + photoUrl(photos[0]) + '" alt="' + esc(item.name) + '" class="w-full h-full object-cover">';
+      return '<img src="' + smallUrl(photos[0]) + '" alt="' + esc(item.name) + '" loading="lazy" class="w-full h-full object-cover">';
     }
     var index = Math.min(cardPhotoIndex[item.id] || 0, photos.length - 1);
+    var n = photos.length;
     return (
       '<div class="card-track" style="transform:translateX(' + -index * 100 + '%)">' +
       photos
-        .map(function (file, i) {
-          // Only the shown photo and its neighbours load straight away.
-          var lazy = Math.abs(i - index) > 1 ? ' loading="lazy"' : "";
-          return '<img src="' + photoUrl(file) + '" alt="' + (i ? "" : esc(item.name)) + '"' + lazy + ' draggable="false">';
+        .map(function (m, i) {
+          // Only the shown photo and its neighbours load; the rest load as the card is flipped.
+          var near = i === index || i === (index + 1) % n || i === (index + n - 1) % n;
+          return '<img ' + (near ? 'src="' : 'data-src="') + smallUrl(m) + '" alt="' + (i === index ? esc(item.name) : "") +
+            '"' + (i === index ? "" : ' loading="lazy"') + ' draggable="false">';
         })
         .join("") +
       "</div>" +
@@ -205,6 +209,14 @@
     );
   }
 
+  // The first two parameters (usually fabric and colour) as one quiet line; the rest are in the product view.
+  function cardAttrsLine(item) {
+    var values = filledAttrs(item).slice(0, 2).map(function (p) {
+      return p[1];
+    });
+    return values.length ? '<p class="card-attrs">' + esc(values.join(", ")) + "</p>" : "";
+  }
+
   function cardHtml(item) {
     var media = cardMediaHtml(item);
     return (
@@ -215,33 +227,18 @@
       '">' +
       '<div class="card-media aspect-[3/4] bg-cream-dark flex items-center justify-center text-charcoal/25 group-hover:text-charcoal/40 transition relative overflow-hidden">' +
       media +
-      '<span class="absolute top-2 right-2 text-[10px] tracking-wide uppercase bg-cream/90 border border-charcoal/20 text-ink/70 px-2 py-1">' +
-      modeLabel(item.mode) +
+      '<span class="card-badge">' +
+      esc(modeLabel(item.mode)) +
       "</span>" +
       "</div>" +
-      '<div class="px-4 py-3 flex-1 flex flex-col">' +
-      '<p class="text-[10px] uppercase tracking-widest text-gold mb-1">' +
-      categoryName(item.category) +
-      "</p>" +
-      '<h3 class="font-serif text-lg text-charcoal leading-snug mb-1">' +
-      item.name +
+      '<div class="px-3 sm:px-4 pt-3 pb-3 sm:pb-4 flex-1 flex flex-col">' +
+      '<h3 class="font-serif text-[1.3rem] sm:text-[1.45rem] text-charcoal leading-tight">' +
+      esc(item.name) +
       "</h3>" +
-      '<dl class="text-xs leading-relaxed mb-3 flex-1 space-y-1">' +
-      filledAttrs(item)
-        .map(function (p) {
-          return (
-            '<div><dt class="inline font-medium text-charcoal/80">' +
-            esc(p[0]) +
-            ':</dt> <dd class="inline text-ink/60">' +
-            esc(p[1]) +
-            "</dd></div>"
-          );
-        })
-        .join("") +
-      "</dl>" +
-      '<div class="flex items-center justify-between gap-3">' +
-      '<p class="text-sm text-charcoal font-medium">' +
-      formatPrice(item) +
+      cardAttrsLine(item) +
+      '<div class="flex items-end justify-between gap-2 mt-auto pt-3">' +
+      '<p class="card-price">' +
+      priceHtml(item) +
       "</p>" +
       cardCartButton(item) +
       "</div>" +
@@ -290,9 +287,12 @@
     var n = imgs.length;
     index = ((index % n) + n) % n;
     cardPhotoIndex[id] = index;
-    [index - 1, index + 1].forEach(function (i) {
+    [index - 1, index, index + 1].forEach(function (i) {
       var img = imgs[(i + n) % n];
-      if (img) img.removeAttribute("loading");
+      if (img && img.hasAttribute("data-src")) {
+        img.src = img.getAttribute("data-src");
+        img.removeAttribute("data-src");
+      }
     });
     track.style.transition = animate === false ? "none" : "";
     track.style.transform = "translateX(" + -index * 100 + "%)";
@@ -324,7 +324,8 @@
     var itemId = parseInt(card.getAttribute("data-id"), 10);
     var it = findItem(items, itemId);
     var photos = it ? cardPhotos(it) : [];
-    openProduct(itemId, false, photos[cardPhotoIndex[itemId] || 0], card.querySelector(".card-media"));
+    var shown = photos[cardPhotoIndex[itemId] || 0];
+    openProduct(itemId, false, shown ? shown.file : null, card.querySelector(".card-media"));
   });
 
   var swipe = null;
@@ -368,6 +369,10 @@
       items = data;
       itemsByLang[LANG] = data;
       render("load");
+      // A shared /item/<id> link: show that piece (the address becomes the usual #item-<id> one).
+      if (window.TIKNIK_OPEN_ITEM && !location.hash) {
+        history.replaceState(null, "", langUrl(LANG) + "#item-" + window.TIKNIK_OPEN_ITEM);
+      }
       // Deep-link support: open directly if the page was loaded with #item-<id>
       maybeOpenFromHash();
     })
@@ -441,7 +446,7 @@
             photoUrl(m.file) +
             '#t=0.1" muted playsinline preload="metadata" class="w-full h-full object-cover pointer-events-none"></video>' +
             '<span class="absolute inset-0 flex items-center justify-center"><span class="w-7 h-7 rounded-full bg-cream/85 text-charcoal text-[10px] flex items-center justify-center pl-0.5">&#9654;</span></span>'
-          : '<img src="' + photoUrl(m.file) + '" class="w-full h-full object-cover" alt="">';
+          : '<img src="' + smallUrl(m) + '" class="w-full h-full object-cover" alt="">';
         return (
           '<button data-i="' +
           i +
@@ -500,13 +505,22 @@
   function fillProductText(item) {
     document.getElementById("product-category").textContent = categoryName(item.category);
     document.getElementById("product-name").textContent = item.name;
-    document.getElementById("product-price").textContent = formatPrice(item);
+    document.getElementById("product-price").innerHTML = priceHtml(item);
+    var craft = [];
+    if (item.hours) craft.push(t("handmade_hours", "About {n} hours of handwork").replace("{n}", item.hours));
+    if (item.edition === 1) craft.push(t("edition_one", "One of a kind"));
+    else if (item.edition > 1) craft.push(t("edition_n", "Only {n} made").replace("{n}", item.edition));
+    var craftEl = document.getElementById("product-craft");
+    craftEl.innerHTML = craft.map(function (c) {
+      return '<span class="block">' + esc(c) + "</span>";
+    }).join("");
+    craftEl.classList.toggle("hidden", !craft.length);
     var attrsEl = document.getElementById("product-attrs");
     var pairs = filledAttrs(item);
     attrsEl.innerHTML = pairs
       .map(function (p) {
         return (
-          '<dt class="text-[11px] uppercase tracking-widest text-ink/45 pt-0.5">' +
+          '<dt class="text-[13px] text-ink/55">' +
           esc(p[0]) +
           '</dt><dd class="text-charcoal/85">' +
           esc(p[1]) +
@@ -619,6 +633,34 @@
   // ------------------------------------------------------------------
   function langUrl(lang) {
     return lang === "en" ? "/?lang=en" : "/" + lang + "/";
+  }
+
+  // Share a piece: its own link (/item/<id>) shows that piece's photo and name in link previews
+  // (Instagram, WhatsApp, Telegram). Phones get the system share sheet; computers copy the link.
+  var shareBtn = document.getElementById("product-share");
+  if (shareBtn) {
+    shareBtn.addEventListener("click", function () {
+      if (!currentOpenItem) return;
+      var url = location.origin + (cardLang === "en" ? "" : "/" + cardLang) + "/item/" + currentOpenItem.id;
+      if (navigator.share) {
+        navigator.share({ title: currentOpenItem.name + " — Tiknik", url: url }).catch(function () {});
+        return;
+      }
+      var label = shareBtn.querySelector("[data-t]");
+      var copied = function () {
+        label.textContent = t("link_copied", "Link copied");
+        setTimeout(function () {
+          label.textContent = t("share", "Share");
+        }, 2000);
+      };
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(copied, function () {
+          window.prompt("", url);
+        });
+      } else {
+        window.prompt("", url);
+      }
+    });
   }
 
   // The address already shows the card's language (see setCardLang), so going "to" it would only
@@ -1368,7 +1410,7 @@
         return (
           '<li class="flex gap-4 py-4">' +
           '<div class="w-16 h-20 shrink-0 bg-cream-dark overflow-hidden">' +
-          (thumb ? '<img src="' + photoUrl(thumb) + '" alt="" class="w-full h-full object-cover">' : "") +
+          (thumb ? '<img src="' + smallUrl(thumb) + '" alt="" class="w-full h-full object-cover">' : "") +
           "</div>" +
           '<div class="flex-1 min-w-0">' +
           (item.mode === "Both"
@@ -1377,7 +1419,7 @@
                 return '<button type="button" class="js-kind' + (line.kind === k ? " on" : "") + '" data-i="' + i + '" data-k="' + k + '">' +
                   esc(t(k === "buy" ? "cart_buy_label" : "cart_rent_label", k)) + "</button>";
               }).join("") + "</div>"
-            : '<p class="text-[10px] uppercase tracking-widest text-gold">' + esc(t(line.kind === "buy" ? "cart_buy_label" : "cart_rent_label", "")) + "</p>") +
+            : '<p class="text-xs text-gold">' + esc(t(line.kind === "buy" ? "cart_buy_label" : "cart_rent_label", "")) + "</p>") +
           '<p class="font-serif text-lg text-charcoal leading-snug truncate">' + esc(item.name) + "</p>" +
           days +
           '<button type="button" class="js-remove text-[11px] text-ink/45 hover:text-charcoal underline underline-offset-2 mt-2" data-i="' + i + '">' + esc(t("cart_remove", "Remove")) + "</button>" +

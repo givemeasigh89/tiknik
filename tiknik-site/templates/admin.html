@@ -4,17 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tiknik Admin — Catalog</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script>
-  tailwind.config = {
-    theme: { extend: {
-      colors: {
-        cream: '#EFEEEA', 'cream-dark': '#E4E1D8', charcoal: '#2E2C29', ink: '#3A3A3A', line: '#C9C3B4', gold: '#A48F66',
-      },
-      fontFamily: { serif: ['"Cormorant Garamond"', 'serif'], sans: ['Jost', 'sans-serif'] },
-    } }
-  };
-</script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/site.css') }}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
@@ -377,6 +367,7 @@
                       <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 16V4M7 9l5-5 5 5M4 20h16"/></svg>
                       <span class="upload-label">Add photos or video</span>
                       <input type="file" name="photos" accept=".jpg,.jpeg,.png,.webp,.mp4,.webm,.mov" multiple class="hidden js-autoupload">
+                      <input type="file" name="thumbs" multiple class="hidden js-thumbs">
                     </label>
                     <p class="upload-hint text-[11px] text-ink/40 mt-1.5">
                       Photos: JPG, PNG or WEBP — the first photo is the main one.<br>
@@ -422,6 +413,17 @@
                     {% endfor %}
                   </select>
                   {{ price_fields(item) }}
+                </div>
+                <!-- Handmade facts, shown in the product view when filled in -->
+                <div class="grid grid-cols-2 gap-2.5">
+                  <label class="flex flex-col gap-1 min-w-0">
+                    <span class="text-[10px] uppercase tracking-wider text-ink/45">Hours of handwork</span>
+                    <input name="hours" type="number" min="0" value="{{ item.hours if item.hours is not none else '' }}" placeholder="e.g. 120" class="field">
+                  </label>
+                  <label class="flex flex-col gap-1 min-w-0">
+                    <span class="text-[10px] uppercase tracking-wider text-ink/45">Pieces made (1 = one of a kind)</span>
+                    <input name="edition" type="number" min="0" value="{{ item.edition if item.edition is not none else '' }}" placeholder="—" class="field">
+                  </label>
                 </div>
                 <div class="flex items-center justify-between gap-2 mt-1">
                   <button type="submit" class="btn btn-dark">Save changes</button>
@@ -532,7 +534,7 @@
         <h2 class="font-serif text-3xl text-charcoal">Animations
           <span class="text-base align-middle ml-1 rounded-full px-2.5 py-0.5 {{ 'bg-gold text-cream' if motion else 'bg-cream-dark text-ink/60' }}">{{ 'on' if motion else 'off' }}</span>
         </h2>
-        <p class="text-sm text-ink/55 mt-1 max-w-xl">Photo flying into the product view, headings rising word by word, the catalog arriving in a wave, the process ring turning with the scroll, and the hero reveal. Switch off to go straight back to the plain site.</p>
+        <p class="text-sm text-ink/55 mt-1 max-w-xl">Photo flying into the product view and back, the process ring turning with the scroll, and the hero reveal. Switch off to go straight back to the plain site.</p>
       </div>
       <form method="POST" action="{{ url_for('admin_motion') }}">
         <input type="hidden" name="motion" value="{{ '0' if motion else '1' }}">
@@ -544,11 +546,13 @@
     <section id="contacts" class="card p-5 sm:p-7">
       <h2 class="font-serif text-3xl text-charcoal">Contacts</h2>
       <p class="text-sm text-ink/55 mt-1 mb-5">Shown in the site's contact section and footer. Leave WhatsApp empty to hide it.</p>
-      <form method="POST" action="{{ url_for('admin_contacts') }}" class="grid sm:grid-cols-[1fr_1fr_auto] gap-3 items-end">
+      <form method="POST" action="{{ url_for('admin_contacts') }}" class="grid sm:grid-cols-[1fr_1fr_1fr_auto] gap-3 items-end">
         <label class="flex flex-col gap-1 text-sm"><span class="text-[10px] uppercase tracking-wider text-ink/45">Instagram link or @name</span>
           <input name="instagram" value="{{ instagram }}" class="field"></label>
         <label class="flex flex-col gap-1 text-sm"><span class="text-[10px] uppercase tracking-wider text-ink/45">WhatsApp number, with country code</span>
           <input name="whatsapp" value="{{ whatsapp }}" placeholder="e.g. 374 99 123456" inputmode="tel" class="field"></label>
+        <label class="flex flex-col gap-1 text-sm"><span class="text-[10px] uppercase tracking-wider text-ink/45">Opening hours (footer)</span>
+          <input name="hours" value="{{ hours }}" maxlength="80" placeholder="e.g. Mon–Sat 11:00–19:00" class="field"></label>
         <button type="submit" class="btn btn-dark">Save contacts</button>
       </form>
     </section>
@@ -730,10 +734,19 @@
         var label = input.closest("label").querySelector(".upload-label");
         label.textContent = "Preparing " + input.files.length + "…";
         Promise.all(Array.prototype.map.call(input.files, shrinkPhoto)).then(function (files) {
+          // A small copy of each photo for the catalog cards, sent along in the same order.
+          return Promise.all(files.map(function (file) {
+            return isVideo(file) ? null : makeThumb(file);
+          })).then(function (thumbs) { return [files, thumbs]; });
+        }).then(function (both) {
+          var files = both[0], thumbs = both[1];
           try {
             var dt = new DataTransfer();
             files.forEach(function (file) { dt.items.add(file); });
             input.files = dt.files;
+            var dtThumbs = new DataTransfer();
+            thumbs.forEach(function (th) { if (th) dtThumbs.items.add(th); });
+            input.form.querySelector(".js-thumbs").files = dtThumbs.files;
           } catch (e) { /* very old browser — upload the originals */ }
           label.textContent = "Uploading " + files.length + "…";
           input.form.submit();
@@ -744,6 +757,31 @@
     // Camera photos are often 10–40 MB; the site never shows them larger than ~2000 px, so scale
     // them down to a JPEG of that size in the browser before uploading — saves disk space on the server.
     var PHOTO_MAX_SIDE = 2000;
+    function isVideo(file) {
+      return /^video\//.test(file.type) || /\.(mp4|webm|mov)$/i.test(file.name);
+    }
+
+    // ~700 px JPEG for catalog cards; an empty file keeps the order if a photo can't be read.
+    function makeThumb(file) {
+      var empty = new File([], "empty.jpg", { type: "image/jpeg" });
+      if (!window.createImageBitmap) return Promise.resolve(empty);
+      return createImageBitmap(file).then(function (bmp) {
+        var scale = Math.min(1, 700 / Math.max(bmp.width, bmp.height));
+        var canvas = document.createElement("canvas");
+        canvas.width = Math.round(bmp.width * scale);
+        canvas.height = Math.round(bmp.height * scale);
+        var ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(bmp, 0, 0, canvas.width, canvas.height);
+        return new Promise(function (resolve) {
+          canvas.toBlob(function (blob) {
+            resolve(blob ? new File([blob], "thumb.jpg", { type: "image/jpeg" }) : empty);
+          }, "image/jpeg", 0.8);
+        });
+      }).catch(function () { return empty; });
+    }
+
     function shrinkPhoto(file) {
       if (!/^image\/(jpeg|png|webp)$/.test(file.type) || file.size < 800 * 1024 || !window.createImageBitmap) {
         return Promise.resolve(file);

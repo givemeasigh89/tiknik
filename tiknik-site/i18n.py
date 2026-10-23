@@ -146,9 +146,9 @@ UI = {
 
     # The language / currency dial in the product view
     "dial_hint": {
-        "en": "Turn the rings · language & currency",
-        "ru": "Поверните кольца · язык и валюта",
-        "hy": "Պտտեք օղակները · լեզու և արժույթ",
+        "en": "Turn the rings for language and currency",
+        "ru": "Поверните кольца: язык и валюта",
+        "hy": "Պտտեք օղակները՝ լեզուն և արժույթը փոխելու համար",
     },
 
     # Navigation (new sections)
@@ -234,13 +234,52 @@ UI = {
     # Contact links
     "contact_direct": {"en": "Or write to us directly", "ru": "Или напишите нам напрямую", "hy": "Կամ գրեք մեզ անմիջապես"},
 
+    # Prices on cards and in the product view (when an item can be both bought and rented)
+    "price_label_buy": {"en": "to buy", "ru": "покупка", "hy": "գնում"},
+    "price_label_rent": {"en": "to rent", "ru": "аренда", "hy": "վարձույթ"},
+
+    # Handmade facts in the product view ({n} is a number set per item in /admin)
+    "handmade_hours": {
+        "en": "About {n} hours of handwork",
+        "ru": "Около {n} часов ручной работы",
+        "hy": "Մոտ {n} ժամ ձեռքի աշխատանք",
+    },
+    "edition_one": {"en": "One of a kind", "ru": "Единственный экземпляр", "hy": "Միակ օրինակ"},
+    "edition_n": {"en": "Only {n} made", "ru": "Тираж: {n} шт.", "hy": "Ընդամենը {n} օրինակ"},
+    "share": {"en": "Share", "ru": "Поделиться", "hy": "Կիսվել"},
+    "link_copied": {"en": "Link copied", "ru": "Ссылка скопирована", "hy": "Հղումը պատճենված է"},
+
+    # Delivery: three facts (all already stated elsewhere on the site)
+    "delivery_f1_title": {"en": "2–4 months", "ru": "2–4 месяца", "hy": "2–4 ամիս"},
+    "delivery_f1_text": {
+        "en": "for a bridal gown made to your measurements. Express on request.",
+        "ru": "на свадебное платье по вашим меркам. Срочный пошив по запросу.",
+        "hy": "հարսանյաց զգեստի համար՝ ձեր չափսերով։ Շտապ պատվերը՝ ըստ պահանջի։",
+    },
+    "delivery_f2_title": {"en": "Fittings by video", "ru": "Примерки по видеосвязи", "hy": "Փորձեր տեսազանգով"},
+    "delivery_f2_text": {
+        "en": "With a step-by-step guide to taking your own measurements.",
+        "ru": "С понятной инструкцией, как снять мерки самостоятельно.",
+        "hy": "Քայլ առ քայլ ուղեցույցով, թե ինչպես ինքներդ վերցնել չափսերը։",
+    },
+    "delivery_f3_title": {"en": "Shipped worldwide", "ru": "Доставка по всему миру", "hy": "Առաքում ամբողջ աշխարհով"},
+    "delivery_f3_text": {
+        "en": "From our atelier in Yerevan to your door.",
+        "ru": "Из нашего ателье в Ереване прямо к вам.",
+        "hy": "Մեր արվեստանոցից Երևանում՝ մինչև ձեր դուռը։",
+    },
+
+    # Footer
+    "handmade_in": {"en": "Handmade in Yerevan", "ru": "Сшито вручную в Ереване", "hy": "Ձեռքով կարված Երևանում"},
+    "hours_label": {"en": "Open", "ru": "Часы работы", "hy": "Աշխատում ենք"},
+
     # Used by static/js/main.js (passed in as window.TIKNIK_I18N)
     "price_on_request": {"en": "Price on request", "ru": "Цена по запросу", "hy": "Գինը՝ ըստ հարցման"},
     "per_day": {"en": " / day", "ru": " / сутки", "hy": " / օր"},
-    "mode_Rent": {"en": "For Rent", "ru": "Аренда", "hy": "Վարձույթ"},
-    "mode_Sale": {"en": "For Sale", "ru": "Продажа", "hy": "Վաճառք"},
-    "mode_Both": {"en": "Rent or Buy", "ru": "Аренда или покупка", "hy": "Վարձույթ կամ գնում"},
-    "mode_Custom": {"en": "Made to Order", "ru": "На заказ", "hy": "Պատվերով"},
+    "mode_Rent": {"en": "For rent", "ru": "Аренда", "hy": "Վարձույթ"},
+    "mode_Sale": {"en": "For sale", "ru": "Продажа", "hy": "Վաճառք"},
+    "mode_Both": {"en": "Rent or buy", "ru": "Аренда или покупка", "hy": "Վարձույթ կամ գնում"},
+    "mode_Custom": {"en": "Made to order", "ru": "На заказ", "hy": "Պատվերով"},
     "load_error": {
         "en": "Unable to load the catalog right now.",
         "ru": "Не удалось загрузить каталог.",
@@ -268,6 +307,7 @@ JS_KEYS = (
     "back_to_catalog", "prev_item", "next_item", "cta_book_quote", "dial_hint",
     "add_to_cart", "add_buy", "add_rent", "in_cart", "cart_buy_label", "cart_rent_label", "cart_day", "cart_days",
     "cart_sent", "cart_remove", "busy_error", "review_thanks",
+    "price_label_buy", "price_label_rent", "handmade_hours", "edition_one", "edition_n", "share", "link_copied",
     "price_on_request", "per_day", "mode_Rent", "mode_Sale", "mode_Both", "mode_Custom",
     "load_error", "sending", "sent", "send_error", "required_error",
 )

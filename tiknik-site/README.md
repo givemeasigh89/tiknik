@@ -102,9 +102,10 @@ A built-in admin page handles everything — no PythonAnywhere file editing, no 
 
 ## Animations (GSAP)
 
-`static/js/motion.js` adds the motion layer on top of the site, with GSAP 3.15 (ScrollTrigger, SplitText) from jsDelivr:
-the card photo flying into the product view and back, headings rising word by word, the catalog cards arriving in a wave,
-the "How it works" section pinning while page scroll turns the key, and the hero reveal with a slow parallax.
+`static/js/motion.js` adds the motion layer on top of the site, with GSAP 3.15 (ScrollTrigger) from jsDelivr:
+the card photo flying into the product view and back, the "How it works" section pinning while page scroll turns
+the key, and the hero reveal with a slow parallax. (Headings rising word by word and the catalog arriving in a wave
+were taken out after the design review — effects on every section read as a template.)
 Visitors whose system asks for reduced motion get none of it.
 
 Ways back, quickest first:
@@ -112,6 +113,23 @@ Ways back, quickest first:
 1. `/admin` → **Animations** → *Turn off*. The GSAP scripts and `motion.js` are no longer loaded; the site is the plain version at once.
 2. Delete the `{% if motion %}` blocks in `templates/index.html` (and `static/js/motion.js`); the rest of the code only sends events / offers hooks that do nothing on their own.
 3. The git tag `before-motion` marks the code just before this was added: `git revert` the commits after it, or compare with `git diff before-motion`.
+
+## Styles (Tailwind)
+
+The pages use `static/css/site.css`, built from the classes in `templates/` and `static/js/` (no Tailwind script in the
+browser). After adding or changing classes, rebuild and commit it:
+
+```bash
+npx tailwindcss@3.4.17 -c tailwind.config.js -i static/css/tailwind.src.css -o static/css/site.css --minify
+```
+
+## Photos: small copies, previews
+
+- Catalog cards and thumbnails use ~700 px copies in `static/img/products/thumbs/`. The admin page makes them in the
+  browser on upload; `tools/make_thumbs.py` fills in any that are missing and runs after every deploy.
+- Link previews (Instagram, WhatsApp, Telegram) use Open Graph tags: `static/img/og.jpg` for the site, and each piece's
+  first photo for its own link `/item/<id>` (`/ru/item/<id>`, `/hy/item/<id>`) — the product view's Share button gives it.
+- Hours of handwork and pieces made are set per item in `/admin`; opening hours in Contacts. Empty ones aren't shown.
 
 ## Languages
 

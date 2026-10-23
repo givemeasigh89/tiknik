@@ -3,19 +3,21 @@
 // their system for reduced motion get none of it, and mm.revert() undoes all of it.
 //
 //   1. Product view: the card's photo flies into the large photo (FLIP), and back on close.
-//   2. Section headings rise in word by word (SplitText) as they scroll into view.
-//   3. Catalog cards arrive in a soft wave (ScrollTrigger.batch).
-//   4. "How it works": the section pins and page scroll turns the key through the photos.
-//   5. Hero: the photo and logo strip reveal on load; the photo drifts slower than the page.
+//   2. "How it works": the section pins and page scroll turns the key through the photos.
+//   3. Hero: the photo and the line under it reveal on load; the photo drifts slower than the page.
+//
+// Kept deliberately few: motion that answers what the visitor does, plus one moment on arrival.
+// (Headings rising word by word and the catalog arriving in a wave were tried and taken out —
+// effects on every section read as a template. They're in git history before tag before-review.)
 (function () {
   "use strict";
 
   var root = document.documentElement;
-  if (!window.gsap || !window.ScrollTrigger || !window.SplitText) {
+  if (!window.gsap || !window.ScrollTrigger) {
     root.classList.remove("motion-boot");
     return;
   }
-  gsap.registerPlugin(ScrollTrigger, SplitText);
+  gsap.registerPlugin(ScrollTrigger);
 
   var header = document.querySelector("header");
   var headerHeight = function () {
@@ -27,7 +29,7 @@
     root.classList.add("motion");
     var cleanups = [];
 
-    // ---------------------------------------------------------------- 5. Hero
+    // ---------------------------------------------------------------- 3. Hero
     var hero = document.querySelector(".hero-bg");
     var intro = document.getElementById("intro");
     root.classList.remove("motion-boot");
@@ -43,37 +45,16 @@
       });
     }
 
-    // ---------------------------------------------------------------- 3. Catalog cards
-    var grid = document.getElementById("catalog-grid");
-    var cardTriggers = [];
-    function animateCards(reason) {
-      cardTriggers.forEach(function (t) {
-        t.kill();
-      });
-      cardTriggers = [];
-      if (!grid || reason === "currency") return; // same cards, new prices: no wave
-      var cards = Array.prototype.slice.call(grid.children);
-      if (!cards.length) return;
-      gsap.set(cards, { autoAlpha: 0, y: 46 });
-      cardTriggers = ScrollTrigger.batch(cards, {
-        start: "top 94%",
-        once: true,
-        onEnter: function (batch) {
-          gsap.to(batch, { autoAlpha: 1, y: 0, duration: 0.85, ease: "power3.out", stagger: 0.09, overwrite: true, clearProps: "transform" });
-        },
-      });
-    }
-    function onCatalog(e) {
-      animateCards(e.detail && e.detail.reason);
+    // The catalog changes height when its tab changes: trigger positions below it move.
+    var onCatalog = function () {
       refreshSoon();
-    }
+    };
     document.addEventListener("tiknik:catalog-rendered", onCatalog);
     cleanups.push(function () {
       document.removeEventListener("tiknik:catalog-rendered", onCatalog);
-      gsap.set(grid ? grid.children : [], { clearProps: "all" });
     });
 
-    // ---------------------------------------------------------------- 4. Process ring on scroll
+    // ---------------------------------------------------------------- 2. Process ring on scroll
     var process = document.getElementById("process");
     var ring = window.TiknikProcess;
     if (process && ring) {
@@ -99,57 +80,6 @@
       });
     }
 
-    // ---------------------------------------------------------------- 2. Headings, word by word
-    var splits = [];
-    function splitHeadings() {
-      var headings = document.querySelectorAll(
-        "#catalog h2, #process h2, #about h2, #reviews h2, #delivery h2, #contact h2"
-      );
-      headings.forEach(function (h) {
-        splits.push(
-          SplitText.create(h, {
-            type: "words,lines",
-            mask: "lines",
-            autoSplit: true,
-            onSplit: function (self) {
-              return gsap.from(self.words, {
-                yPercent: 115,
-                duration: 0.95,
-                ease: "power4.out",
-                stagger: 0.06,
-                scrollTrigger: { trigger: h, start: "top 88%", once: true },
-              });
-            },
-          })
-        );
-      });
-      // The small gold line above each heading and the About text follow a beat later.
-      var followers = gsap.utils.toArray("#about .order-2 > :not(h2)");
-      headings.forEach(function (h) {
-        var eyebrow = h.previousElementSibling;
-        if (eyebrow && eyebrow.matches("p.text-gold")) followers.push(eyebrow);
-      });
-      followers.forEach(function (el) {
-        gsap.from(el, {
-          y: 18,
-          autoAlpha: 0,
-          duration: 0.8,
-          ease: "power3.out",
-          scrollTrigger: { trigger: el, start: "top 90%", once: true },
-        });
-      });
-      ScrollTrigger.sort(); // created after the pin above: keep refresh order top-to-bottom
-      refreshSoon();
-    }
-    // Split once the web fonts are in, so the lines break where they finally will.
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(splitHeadings);
-    else splitHeadings();
-    cleanups.push(function () {
-      splits.forEach(function (s) {
-        s.revert();
-      });
-    });
-
     // ---------------------------------------------------------------- 1. Product view
     var overlay = document.getElementById("product-overlay");
     var mainWrap = document.getElementById("product-main-image-wrap");
@@ -173,6 +103,17 @@
 
     // A photo that travels from rect `from` to rect `to`: the clone is laid out at its final
     // place and size, then transformed back to where it starts (FLIP) and released.
+    // The photo currently showing in a card (cards with several photos slide a strip of them).
+    function cardImage(media) {
+      var box = media.getBoundingClientRect();
+      var best = null;
+      media.querySelectorAll("img").forEach(function (img) {
+        var r = img.getBoundingClientRect();
+        if (Math.abs(r.left - box.left) < 2 && img.currentSrc) best = img;
+      });
+      return best;
+    }
+
     function flyPhoto(src, from, to, duration, onDone) {
       var clone = document.createElement("img");
       clone.src = src;
@@ -189,10 +130,26 @@
         duration: duration,
         ease: "power3.inOut",
         onComplete: function () {
-          if (onDone) onDone();
-          clone.remove();
+          if (onDone) onDone(clone);
+          else clone.remove();
         },
       });
+    }
+
+    // Keep the flown photo on top until the large photo has loaded, then fade it away.
+    function handOver(clone) {
+      var done = false;
+      var finish = function () {
+        if (done) return;
+        done = true;
+        gsap.set(mainWrap, { clearProps: "opacity,visibility" });
+        gsap.to(clone, { autoAlpha: 0, duration: 0.35, onComplete: function () { clone.remove(); } });
+      };
+      if (mainImage.complete && mainImage.naturalWidth) finish();
+      else {
+        mainImage.addEventListener("load", finish, { once: true });
+        setTimeout(finish, 2500);
+      }
     }
 
     function revealDetails(delay) {
@@ -218,11 +175,10 @@
       gsap.fromTo(overlay, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.45, ease: "power2.out", clearProps: "opacity,visibility" });
       var from = d.source && visibleRect(d.source);
       var hasPhoto = !mainImage.classList.contains("hidden") && mainImage.getAttribute("src");
-      if (from && hasPhoto) {
+      var shown = from && cardImage(d.source);
+      if (from && hasPhoto && shown) {
         gsap.set(mainWrap, { autoAlpha: 0 });
-        flyPhoto(mainImage.src, from, mainWrap.getBoundingClientRect(), 0.8, function () {
-          gsap.set(mainWrap, { clearProps: "opacity,visibility" });
-        });
+        flyPhoto(shown.currentSrc, from, mainWrap.getBoundingClientRect(), 0.8, handOver);
         revealDetails(0.3);
       } else {
         gsap.fromTo(mainWrap, { scale: 1.04, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: 0.9, ease: "power3.out", clearProps: "transform,opacity,visibility" });
@@ -244,7 +200,10 @@
         if (to && hasPhoto) {
           var from = mainWrap.getBoundingClientRect();
           gsap.to(overlay, { autoAlpha: 0, duration: 0.4, ease: "power2.out" });
-          flyPhoto(mainImage.src, from, to, 0.7, finish);
+          flyPhoto(mainImage.src, from, to, 0.7, function (clone) {
+            clone.remove();
+            finish();
+          });
         } else {
           gsap.to(overlay, { autoAlpha: 0, y: 24, duration: 0.35, ease: "power2.in", onComplete: finish });
         }

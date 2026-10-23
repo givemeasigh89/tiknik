@@ -4,14 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tiknik Admin — Sign in</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script>
-  tailwind.config = {
-    theme: { extend: { colors: {
-      cream: '#EFEEEA', 'cream-dark': '#E4E1D8', charcoal: '#2E2C29', ink: '#3A3A3A', line: '#C9C3B4', gold: '#A48F66',
-    } } }
-  };
-</script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/site.css') }}">
 </head>
 <body class="bg-cream text-ink min-h-screen flex items-center justify-center px-5">
   <div class="w-full max-w-sm">

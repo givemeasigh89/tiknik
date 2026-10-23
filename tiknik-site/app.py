@@ -10,6 +10,7 @@ import time
 
 from flask import Flask, abort, g, jsonify, make_response, redirect, render_template, request, session, url_for, flash
 from werkzeug.utils import secure_filename
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 import content_translations
 from i18n import JS_KEYS, LANG_LABELS, LANGS, translator
@@ -17,6 +18,10 @@ from i18n import JS_KEYS, LANG_LABELS, LANGS, translator
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "tiknik.db")
 PRODUCTS_DIR = os.path.join(BASE_DIR, "static", "img", "products")
+# Small copies of product photos for catalog cards and thumbnails (made in the admin's browser on
+# upload, or by tools/make_thumbs.py for older photos). Pages fall back to the full photo without one.
+THUMBS_DIR = os.path.join(PRODUCTS_DIR, "thumbs")
+MAX_THUMB_KB = 400
 REVIEWS_DIR = os.path.join(BASE_DIR, "static", "img", "reviews")
 WSGI_FILE = "/var/www/tiknik_pythonanywhere_com_wsgi.py"
 
@@ -51,6 +56,8 @@ MODES = ("Sale", "Rent", "Both", "Custom")
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "")
 
 app = Flask(__name__)
+# PythonAnywhere sits behind a proxy: trust its X-Forwarded-Proto so external links are https.
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 app.secret_key = os.environ.get("SECRET_KEY") or os.urandom(32)
 app.config["MAX_CONTENT_LENGTH"] = 100 * 1024 * 1024
 
@@ -125,6 +132,7 @@ def _table_columns(db, table):
 
 def init_db():
     os.makedirs(PRODUCTS_DIR, exist_ok=True)
+    os.makedirs(THUMBS_DIR, exist_ok=True)
     os.makedirs(REVIEWS_DIR, exist_ok=True)
     db = sqlite3.connect(DB_PATH)
     db.row_factory = sqlite3.Row
@@ -158,6 +166,10 @@ def init_db():
     # `price` is the sale price; `rent_price` is the rental price per day.
     if "rent_price" not in _table_columns(db, "items"):
         db.execute("ALTER TABLE items ADD COLUMN rent_price INTEGER")
+    # Handmade facts shown in the product view when filled in: hours of handwork, pieces made.
+    for col in ("hours", "edition"):
+        if col not in _table_columns(db, "items"):
+            db.execute(f"ALTER TABLE items ADD COLUMN {col} INTEGER")
 
     for attr in ATTRS:
         if attr not in _table_columns(db, "items"):
@@ -245,6 +257,7 @@ def init_db():
     db.execute("INSERT OR IGNORE INTO settings (key, value) VALUES ('instagram', ?)", (DEFAULT_INSTAGRAM,))
     db.execute("INSERT OR IGNORE INTO settings (key, value) VALUES ('whatsapp', '')")
     db.execute("INSERT OR IGNORE INTO settings (key, value) VALUES ('motion', '1')")
+    db.execute("INSERT OR IGNORE INTO settings (key, value) VALUES ('hours', '')")
 
     if db.execute("SELECT COUNT(*) AS c FROM items").fetchone()["c"] == 0:
         for name, category, description, mode, price in SEED_ITEMS:
@@ -389,12 +402,20 @@ def parse_price(raw):
         return None
 
 
+def thumb_name(filename):
+    return os.path.splitext(filename)[0] + ".jpg"
+
+
+def remove_photo_files(filename):
+    for path in (os.path.join(PRODUCTS_DIR, filename), os.path.join(THUMBS_DIR, thumb_name(filename))):
+        if os.path.exists(path):
+            os.remove(path)
+
+
 def delete_item(db, item_id):
     """Delete an item with its photos, videos and parameters."""
     for photo in db.execute("SELECT filename FROM item_photos WHERE item_id = ?", (item_id,)).fetchall():
-        path = os.path.join(PRODUCTS_DIR, photo["filename"])
-        if os.path.exists(path):
-            os.remove(path)
+        remove_photo_files(photo["filename"])
     db.execute("DELETE FROM item_photos WHERE item_id = ?", (item_id,))
     db.execute("DELETE FROM item_attrs WHERE item_id = ?", (item_id,))
     db.execute("DELETE FROM items WHERE id = ?", (item_id,))
@@ -437,16 +458,36 @@ def back_to_admin(anchor=None):
 # Public routes
 # ---------------------------------------------------------------------------
 
+@app.route("/favicon.ico")
+def favicon():
+    return app.send_static_file("img/icon-192.png")
+
+
+@app.route("/robots.txt")
+def robots():
+    return "User-agent: *\nDisallow: /admin\n", 200, {"Content-Type": "text/plain; charset=utf-8"}
+
+
+@app.route("/item/<int:item_id>")
+@app.route("/<lang>/item/<int:item_id>")
+def item_page(item_id, lang="en"):
+    """Shareable link to one piece: the site with that piece's preview (Instagram, WhatsApp, …)
+    and its product view opened."""
+    if lang not in LANGS:
+        abort(404)
+    return index(lang=None if lang == "en" else lang, item_id=item_id)
+
+
 @app.route("/")
 @app.route("/<lang>/")
-def index(lang=None):
+def index(lang=None, item_id=None):
     # English lives at "/", the others at "/ru/" and "/hy/".
     if lang is not None and lang not in LANGS[1:]:
         abort(404)
     if lang is None:
         # "/?lang=en" is the language switcher's English link: show English and remember it.
         # Otherwise send visitors to their remembered language, or on a first visit, their browser's.
-        if request.args.get("lang") != "en":
+        if request.args.get("lang") != "en" and item_id is None:
             preferred = request.cookies.get("lang") or request.accept_languages.best_match(LANGS)
             if preferred in LANGS[1:]:
                 return redirect(url_for("index", lang=preferred))
@@ -454,8 +495,28 @@ def index(lang=None):
 
     db = get_db()
     t = translator(lang)
+
+    # Link preview (Open Graph): the site, or one piece when the link is /item/<id>.
+    preview = {"title": t("title"), "description": t("meta_description"),
+               "image": url_for("static", filename="img/og.jpg", _external=True)}
+    if item_id is not None:
+        it = db.execute("SELECT * FROM items WHERE id = ?", (item_id,)).fetchone()
+        if not it:
+            abort(404)
+        photo = db.execute("SELECT filename FROM item_photos WHERE item_id = ? AND kind = 'photo' "
+                           "ORDER BY position LIMIT 1", (item_id,)).fetchone()
+        preview["title"] = f"{localized(it, 'name', lang)} — Tiknik"
+        desc = (localized(it, "description", lang) or "").strip()
+        preview["description"] = (desc[:180] + "…") if len(desc) > 180 else (desc or t("meta_description"))
+        if photo:
+            preview["image"] = url_for("static", filename="img/products/" + photo["filename"], _external=True)
+    preview["url"] = request.url
+
     resp = make_response(render_template(
         "index.html",
+        preview=preview,
+        open_item=item_id,
+        hours=get_setting(db, "hours", ""),
         lang=lang,
         langs=LANGS,
         lang_labels=LANG_LABELS,
@@ -494,8 +555,13 @@ def api_items():
     lang = request_lang()
     items = db.execute("SELECT * FROM items ORDER BY id").fetchall()
     media_by_item = {}
+    thumbs = set(os.listdir(THUMBS_DIR)) if os.path.isdir(THUMBS_DIR) else set()
     for p in db.execute("SELECT item_id, filename, kind FROM item_photos ORDER BY item_id, position"):
-        media_by_item.setdefault(p["item_id"], []).append({"file": p["filename"], "video": p["kind"] == "video"})
+        small = thumb_name(p["filename"])
+        media_by_item.setdefault(p["item_id"], []).append({
+            "file": p["filename"], "video": p["kind"] == "video",
+            "thumb": small if p["kind"] == "photo" and small in thumbs else None,
+        })
     attrs = attrs_by_item(db)
 
     result = []
@@ -514,6 +580,8 @@ def api_items():
             "mode": it["mode"],
             "price": it["price"],
             "rent_price": it["rent_price"],
+            "hours": it["hours"],
+            "edition": it["edition"],
             "media": media_by_item.get(it["id"], []),
         })
     return jsonify(result)
@@ -765,6 +833,7 @@ def admin():
         reviews=reviews,
         instagram=get_setting(db, "instagram", DEFAULT_INSTAGRAM),
         whatsapp=get_setting(db, "whatsapp", ""),
+        hours=get_setting(db, "hours", ""),
         motion=get_setting(db, "motion", "1") == "1",
         items=item_list,
         unsorted=unsorted,
@@ -803,6 +872,7 @@ def admin_upload(item_id):
 
     added = {"photo": 0, "video": 0}
     problems = []
+    thumbs = iter(request.files.getlist("thumbs"))  # one per photo, in order (videos have none)
 
     for f in request.files.getlist("photos"):
         if not f or not f.filename:
@@ -825,6 +895,12 @@ def admin_upload(item_id):
 
         filename = secure_filename(f"item-{item_id}-{position + 1}-{f.filename}")
         f.save(os.path.join(PRODUCTS_DIR, filename))
+        if kind == "photo":
+            th = next(thumbs, None)
+            data = th.read(MAX_THUMB_KB * 1024 + 1) if th else b""
+            if data[:3] == b"\xff\xd8\xff" and len(data) <= MAX_THUMB_KB * 1024:
+                with open(os.path.join(THUMBS_DIR, thumb_name(filename)), "wb") as out:
+                    out.write(data)
         db.execute(
             "INSERT INTO item_photos (item_id, filename, position, kind) VALUES (?,?,?,?)",
             (item_id, filename, position, kind),
@@ -856,9 +932,7 @@ def admin_remove_photo(photo_id):
     db = get_db()
     photo = db.execute("SELECT * FROM item_photos WHERE id = ?", (photo_id,)).fetchone()
     if photo:
-        path = os.path.join(PRODUCTS_DIR, photo["filename"])
-        if os.path.exists(path):
-            os.remove(path)
+        remove_photo_files(photo["filename"])
         db.execute("DELETE FROM item_photos WHERE id = ?", (photo_id,))
         db.commit()
         flash("Photo removed.", "ok")
@@ -910,6 +984,8 @@ def admin_update_item(item_id):
     category = (request.form.get("category") or "").strip()
     price = parse_price(request.form.get("price"))
     rent_price = parse_price(request.form.get("rent_price"))
+    hours = parse_price(request.form.get("hours"))
+    edition = parse_price(request.form.get("edition"))
 
     if not name:
         flash("Name is required.", "error")
@@ -938,6 +1014,8 @@ def admin_update_item(item_id):
             f"UPDATE items SET name_{lang}=?, description_{lang}=? WHERE id=?",
             ((request.form.get(f"name_{lang}") or "").strip(), request.form.get(f"description_{lang}") or "", item_id),
         )
+    db.execute("UPDATE items SET hours = ?, edition = ? WHERE id = ?",
+               (hours if hours and hours > 0 else None, edition if edition and edition > 0 else None, item_id))
     save_item_attrs(db, item_id)
     db.commit()
     flash("Saved.", "ok")
@@ -1214,7 +1292,8 @@ def admin_contacts():
     if instagram and not instagram.startswith(("https://", "http://")):
         instagram = "https://www.instagram.com/" + instagram.lstrip("@").strip("/") + "/"
     whatsapp = re.sub(r"[^\d]", "", request.form.get("whatsapp") or "")
-    for key, value in (("instagram", instagram), ("whatsapp", whatsapp)):
+    hours = (request.form.get("hours") or "").strip()[:80]
+    for key, value in (("instagram", instagram), ("whatsapp", whatsapp), ("hours", hours)):
         db.execute("INSERT INTO settings (key, value) VALUES (?, ?) "
                    "ON CONFLICT(key) DO UPDATE SET value = excluded.value", (key, value))
     db.commit()
@@ -1240,6 +1319,18 @@ def deploy():
     output = result.stdout + result.stderr
     if result.returncode != 0:
         return output, 500, {"Content-Type": "text/plain; charset=utf-8"}
+
+    # Fill in any missing photo thumbnails (needs Pillow, which PythonAnywhere's system Python has).
+    for python in ("/usr/bin/python3", "python3"):
+        try:
+            thumbs = subprocess.run([python, os.path.join(BASE_DIR, "tools", "make_thumbs.py")],
+                                    cwd=BASE_DIR, capture_output=True, text=True, timeout=240)
+        except (OSError, subprocess.TimeoutExpired) as e:
+            output += f"\nthumbnails ({python}): {e}"
+            continue
+        output += "\n" + (thumbs.stdout + thumbs.stderr).strip()
+        if thumbs.returncode == 0:
+            break
 
     os.utime(WSGI_FILE)  # touching the WSGI file makes PythonAnywhere reload the app
     return output + "\nReloaded.", 200, {"Content-Type": "text/plain; charset=utf-8"}
