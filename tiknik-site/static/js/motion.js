@@ -14,7 +14,6 @@
 
   var root = document.documentElement;
   if (!window.gsap || !window.ScrollTrigger) {
-    root.classList.remove("motion-boot");
     return;
   }
   gsap.registerPlugin(ScrollTrigger);
@@ -32,10 +31,10 @@
     // ---------------------------------------------------------------- 3. Hero
     var hero = document.querySelector(".hero-bg");
     var intro = document.getElementById("intro");
-    root.classList.remove("motion-boot");
     if (hero) {
       var heroTl = gsap.timeline({ defaults: { ease: "power3.out" } });
-      heroTl.fromTo(hero, { autoAlpha: 0, scale: 1.08 }, { autoAlpha: 1, scale: 1, duration: 1.8, ease: "power2.out" });
+      // The photo is visible from the first moment (it's the page's main picture); it only settles in.
+      heroTl.fromTo(hero, { scale: 1.06 }, { scale: 1, duration: 1.8, ease: "power2.out" });
       if (intro) heroTl.from(intro.children, { y: 26, autoAlpha: 0, stagger: 0.12, duration: 0.9 }, "-=1.2");
       // Parallax: the photo moves slower than the page as it scrolls away.
       gsap.to(hero, {
@@ -244,6 +243,4 @@
     };
   });
 
-  // Reduced motion (or anything above failing): never leave the hero hidden.
-  root.classList.remove("motion-boot");
 })();

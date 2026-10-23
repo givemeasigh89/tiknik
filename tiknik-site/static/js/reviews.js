@@ -40,7 +40,7 @@
       '<div class="px-6 py-6 flex-1 flex flex-col">' +
       '<span class="font-serif text-5xl leading-none text-gold/70 -mb-3 select-none" aria-hidden="true">“</span>' +
       '<p class="review-quote font-serif text-[17px] leading-relaxed text-charcoal/90 whitespace-pre-line flex-1">' + esc(r.text) + "</p>" +
-      '<p class="mt-5 font-serif italic text-base text-ink/70">' + esc(r.name) + "</p>" +
+      '<p class="mt-5 font-serif italic text-base text-ink/75">' + esc(r.name) + "</p>" +
       "</div></article>"
     );
   }
