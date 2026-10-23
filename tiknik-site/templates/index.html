@@ -171,13 +171,17 @@
   .pdp-body { padding-bottom: 1.4rem; font-size: .92rem; line-height: 1.75; color: rgba(58,58,58,.85); }
   /* Dial at the top right of the details, with a legend under it */
   .pdp-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1.25rem; }
-  .pdp-prefs { display: flex; align-items: center; flex-wrap: wrap; gap: .35rem .9rem; margin-top: 1.4rem; font-size: 13px; }
-  .pdp-prefs #product-dial { width: 34px; height: 41px; flex: 0 0 auto; cursor: grab; }
-  .pdp-prefs #product-dial .dial-labels, .pdp-prefs #product-dial .dial-dots { display: none; }
-  .pref { color: rgba(58,58,58,.75); padding: .35rem 0; transition: color .2s ease; }
-  .pref b { font-weight: 400; color: #2E2C29; text-decoration: underline; text-underline-offset: 4px; text-decoration-color: rgba(46,44,41,.3); }
-  .pref:hover b { text-decoration-color: #2E2C29; }
-  .pref-sep { width: 1px; height: 14px; background: rgba(46,44,41,.2); }
+  .pdp-prefs { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.5rem; }
+  .seg { position: relative; display: inline-flex; padding: 3px; border: 1px solid rgba(46,44,41,.18); border-radius: 9999px; }
+  .seg button { position: relative; z-index: 1; padding: .5rem .95rem; font-size: 13px; letter-spacing: .02em; border-radius: 9999px;
+                color: rgba(58,58,58,.8); transition: color .35s ease; }
+  .seg button.on { color: #EFEEEA; }
+  .seg button:not(.on):hover { color: #2E2C29; }
+  .seg-ink { position: absolute; top: 3px; bottom: 3px; left: 0; width: 0; border-radius: 9999px; background: #2E2C29;
+             transition: transform .5s cubic-bezier(.16,1,.3,1), width .5s cubic-bezier(.16,1,.3,1); }
+  /* Sound on/off in the cart */
+  .sound-toggle { display: inline-flex; align-items: center; gap: .4rem; font-size: 12px; color: rgba(58,58,58,.75); }
+  .sound-toggle:hover { color: #2E2C29; }
 
   /* Thread landing: the bag gives a little catch */
   @keyframes cartCatch { 0% { transform: none; } 35% { transform: rotate(-9deg) scale(1.16); } 70% { transform: rotate(4deg) scale(.97); } 100% { transform: none; } }
@@ -653,7 +657,10 @@
 <aside id="cart-panel" class="fixed top-0 right-0 bottom-0 z-[86] w-full sm:w-[420px] bg-cream translate-x-full transition-transform duration-300 ease-out flex flex-col" aria-label="{{ t('cart') }}">
   <span class="cart-stitch" aria-hidden="true"></span>
   <div class="flex items-center justify-between px-6 py-5 border-b border-line/60">
-    <h2 class="font-serif text-2xl text-charcoal">{{ t('cart') }}</h2>
+    <div class="flex items-baseline gap-4">
+      <h2 class="font-serif text-2xl text-charcoal">{{ t('cart') }}</h2>
+      <button type="button" id="sound-toggle" class="sound-toggle"></button>
+    </div>
     <button type="button" id="cart-close" class="w-9 h-9 -mr-2 flex items-center justify-center text-ink/60 hover:text-charcoal text-2xl" aria-label="×">&times;</button>
   </div>
   <div class="flex-1 overflow-y-auto px-6 py-4">
@@ -762,35 +769,18 @@
         </div>
 
 
-        <!-- Language and currency: a small version of the logo's dial (drag its rings) beside the
-             current choices in words — each also changes on a click. Quiet, after the actions. -->
+        <!-- Language and currency: two small switches with a sliding marker under the choice -->
         <div class="pdp-prefs">
-          <svg id="product-dial" viewBox="0 0 200 240" role="group" tabindex="0"
-                   aria-label="Language: ← →, currency: ↑ ↓">
-                <ellipse cx="100" cy="120" rx="96" ry="117" class="dial-line" stroke-width="1.9"/>
-                <ellipse cx="100" cy="120" rx="91" ry="112" class="dial-line" stroke-width="1.1"/>
-                <ellipse cx="100" cy="120" rx="72" ry="92" class="dial-line" stroke-width="1.2"/>
-                <ellipse cx="100" cy="120" rx="51" ry="68" class="dial-line dial-faint" stroke-width="1" stroke-dasharray="1 4"/>
-                <g class="dial-dots"></g>
-                <g class="dial-labels"></g>
-                <g class="dial-key-wrap" transform="translate(100 120) scale(.82) translate(-100 -122)">
-                  <g class="dial-key">
-                    <circle cx="100" cy="60" r="3" class="dial-line" stroke-width="2"/>
-                    <circle cx="100" cy="71" r="8" class="dial-line" stroke-width="2"/>
-                    <circle cx="89" cy="82" r="8" class="dial-line" stroke-width="2"/>
-                    <circle cx="111" cy="82" r="8" class="dial-line" stroke-width="2"/>
-                    <circle cx="100" cy="93" r="8" class="dial-line" stroke-width="2"/>
-                    <path d="M100 74 L108 82 L100 90 L92 82 Z" class="dial-line" stroke-width="1.7"/>
-                    <path d="M100 101 V194 M96 106 H104 M96 109 H104" class="dial-line" stroke-width="2"/>
-                    <path d="M100 166 L104.5 170.5 L100 175 L95.5 170.5 Z" class="dial-line" stroke-width="1.9"/>
-                    <path d="M87 179 V192 M90.5 179 V192 M90.5 185.5 H100 M95 181 V190" class="dial-line" stroke-width="2"/>
-                  </g>
-                </g>
-              </svg>
-          <button type="button" id="dial-lang-btn" class="pref"><span data-t="dial_lang">{{ t('dial_lang') }}</span> <b id="dial-lang-name"></b></button>
-          <span class="pref-sep" aria-hidden="true"></span>
-          <button type="button" id="dial-cur-btn" class="pref"><span data-t="dial_cur">{{ t('dial_cur') }}</span> <b id="dial-cur-name"></b></button>
+          <div class="seg" id="seg-lang" role="group" aria-label="{{ t('dial_lang') }}">
+            {% for l in langs %}<button type="button" data-v="{{ l }}">{{ lang_labels[l] }}</button>{% endfor %}
+            <span class="seg-ink" aria-hidden="true"></span>
+          </div>
+          <div class="seg" id="seg-cur" role="group" aria-label="{{ t('dial_cur') }}">
+            <button type="button" data-v="USD">$ USD</button><button type="button" data-v="RUB">₽ RUB</button><button type="button" data-v="AMD">֏ AMD</button>
+            <span class="seg-ink" aria-hidden="true"></span>
+          </div>
         </div>
+
         <div class="pdp-sections mt-9">
           <section class="pdp-section" id="product-attrs-section">
             <h3 class="pdp-heading" data-t="pdp_details">{{ t('pdp_details') }}</h3>

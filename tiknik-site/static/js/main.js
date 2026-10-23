@@ -667,6 +667,7 @@
     overlay.classList.remove("translate-x-full");
     document.body.style.overflow = "hidden";
     if (wasClosed && dial) dial.intro();
+    requestAnimationFrame(updateDialLegend);
     if (location.hash !== "#item-" + id) {
       history.pushState({ item: id }, "", "#item-" + id);
     }
@@ -1060,28 +1061,35 @@
     dial.set("cur", activeCurrency, false);
   }
 
-  // Under the dial, in words: which language and currency the rings are set to.
-  var LANG_NAMES = { en: "English", ru: "Русский", hy: "Հայերեն" };
-  var CURRENCY_NAMES = { USD: "USD $", RUB: "RUB ₽", AMD: "AMD ֏" };
+  // Product view switches: language and currency, with a marker sliding under the choice.
+  function setSeg(id, value) {
+    var seg = document.getElementById(id);
+    if (!seg) return;
+    var on = null;
+    seg.querySelectorAll("button").forEach(function (b) {
+      var is = b.getAttribute("data-v") === value;
+      b.classList.toggle("on", is);
+      b.setAttribute("aria-pressed", is ? "true" : "false");
+      if (is) on = b;
+    });
+    var ink = seg.querySelector(".seg-ink");
+    if (on && on.offsetWidth) {
+      ink.style.width = on.offsetWidth + "px";
+      ink.style.transform = "translateX(" + on.offsetLeft + "px)";
+    }
+  }
   function updateDialLegend() {
-    var l = document.getElementById("dial-lang-name");
-    var c = document.getElementById("dial-cur-name");
-    if (l) l.textContent = LANG_NAMES[cardLang] || cardLang;
-    if (c) c.textContent = CURRENCY_NAMES[activeCurrency] || activeCurrency;
+    setSeg("seg-lang", cardLang);
+    setSeg("seg-cur", activeCurrency);
   }
   updateDialLegend();
-
-  // The words beside the small dial change the choice on a click.
-  function nextOf(list, value) {
-    return list[(list.indexOf(value) + 1) % list.length];
-  }
-  document.getElementById("dial-lang-btn").addEventListener("click", function () {
-    var next = nextOf(window.TIKNIK_LANGS || ["en", "ru", "hy"], cardLang);
-    if (dial) dial.set("lang", next, true);
-    setCardLang(next);
+  document.getElementById("seg-lang").addEventListener("click", function (e) {
+    var b = e.target.closest("button");
+    if (b && b.getAttribute("data-v") !== cardLang) setCardLang(b.getAttribute("data-v"));
   });
-  document.getElementById("dial-cur-btn").addEventListener("click", function () {
-    setCurrency(nextOf(["USD", "RUB", "AMD"], activeCurrency));
+  document.getElementById("seg-cur").addEventListener("click", function (e) {
+    var b = e.target.closest("button");
+    if (b) setCurrency(b.getAttribute("data-v"));
   });
   prevBtn.addEventListener("click", function () {
     goTo(-1);
@@ -1622,31 +1630,90 @@
     return duration;
   }
 
-  // Sound: a short, soft "added" cue — a muted tap and a light two-note confirmation, very quiet.
+  // Sound from the atelier's material, never a beep: adding is a soft rustle of silk, removing a
+  // gentle tear of fabric. Filtered noise with smooth envelopes, quiet; can be switched off in the cart.
   var audioCtx = null;
-  function addSound() {
+  var soundOn = true;
+  try {
+    soundOn = localStorage.getItem("tiknik_sound") !== "off";
+  } catch (e) {}
+  function fabric(build) {
+    if (!soundOn) return;
     try {
       audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-      var ctx = audioCtx, now = ctx.currentTime + 0.01;
-      var master = ctx.createGain();
-      master.gain.value = 0.5;
-      var lp = ctx.createBiquadFilter();
-      lp.type = "lowpass"; lp.frequency.value = 3200;
-      master.connect(lp); lp.connect(ctx.destination);
-      [[880, 0, 0.05], [1318.5, 0.075, 0.04]].forEach(function (n) {
-        var t = now + n[1];
-        var o = ctx.createOscillator(), g = ctx.createGain();
-        o.type = "triangle"; o.frequency.value = n[0];
-        g.gain.setValueAtTime(0.0001, t);
-        g.gain.exponentialRampToValueAtTime(n[2], t + 0.006);
-        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.28);
-        o.connect(g); g.connect(master);
-        o.start(t); o.stop(t + 0.3);
-      });
+      var ctx = audioCtx;
+      var buf = ctx.createBuffer(1, ctx.sampleRate * 1.2, ctx.sampleRate);
+      var d = buf.getChannelData(0), last = 0;
+      for (var i = 0; i < d.length; i++) {
+        last = last * 0.6 + (Math.random() * 2 - 1) * 0.4; // softened noise
+        d[i] = last;
+      }
+      build(ctx, buf, ctx.currentTime + 0.01);
     } catch (e) {
       /* no Web Audio: silent */
     }
   }
+  function grain(ctx, buf, t, dur, freq, q, peak, out) {
+    var src = ctx.createBufferSource();
+    src.buffer = buf;
+    var f = ctx.createBiquadFilter();
+    f.type = "bandpass";
+    f.frequency.value = freq;
+    f.Q.value = q;
+    var g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(peak, t + dur * 0.35);
+    g.gain.linearRampToValueAtTime(0.0001, t + dur);
+    src.connect(f);
+    f.connect(g);
+    g.connect(out);
+    src.start(t, Math.random() * 0.5, dur + 0.05);
+    return f;
+  }
+  function addSound() {
+    fabric(function (ctx, buf, t) {
+      var out = ctx.createGain();
+      out.gain.value = 0.9;
+      out.connect(ctx.destination);
+      // two overlapping swishes, the second a touch brighter: silk drawn across silk
+      var a = grain(ctx, buf, t, 0.34, 1400, 0.6, 0.11, out);
+      a.frequency.linearRampToValueAtTime(2600, t + 0.34);
+      var b = grain(ctx, buf, t + 0.12, 0.32, 2200, 0.7, 0.07, out);
+      b.frequency.linearRampToValueAtTime(3400, t + 0.44);
+    });
+  }
+  function tearSound() {
+    fabric(function (ctx, buf, t) {
+      var lp = ctx.createBiquadFilter();
+      lp.type = "lowpass";
+      lp.frequency.value = 3800;
+      var out = ctx.createGain();
+      out.gain.value = 0.8;
+      lp.connect(out);
+      out.connect(ctx.destination);
+      // a run of small fibre snaps, close together, rising a little: muffled, never sharp
+      var at = t;
+      for (var k = 0; k < 14; k++) {
+        grain(ctx, buf, at, 0.035 + Math.random() * 0.02, 900 + k * 70 + Math.random() * 300, 1.2, 0.05 + Math.random() * 0.04, lp);
+        at += 0.018 + Math.random() * 0.014;
+      }
+      grain(ctx, buf, t, at - t + 0.08, 700, 0.5, 0.025, lp); // the body of the cloth under it
+    });
+  }
+  var soundBtn = document.getElementById("sound-toggle");
+  function renderSoundToggle() {
+    soundBtn.textContent = t(soundOn ? "sound_on" : "sound_off", soundOn ? "Sound on" : "Sound off");
+    soundBtn.setAttribute("aria-pressed", soundOn ? "true" : "false");
+  }
+  soundBtn.addEventListener("click", function () {
+    soundOn = !soundOn;
+    try {
+      localStorage.setItem("tiknik_sound", soundOn ? "on" : "off");
+    } catch (e) {}
+    renderSoundToggle();
+    if (soundOn) addSound();
+  });
+  renderSoundToggle();
 
   function lineAmount(item, line) {
     if (line.kind === "buy") return item.price || null;
@@ -1759,6 +1826,7 @@
         cart[i].days = cart[i].days || 1;
       }
     } else if (btn.classList.contains("js-remove")) {
+      tearSound();
       cart.splice(i, 1);
     } else {
       cart[i].days = Math.max(1, Math.min(60, cart[i].days + parseInt(btn.getAttribute("data-d"), 10)));
