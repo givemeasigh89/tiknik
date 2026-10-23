@@ -1070,6 +1070,19 @@
     if (c) c.textContent = CURRENCY_NAMES[activeCurrency] || activeCurrency;
   }
   updateDialLegend();
+
+  // The words beside the small dial change the choice on a click.
+  function nextOf(list, value) {
+    return list[(list.indexOf(value) + 1) % list.length];
+  }
+  document.getElementById("dial-lang-btn").addEventListener("click", function () {
+    var next = nextOf(window.TIKNIK_LANGS || ["en", "ru", "hy"], cardLang);
+    if (dial) dial.set("lang", next, true);
+    setCardLang(next);
+  });
+  document.getElementById("dial-cur-btn").addEventListener("click", function () {
+    setCurrency(nextOf(["USD", "RUB", "AMD"], activeCurrency));
+  });
   prevBtn.addEventListener("click", function () {
     goTo(-1);
   });
@@ -1510,12 +1523,11 @@
     saveCart();
     updateCartCount(true);
     if (currentOpenItem) renderProductCart(currentOpenItem);
+    addSound();
     var target = cartTarget();
-    var flight = threadsToCart(fromEl, target);
-    stitchSound();
-    // product view: the bar comes up for the thread to land in; catalog: it appears once it has landed
+    // catalog: threads fly to the header bag, then the bar appears; product view: just the bar
     if (target.rising) showCartToast();
-    else setTimeout(showCartToast, flight);
+    else setTimeout(showCartToast, threadsToCart(fromEl, target));
   }
 
   // ---- "Added to your cart": a bar at the bottom (also over the product view) with View cart ----
@@ -1526,7 +1538,7 @@
     clearTimeout(toastTimer);
     toastTimer = setTimeout(function () {
       cartToast.classList.remove("show");
-    }, 4500);
+    }, 6000);
   }
   document.getElementById("cart-toast-open").addEventListener("click", function () {
     cartToast.classList.remove("show");
@@ -1610,57 +1622,27 @@
     return duration;
   }
 
-  // Sound: a short run of a sewing machine — soft needle ticks speeding up and slowing down over a
-  // whisper of fabric — synthesised with Web Audio (no file to load), deliberately quiet.
+  // Sound: a short, soft "added" cue — a muted tap and a light two-note confirmation, very quiet.
   var audioCtx = null;
-  function noiseBuffer(ctx) {
-    var buf = ctx.createBuffer(1, ctx.sampleRate * 0.6, ctx.sampleRate);
-    var data = buf.getChannelData(0);
-    for (var i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
-    return buf;
-  }
-  function stitchSound() {
+  function addSound() {
     try {
       audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-      var ctx = audioCtx, now = ctx.currentTime + 0.02;
-      var noise = noiseBuffer(ctx);
+      var ctx = audioCtx, now = ctx.currentTime + 0.01;
       var master = ctx.createGain();
-      master.gain.value = 0.55;
-      master.connect(ctx.destination);
-      // fabric: filtered noise swelling and fading
-      var rustle = ctx.createBufferSource();
-      rustle.buffer = noise;
-      var bp = ctx.createBiquadFilter();
-      bp.type = "bandpass"; bp.frequency.value = 5200; bp.Q.value = 0.7;
-      var rg = ctx.createGain();
-      rg.gain.setValueAtTime(0.0001, now);
-      rg.gain.exponentialRampToValueAtTime(0.035, now + 0.18);
-      rg.gain.exponentialRampToValueAtTime(0.0001, now + 0.6);
-      rustle.connect(bp); bp.connect(rg); rg.connect(master);
-      rustle.start(now); rustle.stop(now + 0.6);
-      // needle: 9 ticks, quicker in the middle — a light click and a low soft knock each
-      var t = now + 0.12;
-      for (var k = 0; k < 9; k++) {
-        var tick = ctx.createBufferSource();
-        tick.buffer = noise;
-        var hp = ctx.createBiquadFilter();
-        hp.type = "bandpass"; hp.frequency.value = 2600; hp.Q.value = 1.4;
-        var tg = ctx.createGain();
-        tg.gain.setValueAtTime(0.0001, t);
-        tg.gain.exponentialRampToValueAtTime(0.09, t + 0.003);
-        tg.gain.exponentialRampToValueAtTime(0.0001, t + 0.035);
-        tick.connect(hp); hp.connect(tg); tg.connect(master);
-        tick.start(t, Math.random() * 0.4, 0.05);
-        var knock = ctx.createOscillator();
-        knock.type = "sine"; knock.frequency.setValueAtTime(150, t); knock.frequency.exponentialRampToValueAtTime(70, t + 0.05);
-        var kg = ctx.createGain();
-        kg.gain.setValueAtTime(0.0001, t);
-        kg.gain.exponentialRampToValueAtTime(0.05, t + 0.004);
-        kg.gain.exponentialRampToValueAtTime(0.0001, t + 0.06);
-        knock.connect(kg); kg.connect(master);
-        knock.start(t); knock.stop(t + 0.07);
-        t += 0.075 - Math.sin((k / 8) * Math.PI) * 0.03;
-      }
+      master.gain.value = 0.5;
+      var lp = ctx.createBiquadFilter();
+      lp.type = "lowpass"; lp.frequency.value = 3200;
+      master.connect(lp); lp.connect(ctx.destination);
+      [[880, 0, 0.05], [1318.5, 0.075, 0.04]].forEach(function (n) {
+        var t = now + n[1];
+        var o = ctx.createOscillator(), g = ctx.createGain();
+        o.type = "triangle"; o.frequency.value = n[0];
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(n[2], t + 0.006);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.28);
+        o.connect(g); g.connect(master);
+        o.start(t); o.stop(t + 0.3);
+      });
     } catch (e) {
       /* no Web Audio: silent */
     }

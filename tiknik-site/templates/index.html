@@ -171,15 +171,13 @@
   .pdp-body { padding-bottom: 1.4rem; font-size: .92rem; line-height: 1.75; color: rgba(58,58,58,.85); }
   /* Dial at the top right of the details, with a legend under it */
   .pdp-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1.25rem; }
-  .pdp-dial { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; text-align: center; margin-top: .25rem; }
-  .pdp-dial #product-dial { width: 92px; height: 110px; }
-  .pdp-dial #product-dial .dial-line { transition: stroke .35s ease; }
-  .pdp-dial:hover #product-dial .dial-line { stroke: #8a7652; }
-  .dial-legend { margin-top: .6rem; display: grid; gap: .3rem; font-size: 12px; line-height: 1.25; }
-  .dial-legend dt { font-size: 10.5px; color: rgba(58,58,58,.75); }
-  .dial-legend dd { color: #2E2C29; }
-  .dial-hint { margin-top: .45rem; font-size: 10.5px; color: rgba(58,58,58,.75); max-width: 7.5rem; }
-  @media (max-width: 420px) { .pdp-dial #product-dial { width: 78px; height: 94px; } }
+  .pdp-prefs { display: flex; align-items: center; flex-wrap: wrap; gap: .35rem .9rem; margin-top: 1.4rem; font-size: 13px; }
+  .pdp-prefs #product-dial { width: 34px; height: 41px; flex: 0 0 auto; cursor: grab; }
+  .pdp-prefs #product-dial .dial-labels, .pdp-prefs #product-dial .dial-dots { display: none; }
+  .pref { color: rgba(58,58,58,.75); padding: .35rem 0; transition: color .2s ease; }
+  .pref b { font-weight: 400; color: #2E2C29; text-decoration: underline; text-underline-offset: 4px; text-decoration-color: rgba(46,44,41,.3); }
+  .pref:hover b { text-decoration-color: #2E2C29; }
+  .pref-sep { width: 1px; height: 14px; background: rgba(46,44,41,.2); }
 
   /* Thread landing: the bag gives a little catch */
   @keyframes cartCatch { 0% { transform: none; } 35% { transform: rotate(-9deg) scale(1.16); } 70% { transform: rotate(4deg) scale(.97); } 100% { transform: none; } }
@@ -747,15 +745,27 @@
       <!-- Details -->
       <div class="pdp-info">
         <div class="pdp-head">
-          <div class="min-w-0">
+          <div class="min-w-0 flex-1">
             <h2 id="product-name" class="font-serif text-[2.3rem] sm:text-[3rem] leading-[1.05] text-charcoal"></h2>
             <div id="product-price" class="product-price mt-3"></div>
             <p id="product-craft" class="hidden mt-4 font-serif text-[17px] text-charcoal/80 leading-snug"></p>
           </div>
-          <!-- Language / currency dial (the logo's key in its double oval): outer ring = language,
-               inner ring = currency, drawn by main.js; the legend says what they're set to. -->
-          <div class="pdp-dial">
-            <svg id="product-dial" viewBox="0 0 200 240" role="group" tabindex="0"
+        </div>
+
+        <div id="product-cart" class="pdp-actions mt-7"></div>
+        <div class="flex flex-wrap items-center gap-x-6 gap-y-2 mt-4 text-sm">
+          <a id="product-cta" href="#contact" class="pdp-link"><span data-t="cta_book_quote">{{ t('cta_book_quote') }}</span></a>
+          <button type="button" id="product-share" class="pdp-link inline-flex items-center gap-2">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3M7.5 7.5L12 3l4.5 4.5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>
+            <span data-t="share">{{ t('share') }}</span>
+          </button>
+        </div>
+
+
+        <!-- Language and currency: a small version of the logo's dial (drag its rings) beside the
+             current choices in words — each also changes on a click. Quiet, after the actions. -->
+        <div class="pdp-prefs">
+          <svg id="product-dial" viewBox="0 0 200 240" role="group" tabindex="0"
                    aria-label="Language: ← →, currency: ↑ ↓">
                 <ellipse cx="100" cy="120" rx="96" ry="117" class="dial-line" stroke-width="1.9"/>
                 <ellipse cx="100" cy="120" rx="91" ry="112" class="dial-line" stroke-width="1.1"/>
@@ -777,23 +787,10 @@
                   </g>
                 </g>
               </svg>
-            <dl class="dial-legend">
-              <div><dt data-t="dial_lang">{{ t('dial_lang') }}</dt><dd id="dial-lang-name"></dd></div>
-              <div><dt data-t="dial_cur">{{ t('dial_cur') }}</dt><dd id="dial-cur-name"></dd></div>
-            </dl>
-            <p class="dial-hint" data-t="dial_hint">{{ t('dial_hint') }}</p>
-          </div>
+          <button type="button" id="dial-lang-btn" class="pref"><span data-t="dial_lang">{{ t('dial_lang') }}</span> <b id="dial-lang-name"></b></button>
+          <span class="pref-sep" aria-hidden="true"></span>
+          <button type="button" id="dial-cur-btn" class="pref"><span data-t="dial_cur">{{ t('dial_cur') }}</span> <b id="dial-cur-name"></b></button>
         </div>
-
-        <div id="product-cart" class="pdp-actions mt-7"></div>
-        <div class="flex flex-wrap items-center gap-x-6 gap-y-2 mt-4 text-sm">
-          <a id="product-cta" href="#contact" class="pdp-link"><span data-t="cta_book_quote">{{ t('cta_book_quote') }}</span></a>
-          <button type="button" id="product-share" class="pdp-link inline-flex items-center gap-2">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3M7.5 7.5L12 3l4.5 4.5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>
-            <span data-t="share">{{ t('share') }}</span>
-          </button>
-        </div>
-
         <div class="pdp-sections mt-9">
           <section class="pdp-section" id="product-attrs-section">
             <h3 class="pdp-heading" data-t="pdp_details">{{ t('pdp_details') }}</h3>
