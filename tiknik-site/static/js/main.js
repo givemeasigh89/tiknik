@@ -74,26 +74,11 @@
     return amd.toLocaleString("en-US") + " ֏";
   }
 
-  // Prices as small labelled columns: "Buy / $510" and "Rent per day / $55", side by side when an
-  // item can be both bought and rented. Used on catalog cards and, larger, in the product view.
+  // Product view: the main price large, the rental (or "price on request") on a quiet line under it.
   function priceHtml(item) {
-    var cols = [];
-    if ((item.mode === "Sale" || item.mode === "Both") && item.price) {
-      cols.push([t("price_dt_buy", "Buy"), formatAmount(item.price)]);
-    }
-    if ((item.mode === "Rent" || item.mode === "Both") && item.rent_price) {
-      cols.push([t("price_dt_rent", "Rent per day"), formatAmount(item.rent_price)]);
-    }
-    if (!cols.length) return '<span class="price-request">' + esc(t("price_on_request", "Price on request")) + "</span>";
-    return (
-      '<span class="prices">' +
-      cols
-        .map(function (c) {
-          return '<span class="price"><span class="price-label">' + esc(c[0]) + '</span><span class="price-amount">' + esc(c[1]) + "</span></span>";
-        })
-        .join("") +
-      "</span>"
-    );
+    var p = cardPrices(item);
+    if (!p.main) return '<span class="price-request">' + esc(p.sub || t("price_on_request", "Price on request")) + "</span>";
+    return '<span class="price-main">' + esc(p.main) + "</span>" + (p.sub ? '<span class="price-sub">' + esc(p.sub) + "</span>" : "");
   }
 
   function setCurrency(code) {
@@ -162,18 +147,16 @@
   var CHEVRON_LEFT = '<svg viewBox="0 0 24 24" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M15 5l-7 7 7 7"/></svg>';
   var CHEVRON_RIGHT = '<svg viewBox="0 0 24 24" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 5l7 7-7 7"/></svg>';
 
-  function cardDotsHtml(count, index) {
-    if (count > 8) return '<span class="card-count">' + (index + 1) + " / " + count + "</span>";
-    var dots = "";
-    for (var i = 0; i < count; i++) dots += '<span class="card-dot' + (i === index ? " on" : "") + '"></span>';
-    return dots;
+  // A thin line under the photo shows which of the photos is showing (works for 2 photos or 20).
+  function cardProgressHtml(count, index) {
+    return '<span style="width:' + (100 / count).toFixed(3) + "%;transform:translateX(" + index * 100 + '%)"></span>';
   }
 
   function cardMediaHtml(item) {
     var photos = cardPhotos(item);
     if (!photos.length) return iconSvg(item.category);
     if (photos.length === 1) {
-      return '<img src="' + smallUrl(photos[0]) + '" alt="' + esc(item.name) + '" loading="lazy" class="w-full h-full object-cover">';
+      return '<img src="' + smallUrl(photos[0]) + '" alt="' + esc(item.name) + '" loading="lazy" class="pcard-img w-full h-full object-cover">';
     }
     var index = Math.min(cardPhotoIndex[item.id] || 0, photos.length - 1);
     var n = photos.length;
@@ -183,18 +166,18 @@
         .map(function (m, i) {
           // Only the shown photo and its neighbours load; the rest load as the card is flipped.
           var near = i === index || i === (index + 1) % n || i === (index + n - 1) % n;
-          return '<img ' + (near ? 'src="' : 'data-src="') + smallUrl(m) + '" alt="' + (i === index ? esc(item.name) : "") +
+          return '<img class="pcard-img" ' + (near ? 'src="' : 'data-src="') + smallUrl(m) + '" alt="' + (i === index ? esc(item.name) : "") +
             '"' + (i === index ? "" : ' loading="lazy"') + ' draggable="false">';
         })
         .join("") +
       "</div>" +
-      '<button type="button" class="card-nav left-2" data-dir="-1" aria-label="‹">' + CHEVRON_LEFT + "</button>" +
-      '<button type="button" class="card-nav right-2" data-dir="1" aria-label="›">' + CHEVRON_RIGHT + "</button>" +
-      '<div class="card-dots">' + cardDotsHtml(photos.length, index) + "</div>"
+      '<button type="button" class="card-nav left-3" data-dir="-1" aria-label="‹">' + CHEVRON_LEFT + "</button>" +
+      '<button type="button" class="card-nav right-3" data-dir="1" aria-label="›">' + CHEVRON_RIGHT + "</button>" +
+      '<div class="card-progress" aria-hidden="true">' + cardProgressHtml(n, index) + "</div>"
     );
   }
 
-  // The small bag button on a catalog card (items that can be bought or rented).
+  // Phones: a small bag on the photo's corner. Computers: "Buy" / "Rent" appear over the photo on hover.
   var BAG_ICON =
     '<svg viewBox="0 0 24 24" class="card-cart-bag" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round">' +
     '<path d="M5 8h14l-1.2 12H6.2L5 8z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></svg>' +
@@ -205,49 +188,80 @@
     return item.mode === "Sale" || item.mode === "Rent" || item.mode === "Both";
   }
 
+  function cartKinds(item) {
+    return { Sale: ["buy"], Rent: ["rent"], Both: ["buy", "rent"] }[item.mode] || [];
+  }
+
   function cardCartButton(item) {
     if (!canCart(item)) return "";
     var inCart = itemInCart(item.id);
+    var label = inCart ? t("in_cart", "In your cart") : t("add_to_cart", "Add to Cart");
     return (
-      '<button type="button" class="card-cart' + (inCart ? " in-cart" : "") + '" data-cart-id="' + item.id + '" aria-label="' +
-      esc(inCart ? t("in_cart", "In your cart") : t("add_to_cart", "Add to Cart")) + '" title="' +
-      esc(inCart ? t("in_cart", "In your cart") : t("add_to_cart", "Add to Cart")) + '">' + BAG_ICON + "</button>"
+      '<button type="button" class="card-cart' + (inCart ? " in-cart" : "") + '" data-cart-id="' + item.id +
+      '" aria-label="' + esc(label) + '" title="' + esc(label) + '">' + BAG_ICON + "</button>"
+    );
+  }
+
+  function quickAddHtml(item) {
+    var kinds = cartKinds(item);
+    if (!kinds.length) return "";
+    return (
+      '<div class="quick-add" data-quick-id="' + item.id + '">' +
+      kinds
+        .map(function (kind) {
+          var inCart = cartIndex(item.id, kind) !== -1;
+          var label = kinds.length === 1 && kind === "buy" ? t("add_to_cart", "Add to Cart") : t("add_" + kind, kind);
+          return '<button type="button" class="js-quick' + (inCart ? " in" : "") + '" data-kind="' + kind + '">' +
+            esc(inCart ? t("in_cart", "In your cart ✓") : label) + "</button>";
+        })
+        .join("") +
+      "</div>"
     );
   }
 
   // The first two parameters (usually fabric and colour) as one quiet line; the rest are in the product view.
-  function cardAttrsLine(item) {
-    var values = filledAttrs(item).slice(0, 2).map(function (p) {
-      return p[1];
-    });
-    return values.length ? '<p class="card-attrs">' + esc(values.join(", ")) + "</p>" : "";
+  function cardAttrs(item) {
+    return filledAttrs(item)
+      .slice(0, 2)
+      .map(function (p) {
+        return p[1];
+      })
+      .join(", ");
+  }
+
+  // The price beside the name, and the rental (or "made to order") on the line under it.
+  function cardPrices(item) {
+    var buy = (item.mode === "Sale" || item.mode === "Both") && item.price;
+    var rent = (item.mode === "Rent" || item.mode === "Both") && item.rent_price;
+    var rentText = rent ? formatAmount(item.rent_price) + t("per_day", " / day") : "";
+    if (buy) return { main: formatAmount(item.price), sub: rent ? t("card_or_rent", "or rent {p}").replace("{p}", rentText) : "" };
+    if (rent) return { main: rentText, sub: t("card_rental", "for rent") };
+    return { main: "", sub: item.mode === "Custom" ? t("price_on_request", "Price on request") : "" };
   }
 
   function cardHtml(item) {
-    var media = cardMediaHtml(item);
+    var p = cardPrices(item);
+    var attrs = cardAttrs(item);
     return (
-      '<div class="fade-in group border border-charcoal/15 bg-cream hover:border-charcoal/40 transition flex flex-col cursor-pointer" data-cat="' +
-      item.category +
-      '" data-id="' +
-      item.id +
-      '">' +
-      '<div class="card-media aspect-[3/4] bg-cream-dark flex items-center justify-center text-charcoal/25 group-hover:text-charcoal/40 transition relative overflow-hidden">' +
-      media +
-      '<span class="card-badge">' +
-      esc(modeLabel(item.mode)) +
-      "</span>" +
+      '<article class="pcard group" data-cat="' + item.category + '" data-id="' + item.id + '">' +
+      '<div class="card-media pcard-media text-charcoal/25">' +
+      cardMediaHtml(item) +
       cardCartButton(item) +
+      quickAddHtml(item) +
       "</div>" +
-      '<div class="px-3 sm:px-4 pt-3 pb-3 sm:pb-4 flex-1 flex flex-col">' +
-      '<h3 class="font-serif text-[1.3rem] sm:text-[1.45rem] text-charcoal leading-tight">' +
-      esc(item.name) +
-      "</h3>" +
-      cardAttrsLine(item) +
-      '<div class="card-price mt-auto pt-3">' +
-      priceHtml(item) +
+      '<div class="pcard-info">' +
+      '<div class="pcard-row">' +
+      '<h3 class="pcard-name">' + esc(item.name) + "</h3>" +
+      (p.main ? '<span class="pcard-price">' + esc(p.main) + "</span>" : "") +
       "</div>" +
+      (attrs || p.sub
+        ? '<div class="pcard-row pcard-sub">' +
+          '<span class="pcard-attrs">' + esc(attrs) + "</span>" +
+          (p.sub ? '<span class="pcard-note">' + esc(p.sub) + "</span>" : "") +
+          "</div>"
+        : "") +
       "</div>" +
-      "</div>"
+      "</article>"
     );
   }
 
@@ -300,13 +314,22 @@
     });
     track.style.transition = animate === false ? "none" : "";
     track.style.transform = "translateX(" + -index * 100 + "%)";
-    card.querySelector(".card-dots").innerHTML = cardDotsHtml(n, index);
+    card.querySelector(".card-progress").innerHTML = cardProgressHtml(n, index);
   }
 
   var suppressClickUntil = 0;
   grid.addEventListener("click", function (e) {
     var card = e.target.closest("[data-id]");
     if (!card) return;
+    var quick = e.target.closest(".js-quick");
+    if (quick) {
+      var quickId = parseInt(card.getAttribute("data-id"), 10);
+      var kind = quick.getAttribute("data-kind");
+      if (cartIndex(quickId, kind) !== -1) openCart();
+      else addToCart(quickId, kind);
+      return;
+    }
+    if (e.target.closest(".quick-add")) return; // the gap between the two buttons
     var bag = e.target.closest(".card-cart");
     if (bag) {
       var bagId = parseInt(bag.getAttribute("data-cart-id"), 10);
@@ -1424,6 +1447,10 @@
   }
 
   function refreshCardCartButtons() {
+    grid.querySelectorAll(".quick-add").forEach(function (bar) {
+      var item = findItem(items, parseInt(bar.getAttribute("data-quick-id"), 10));
+      if (item) bar.outerHTML = quickAddHtml(item);
+    });
     grid.querySelectorAll(".card-cart").forEach(function (btn) {
       var inCart = itemInCart(parseInt(btn.getAttribute("data-cart-id"), 10));
       var label = inCart ? t("in_cart", "In your cart") : t("add_to_cart", "Add to Cart");
