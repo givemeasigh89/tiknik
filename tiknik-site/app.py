@@ -244,6 +244,7 @@ def init_db():
     db.execute("INSERT OR IGNORE INTO settings (key, value) VALUES ('rub_rate', '4.2')")
     db.execute("INSERT OR IGNORE INTO settings (key, value) VALUES ('instagram', ?)", (DEFAULT_INSTAGRAM,))
     db.execute("INSERT OR IGNORE INTO settings (key, value) VALUES ('whatsapp', '')")
+    db.execute("INSERT OR IGNORE INTO settings (key, value) VALUES ('motion', '1')")
 
     if db.execute("SELECT COUNT(*) AS c FROM items").fetchone()["c"] == 0:
         for name, category, description, mode, price in SEED_ITEMS:
@@ -466,6 +467,7 @@ def index(lang=None):
         rub_rate=get_setting(db, "rub_rate", "4.2"),
         instagram=get_setting(db, "instagram", DEFAULT_INSTAGRAM),
         whatsapp=get_setting(db, "whatsapp", ""),
+        motion=get_setting(db, "motion", "1") == "1",
     ))
     resp.set_cookie("lang", lang, max_age=365 * 24 * 3600, samesite="Lax")
     return resp
@@ -763,6 +765,7 @@ def admin():
         reviews=reviews,
         instagram=get_setting(db, "instagram", DEFAULT_INSTAGRAM),
         whatsapp=get_setting(db, "whatsapp", ""),
+        motion=get_setting(db, "motion", "1") == "1",
         items=item_list,
         unsorted=unsorted,
         counts=counts,
@@ -1187,6 +1190,19 @@ def admin_review(review_id, action):
             flash("Review deleted.", "ok")
         db.commit()
     return back_to_admin("reviews")
+
+
+@app.route("/admin/motion", methods=["POST"])
+def admin_motion():
+    if not admin_logged_in():
+        return redirect(url_for("admin_login"))
+    db = get_db()
+    on = request.form.get("motion") == "1"
+    db.execute("INSERT INTO settings (key, value) VALUES ('motion', ?) "
+               "ON CONFLICT(key) DO UPDATE SET value = excluded.value", ("1" if on else "0",))
+    db.commit()
+    flash("Animations are on." if on else "Animations are off — the site is back to the plain version.", "ok")
+    return back_to_admin("motion")
 
 
 @app.route("/admin/contacts", methods=["POST"])

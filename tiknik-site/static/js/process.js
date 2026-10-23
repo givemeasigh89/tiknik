@@ -279,8 +279,9 @@
   var visible = false;
   var hovering = false;
   var resumeAt = 0;
+  var autoplayOff = false;
   setInterval(function () {
-    if (reduceMotion || !visible || hovering || dragging || document.hidden || Date.now() < resumeAt) return;
+    if (autoplayOff || reduceMotion || !visible || hovering || dragging || document.hidden || Date.now() < resumeAt) return;
     step(1);
   }, 4200);
   function pauseAutoplay() {
@@ -299,6 +300,21 @@
       visible = entries[0].isIntersecting;
     }, { threshold: 0.4 }).observe(ring);
   }
+
+  // For add-ons (static/js/motion.js): turn the key from page scroll instead of the timer.
+  window.TiknikProcess = {
+    photos: N,
+    stepDegrees: STEP,
+    // Ease the key to `deg`, the nearest way round from where it is now.
+    turnTo: function (deg) {
+      if (dragging) return;
+      target = deg + 360 * Math.round((angle - deg) / 360);
+      wake();
+    },
+    setAutoplay: function (on) {
+      autoplayOff = !on;
+    },
+  };
 
   render();
 })();

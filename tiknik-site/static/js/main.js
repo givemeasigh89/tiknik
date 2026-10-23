@@ -95,7 +95,7 @@
         btn.removeAttribute("data-active");
       }
     });
-    render();
+    render("currency");
     // If a product detail view is open, refresh its price too.
     if (overlay && !overlay.classList.contains("translate-x-full") && currentOpenItem) {
       document.getElementById("product-price").textContent = formatPrice(currentOpenItem);
@@ -250,7 +250,8 @@
     );
   }
 
-  function render() {
+  // reason: "load", "tab" or "currency" — passed on to add-ons such as static/js/motion.js.
+  function render(reason) {
     var filtered =
       activeCategory === "all"
         ? items
@@ -261,10 +262,11 @@
     if (!filtered.length) {
       grid.innerHTML = "";
       emptyMsg.classList.remove("hidden");
-      return;
+    } else {
+      emptyMsg.classList.add("hidden");
+      grid.innerHTML = filtered.map(cardHtml).join("");
     }
-    emptyMsg.classList.add("hidden");
-    grid.innerHTML = filtered.map(cardHtml).join("");
+    document.dispatchEvent(new CustomEvent("tiknik:catalog-rendered", { detail: { reason: reason || "load" } }));
   }
 
   tabs.forEach(function (btn) {
@@ -274,7 +276,7 @@
       });
       btn.setAttribute("data-active", "true");
       activeCategory = btn.getAttribute("data-category");
-      render();
+      render("tab");
     });
   });
 
@@ -322,7 +324,7 @@
     var itemId = parseInt(card.getAttribute("data-id"), 10);
     var it = findItem(items, itemId);
     var photos = it ? cardPhotos(it) : [];
-    openProduct(itemId, false, photos[cardPhotoIndex[itemId] || 0]);
+    openProduct(itemId, false, photos[cardPhotoIndex[itemId] || 0], card.querySelector(".card-media"));
   });
 
   var swipe = null;
@@ -365,7 +367,7 @@
     .then(function (data) {
       items = data;
       itemsByLang[LANG] = data;
-      render();
+      render("load");
       // Deep-link support: open directly if the page was loaded with #item-<id>
       maybeOpenFromHash();
     })
@@ -517,7 +519,7 @@
     renderProductCart(item);
   }
 
-  function openProduct(id, keepList, startPhoto) {
+  function openProduct(id, keepList, startPhoto, sourceEl) {
     var item = findItem(items, id);
     if (!item) return;
     var wasClosed = overlay.classList.contains("translate-x-full");
@@ -552,7 +554,12 @@
     if (location.hash !== "#item-" + id) {
       history.pushState({ item: id }, "", "#item-" + id);
     }
+    document.dispatchEvent(new CustomEvent("tiknik:product-open", {
+      detail: { id: id, source: sourceEl || null, wasClosed: wasClosed },
+    }));
   }
+
+  var closing = false;
 
   function closeProduct() {
     // The card was switched to another language: show the whole site in it.
@@ -560,6 +567,29 @@
       reloadInCardLang("#catalog");
       return;
     }
+    var motion = window.TiknikMotion;
+    if (motion && motion.closeProduct && !overlay.classList.contains("translate-x-full")) {
+      if (closing) return;
+      closing = true;
+      var finished = false;
+      var finish = function () {
+        if (finished) return;
+        finished = true;
+        closing = false;
+        finishClose();
+      };
+      try {
+        motion.closeProduct(currentOpenItem ? currentOpenItem.id : null, finish);
+      } catch (e) {
+        finish();
+      }
+      setTimeout(finish, 1500); // never leave the product view stuck open
+      return;
+    }
+    finishClose();
+  }
+
+  function finishClose() {
     overlay.classList.add("translate-x-full");
     mainVideo.pause();
     document.body.style.overflow = "";

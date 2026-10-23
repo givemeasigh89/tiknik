@@ -100,6 +100,19 @@ A built-in admin page handles everything — no PythonAnywhere file editing, no 
 - **Contacts** (Instagram link, WhatsApp number) are set in `/admin` → Contacts.
 - **About us** text is `about_*` in `i18n.py`; its photos are `static/img/about/1–3.jpg`.
 
+## Animations (GSAP)
+
+`static/js/motion.js` adds the motion layer on top of the site, with GSAP 3.15 (ScrollTrigger, SplitText) from jsDelivr:
+the card photo flying into the product view and back, headings rising word by word, the catalog cards arriving in a wave,
+the "How it works" section pinning while page scroll turns the key, and the hero reveal with a slow parallax.
+Visitors whose system asks for reduced motion get none of it.
+
+Ways back, quickest first:
+
+1. `/admin` → **Animations** → *Turn off*. The GSAP scripts and `motion.js` are no longer loaded; the site is the plain version at once.
+2. Delete the `{% if motion %}` blocks in `templates/index.html` (and `static/js/motion.js`); the rest of the code only sends events / offers hooks that do nothing on their own.
+3. The git tag `before-motion` marks the code just before this was added: `git revert` the commits after it, or compare with `git diff before-motion`.
+
 ## Languages
 
 The site is in English (`/`), Russian (`/ru/`) and Armenian (`/hy/`). First-time visitors are sent to their browser's language; after that the language they pick in the header is remembered.

@@ -526,6 +526,20 @@
       {% endif %}
     </section>
 
+    <!-- ===================== Animations ===================== -->
+    <section id="motion" class="card p-5 sm:p-7 flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
+      <div>
+        <h2 class="font-serif text-3xl text-charcoal">Animations
+          <span class="text-base align-middle ml-1 rounded-full px-2.5 py-0.5 {{ 'bg-gold text-cream' if motion else 'bg-cream-dark text-ink/60' }}">{{ 'on' if motion else 'off' }}</span>
+        </h2>
+        <p class="text-sm text-ink/55 mt-1 max-w-xl">Photo flying into the product view, headings rising word by word, the catalog arriving in a wave, the process ring turning with the scroll, and the hero reveal. Switch off to go straight back to the plain site.</p>
+      </div>
+      <form method="POST" action="{{ url_for('admin_motion') }}">
+        <input type="hidden" name="motion" value="{{ '0' if motion else '1' }}">
+        <button type="submit" class="btn {{ 'btn-ghost' if motion else 'btn-dark' }}">{{ 'Turn off' if motion else 'Turn on' }}</button>
+      </form>
+    </section>
+
     <!-- ===================== Contacts ===================== -->
     <section id="contacts" class="card p-5 sm:p-7">
       <h2 class="font-serif text-3xl text-charcoal">Contacts</h2>
