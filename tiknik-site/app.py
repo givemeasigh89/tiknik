@@ -176,7 +176,9 @@ def init_db():
             db.execute(f"ALTER TABLE items ADD COLUMN {attr} TEXT")
 
     # Translations: English lives in name/description/attrs, other languages in *_<lang> columns.
-    for table, fields in (("categories", ("name",)), ("items", ("name", "description") + ATTRS)):
+    if "delivery" not in _table_columns(db, "items"):
+        db.execute("ALTER TABLE items ADD COLUMN delivery TEXT")  # per-item "Fittings & delivery" text
+    for table, fields in (("categories", ("name",)), ("items", ("name", "description", "delivery") + ATTRS)):
         cols = _table_columns(db, table)
         for field in fields:
             for lang in LANGS[1:]:
@@ -575,6 +577,7 @@ def api_items():
             "id": it["id"],
             "name": localized(it, "name", lang),
             "description": localized(it, "description", lang),
+            "delivery": (localized(it, "delivery", lang) or "").strip(),
             "attrs": pairs,
             "category": it["category"],
             "mode": it["mode"],
@@ -1011,9 +1014,11 @@ def admin_update_item(item_id):
         )
     for lang in LANGS[1:]:
         db.execute(
-            f"UPDATE items SET name_{lang}=?, description_{lang}=? WHERE id=?",
-            ((request.form.get(f"name_{lang}") or "").strip(), request.form.get(f"description_{lang}") or "", item_id),
+            f"UPDATE items SET name_{lang}=?, description_{lang}=?, delivery_{lang}=? WHERE id=?",
+            ((request.form.get(f"name_{lang}") or "").strip(), request.form.get(f"description_{lang}") or "",
+             request.form.get(f"delivery_{lang}") or "", item_id),
         )
+    db.execute("UPDATE items SET delivery = ? WHERE id = ?", (request.form.get("delivery") or "", item_id))
     db.execute("UPDATE items SET hours = ?, edition = ? WHERE id = ?",
                (hours if hours and hours > 0 else None, edition if edition and edition > 0 else None, item_id))
     save_item_attrs(db, item_id)

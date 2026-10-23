@@ -327,7 +327,7 @@
       var quickId = parseInt(card.getAttribute("data-id"), 10);
       var kind = quick.getAttribute("data-kind");
       if (cartIndex(quickId, kind) !== -1) openCart();
-      else addToCart(quickId, kind);
+      else addToCart(quickId, kind, quick);
       return;
     }
     if (e.target.closest(".quick-add")) return; // the gap between the two buttons
@@ -338,7 +338,7 @@
         openCart();
       } else {
         var bagItem = findItem(items, bagId);
-        addToCart(bagId, bagItem.mode === "Rent" ? "rent" : "buy");
+        addToCart(bagId, bagItem.mode === "Rent" ? "rent" : "buy", bag);
       }
       return;
     }
@@ -595,7 +595,14 @@
   function fillProductText(item) {
     document.getElementById("product-category").textContent = categoryName(item.category);
     document.getElementById("product-name").textContent = item.name;
-    document.getElementById("product-price").innerHTML = priceHtml(item);
+    var priceEl = document.getElementById("product-price");
+    priceEl.innerHTML = priceHtml(item);
+    priceEl.classList.toggle("hidden", cartKinds(item).length > 0);
+    // "Fittings & delivery": the piece's own text when set in /admin, else the standard facts
+    var delivery = document.getElementById("product-delivery");
+    delivery.textContent = item.delivery || "";
+    delivery.classList.toggle("hidden", !item.delivery);
+    document.getElementById("product-delivery-default").classList.toggle("hidden", !!item.delivery);
     var craft = [];
     if (item.hours) craft.push(t("handmade_hours", "About {n} hours of handwork").replace("{n}", item.hours));
     if (item.edition === 1) craft.push(t("edition_one", "One of a kind"));
@@ -1485,11 +1492,100 @@
     });
   }
 
-  function addToCart(id, kind) {
+  function addToCart(id, kind, fromEl) {
     if (cartIndex(id, kind) === -1) cart.push({ id: id, kind: kind, days: 1 });
     saveCart();
     updateCartCount(true);
     if (currentOpenItem) renderProductCart(currentOpenItem);
+    showCartToast();
+    threadsToCart(fromEl);
+    chime();
+  }
+
+  // ---- "Added to your cart": a bar at the bottom (also over the product view) with View cart ----
+  var cartToast = document.getElementById("cart-toast");
+  var toastTimer = 0;
+  function showCartToast() {
+    cartToast.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () {
+      cartToast.classList.remove("show");
+    }, 4500);
+  }
+  document.getElementById("cart-toast-open").addEventListener("click", function () {
+    cartToast.classList.remove("show");
+    openCart();
+  });
+
+  // Three fine gold threads drawn from the button that was pressed into the bag on the bar —
+  // the atelier's needle and thread, barely there. Skipped for reduced motion.
+  function threadsToCart(fromEl) {
+    var target = document.getElementById("cart-toast-icon");
+    if (!fromEl || reduceGalleryMotion || !target.animate) return;
+    var a = fromEl.getBoundingClientRect();
+    var b = target.getBoundingClientRect();
+    var sx = a.left + a.width / 2, sy = a.top + a.height / 2;
+    var ex = b.left + b.width / 2, ey = b.top + b.height / 2 - 14; // the bar is still rising 14px
+    var NS = "http://www.w3.org/2000/svg";
+    var svg = document.createElementNS(NS, "svg");
+    svg.setAttribute("class", "thread-layer");
+    document.body.appendChild(svg);
+    for (var i = 0; i < 3; i++) {
+      var bend = (i - 1) * 70 + (Math.random() * 30 - 15);
+      var path = document.createElementNS(NS, "path");
+      path.setAttribute("d", "M" + sx + " " + sy +
+        " C" + (sx + bend) + " " + (sy - 140 - Math.random() * 60) + " " +
+        (ex - bend * 1.4) + " " + (ey - 180 + Math.random() * 60) + " " + ex + " " + ey);
+      path.setAttribute("fill", "none");
+      path.setAttribute("stroke", "#A48F66");
+      path.setAttribute("stroke-width", String(0.8 + i * 0.25));
+      path.setAttribute("stroke-linecap", "round");
+      svg.appendChild(path);
+      var len = path.getTotalLength();
+      path.style.strokeDasharray = len + " " + len;
+      // drawn out from the button, then pulled through into the bag
+      path.animate(
+        [
+          { strokeDashoffset: len, opacity: 0.95 },
+          { strokeDashoffset: 0, opacity: 0.95, offset: 0.55 },
+          { strokeDashoffset: -len, opacity: 0.2 },
+        ],
+        { duration: 1150 + i * 140, delay: i * 80, easing: "cubic-bezier(.16, 1, .3, 1)", fill: "forwards" }
+      );
+    }
+    setTimeout(function () {
+      target.classList.remove("pulse");
+      void target.offsetWidth;
+      target.classList.add("pulse");
+    }, 900);
+    setTimeout(function () {
+      svg.remove();
+    }, 1700);
+  }
+
+  // A soft two-note chime (synthesised, so there's no sound file to load), quiet on purpose.
+  var audioCtx = null;
+  function chime() {
+    try {
+      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      var now = audioCtx.currentTime;
+      [[1046.5, 0], [1567.98, 0.1]].forEach(function (note) {
+        var osc = audioCtx.createOscillator();
+        var gain = audioCtx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = note[0];
+        var t0 = now + note[1];
+        gain.gain.setValueAtTime(0.0001, t0);
+        gain.gain.exponentialRampToValueAtTime(0.04, t0 + 0.012);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.9);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(t0);
+        osc.stop(t0 + 1);
+      });
+    } catch (e) {
+      /* no Web Audio: silent */
+    }
   }
 
   function lineAmount(item, line) {
@@ -1525,7 +1621,7 @@
 
   document.getElementById("product-cart").addEventListener("click", function (e) {
     var add = e.target.closest(".js-add-cart");
-    if (add && currentOpenItem) addToCart(currentOpenItem.id, add.getAttribute("data-kind"));
+    if (add && currentOpenItem) addToCart(currentOpenItem.id, add.getAttribute("data-kind"), add);
     if (e.target.closest(".js-view-cart")) openCart();
     if (e.target.closest(".js-pdp-cta")) {
       e.preventDefault();

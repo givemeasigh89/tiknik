@@ -393,12 +393,14 @@
                   <input name="name" value="{{ item.name }}" required placeholder="Name" class="field">
                   {{ param_fields(item.attrs, '') }}
                   <textarea name="description" rows="5" placeholder="Description — shown only on the product page" class="field leading-relaxed">{{ item.description or '' }}</textarea>
+                  <textarea name="delivery" rows="3" placeholder="Fittings &amp; delivery for this piece — empty shows the standard text" class="field leading-relaxed">{{ item.delivery or '' }}</textarea>
                 </div>
                 {% for l, label in [('ru', 'Russian'), ('hy', 'Armenian')] %}
                   <div class="lang-pane hidden flex-col gap-2.5" data-lang="{{ l }}">
                     <input name="name_{{ l }}" value="{{ item['name_' ~ l] or '' }}" placeholder="Name in {{ label }} — empty shows English" class="field">
                     {{ param_fields(item.attrs, '_' ~ l) }}
                     <textarea name="description_{{ l }}" rows="5" placeholder="Description in {{ label }} — empty shows English" class="field leading-relaxed">{{ item['description_' ~ l] or '' }}</textarea>
+                    <textarea name="delivery_{{ l }}" rows="3" placeholder="Fittings &amp; delivery in {{ label }} — empty shows English (or the standard text)" class="field leading-relaxed">{{ item['delivery_' ~ l] or '' }}</textarea>
                   </div>
                 {% endfor %}
                 <div class="grid grid-cols-2 gap-2.5">
