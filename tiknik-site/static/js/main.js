@@ -94,6 +94,7 @@
     // If a product detail view is open, refresh its price too.
     if (overlay && !overlay.classList.contains("translate-x-full") && currentOpenItem) {
       document.getElementById("product-price").innerHTML = priceHtml(currentOpenItem);
+      renderProductCart(currentOpenItem);
     }
     if (dial) dial.set("cur", code, true);
     if (document.body.classList.contains("cart-open")) renderCart();
@@ -477,9 +478,7 @@
         return (
           '<button data-i="' +
           i +
-          '" class="thumb-btn relative shrink-0 w-16 h-20 md:w-full md:h-24 overflow-hidden border transition bg-cream-dark ' +
-          (i === galleryIndex ? "border-charcoal" : "border-charcoal/15 hover:border-charcoal/40") +
-          '">' +
+          '" class="thumb-btn' + (i === galleryIndex ? " on" : "") + '" aria-label="' + (i + 1) + '">' +
           preview +
           "</button>"
         );
@@ -575,6 +574,8 @@
     var multi = productList.length > 1;
     itemPrevBtn.classList.toggle("hidden", !multi);
     itemNextBtn.classList.toggle("hidden", !multi);
+    itemPrevBtn.classList.toggle("flex", multi);
+    itemNextBtn.classList.toggle("flex", multi);
     itemCounter.textContent = multi ? productIndex + 1 + " / " + productList.length : "";
   }
 
@@ -618,7 +619,9 @@
       })
       .join("");
     attrsEl.classList.toggle("hidden", !pairs.length);
+    document.getElementById("product-attrs-section").classList.toggle("hidden", !pairs.length);
     document.getElementById("product-description").textContent = item.description || "";
+    document.getElementById("product-description-section").classList.toggle("hidden", !(item.description || "").trim());
     renderProductCart(item);
   }
 
@@ -1086,7 +1089,7 @@
   var touch = null;
   var lastTap = { time: 0, x: 0, y: 0 };
   mainImageWrap.addEventListener("touchstart", function (e) {
-    if (e.touches.length !== 1) {
+    if (e.touches.length !== 1 || e.target.closest("button")) {
       touch = null;
       return;
     }
@@ -1235,7 +1238,8 @@
     applyZoomTransform();
   }
 
-  mainImageWrap.addEventListener("dblclick", function () {
+  mainImageWrap.addEventListener("dblclick", function (e) {
+    if (e.target.closest("button")) return; // fast clicks on the arrows are not a zoom
     openZoom();
   });
 
@@ -1496,16 +1500,25 @@
   // Buttons in the product view: Buy / Rent depending on the item's mode.
   function renderProductCart(item) {
     var box = document.getElementById("product-cart");
-    var kinds = { Sale: ["buy"], Rent: ["rent"], Both: ["buy", "rent"] }[item.mode] || [];
-    var cls = "border border-charcoal text-charcoal px-5 py-3 text-sm tracking-wide hover:bg-charcoal hover:text-cream transition";
+    var kinds = cartKinds(item);
+    var cta = document.getElementById("product-cta");
+    cta.classList.toggle("hidden", !kinds.length); // made to order: the big button below is the fitting
+    if (!kinds.length) {
+      box.innerHTML = '<a href="#contact" class="pdp-btn primary js-pdp-cta"><span>' + esc(t("cta_book_quote", "Book a Fitting or Request a Quote")) + "</span></a>";
+      return;
+    }
     box.innerHTML = kinds
-      .map(function (kind) {
+      .map(function (kind, i) {
         var label = kinds.length === 1 && kind === "buy" ? t("add_to_cart", "Add to Cart") : t("add_" + kind, kind);
-        if (cartIndex(item.id, kind) !== -1) {
-          return '<button type="button" class="js-view-cart ' + cls.replace("border-charcoal text-charcoal", "border-gold text-gold") + '">' +
-            (kinds.length > 1 ? esc(label) + " · " : "") + esc(t("in_cart", "In your cart ✓")) + "</button>";
-        }
-        return '<button type="button" class="js-add-cart ' + cls + '" data-kind="' + kind + '">' + esc(label) + "</button>";
+        var amount = kind === "buy"
+          ? (item.price ? formatAmount(item.price) : "")
+          : (item.rent_price ? formatAmount(item.rent_price) + t("per_day", " / day") : "");
+        var inCart = cartIndex(item.id, kind) !== -1;
+        return (
+          '<button type="button" class="pdp-btn ' + (i === 0 ? "primary" : "secondary") + (inCart ? " in js-view-cart" : " js-add-cart") +
+          '" data-kind="' + kind + '"><span>' + esc(inCart ? t("in_cart", "In your cart ✓") : label) + "</span>" +
+          (amount ? '<span class="amt">' + esc(amount) + "</span>" : "") + "</button>"
+        );
       })
       .join("");
   }
@@ -1514,6 +1527,10 @@
     var add = e.target.closest(".js-add-cart");
     if (add && currentOpenItem) addToCart(currentOpenItem.id, add.getAttribute("data-kind"));
     if (e.target.closest(".js-view-cart")) openCart();
+    if (e.target.closest(".js-pdp-cta")) {
+      e.preventDefault();
+      document.getElementById("product-cta").click();
+    }
   });
 
   function renderCart() {

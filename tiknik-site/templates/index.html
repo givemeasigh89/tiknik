@@ -112,10 +112,57 @@
   @media (hover: hover) { .card-progress { opacity: 0; } .pcard:hover .card-progress { opacity: 1; } }
 
   /* Product view price */
-  .price-main { display: block; font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-size: 1.9rem;
+  .price-main { display: block; font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-size: 2rem;
                 line-height: 1.1; font-weight: 600; color: #2E2C29; font-variant-numeric: lining-nums tabular-nums; }
   .price-sub { display: block; margin-top: .2rem; font-size: .9rem; color: rgba(58,58,58,.75); }
   .price-request { font-size: 1.05rem; color: rgba(58,58,58,.85); }
+
+  /* Product view: photo column (stays in view on computers) and a details column */
+  .pdp { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.75rem; }
+  .pdp-media { width: 100%; }
+  @media (min-width: 900px) {
+    .pdp { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 3.5rem; align-items: start; }
+    .pdp-media { position: sticky; top: 1.25rem; justify-self: end; width: min(100%, calc((100vh - 15rem) * .75)); }
+    .pdp-info { max-width: 520px; padding-top: .5rem; }
+  }
+  .pdp-arrow { position: absolute; top: 50%; transform: translateY(-50%); width: 42px; height: 42px; border-radius: 9999px;
+               align-items: center; justify-content: center; font-size: 1.25rem; color: #2E2C29; z-index: 2;
+               background: rgba(239,238,234,.86); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+               transition: background .2s ease; }
+  .pdp-arrow:not(.hidden) { display: flex; }
+  .pdp-arrow:hover { background: #EFEEEA; }
+  .pdp-thumbs { gap: .5rem; overflow-x: auto; margin-top: .75rem; padding-bottom: .25rem; }
+  .pdp-thumbs:not(.hidden) { display: flex; }
+  .pdp-thumbs .thumb-btn { position: relative; flex: 0 0 auto; width: 56px; height: 70px; overflow: hidden; background: #E4E1D8;
+                           opacity: .55; outline: 1px solid transparent; outline-offset: 2px; transition: opacity .25s ease, outline-color .25s ease; }
+  .pdp-thumbs .thumb-btn:hover { opacity: .85; }
+  .pdp-thumbs .thumb-btn.on { opacity: 1; outline-color: #2E2C29; }
+
+  .pdp-btn { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; width: 100%;
+             padding: .95rem 1.25rem; font-size: .95rem; letter-spacing: .01em; transition: background .2s ease, color .2s ease, border-color .2s ease; }
+  .pdp-btn + .pdp-btn { margin-top: .6rem; }
+  .pdp-btn .amt { font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-size: 1.25rem; font-weight: 600;
+                  font-variant-numeric: lining-nums tabular-nums; white-space: nowrap; }
+  .pdp-btn.primary { background: #2E2C29; color: #EFEEEA; }
+  .pdp-btn.primary:hover { background: #45423d; }
+  .pdp-btn.secondary { border: 1px solid rgba(46,44,41,.35); color: #2E2C29; }
+  .pdp-btn.secondary:hover { border-color: #2E2C29; }
+  .pdp-btn.in { background: #A48F66; border-color: #A48F66; color: #EFEEEA; }
+  .pdp-link { color: rgba(58,58,58,.85); text-decoration: underline; text-underline-offset: 5px;
+              text-decoration-color: rgba(46,44,41,.3); transition: color .2s ease, text-decoration-color .2s ease; }
+  .pdp-link:hover { color: #2E2C29; text-decoration-color: #2E2C29; }
+
+  .pdp-section { border-top: 1px solid rgba(46,44,41,.14); }
+  .pdp-section:last-of-type { border-bottom: 1px solid rgba(46,44,41,.14); }
+  .pdp-section summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+                         padding: 1.05rem 0; font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-size: 1.3rem; color: #2E2C29; }
+  .pdp-section summary::-webkit-details-marker { display: none; }
+  .pdp-section summary::after { content: ""; width: 12px; height: 12px; flex-shrink: 0;
+                                background: linear-gradient(#2E2C29, #2E2C29) center / 12px 1px no-repeat,
+                                            linear-gradient(#2E2C29, #2E2C29) center / 1px 12px no-repeat; }
+  .pdp-section[open] summary::after { background: linear-gradient(#2E2C29, #2E2C29) center / 12px 1px no-repeat; }
+  .pdp-body { padding-bottom: 1.4rem; font-size: .92rem; line-height: 1.75; color: rgba(58,58,58,.85); }
+  .pdp-info #product-dial { width: 92px; height: 110px; }
 
   /* Cart */
   .card-cart { position: absolute; right: .6rem; bottom: .6rem; z-index: 3; width: 40px; height: 40px; border-radius: 9999px;
@@ -612,85 +659,99 @@
 </dialog>
 
 <!-- ============================== PRODUCT DETAIL OVERLAY ============================== -->
+<!-- Photo on the left (stays in view while the details scroll), thumbnails under it; on the right
+     the name, price, the two ways to have the piece, then folded sections. One column on phones. -->
 <div id="product-overlay" class="fixed inset-0 z-[70] bg-cream translate-x-full transition-transform duration-300 ease-out overflow-y-auto">
-  <div class="max-w-[1500px] mx-auto px-5 py-6 sm:py-8">
-    <div class="flex items-center justify-between gap-4 mb-6">
-      <button id="product-close" class="text-sm tracking-wide text-ink/70 hover:text-charcoal flex items-center gap-2 shrink-0">
-        <span aria-hidden="true">&larr;</span> <span data-t="back_to_catalog">{{ t('back_to_catalog') }}</span>
-      </button>
-      <div class="flex items-center gap-3 sm:gap-4 text-sm text-ink/70 shrink-0">
-        <button id="product-item-prev" aria-label="{{ t('prev_item') }}" class="hidden hover:text-charcoal flex items-center gap-1">
-          <span aria-hidden="true">&#8249;</span> <span class="hidden sm:inline" data-t="prev_item">{{ t('prev_item') }}</span>
+  <div class="max-w-[1320px] mx-auto px-5 sm:px-8 pt-5 pb-16 sm:pt-6">
+    <div class="flex items-center justify-between gap-4 mb-5 sm:mb-7 text-sm">
+      <div class="flex items-center gap-2 min-w-0 text-ink/75">
+        <button id="product-close" class="hover:text-charcoal flex items-center gap-2 shrink-0 py-2">
+          <span aria-hidden="true">&larr;</span> <span data-t="collection">{{ t('collection') }}</span>
         </button>
-        <span id="product-item-counter" class="text-xs text-ink/40 tracking-wide"></span>
-        <button id="product-item-next" aria-label="{{ t('next_item') }}" class="hidden hover:text-charcoal flex items-center gap-1">
-          <span class="hidden sm:inline" data-t="next_item">{{ t('next_item') }}</span> <span aria-hidden="true">&#8250;</span>
-        </button>
+        <span class="text-ink/40 shrink-0" aria-hidden="true">/</span>
+        <span id="product-category" class="truncate"></span>
+      </div>
+      <div class="flex items-center gap-1 text-ink/75 shrink-0">
+        <button id="product-item-prev" aria-label="{{ t('prev_item') }}" class="hidden w-9 h-9 items-center justify-center hover:text-charcoal text-lg">&#8249;</button>
+        <span id="product-item-counter" class="text-xs tabular-nums text-ink/75 min-w-[3rem] text-center"></span>
+        <button id="product-item-next" aria-label="{{ t('next_item') }}" class="hidden w-9 h-9 items-center justify-center hover:text-charcoal text-lg">&#8250;</button>
       </div>
     </div>
 
-    <div class="grid grid-cols-[minmax(0,1fr)] md:grid-cols-[minmax(0,1fr)_96px_minmax(0,1fr)] lg:grid-cols-[minmax(0,1.6fr)_110px_minmax(0,1fr)] gap-6 lg:gap-10">
-
-      <!-- Main image -->
-      <div id="product-main-image-wrap" class="relative aspect-[3/4] bg-cream-dark overflow-hidden order-1 cursor-zoom-in">
-        <img id="product-main-image" src="" alt="" class="w-full h-full object-cover hidden">
-        <video id="product-main-video" controls playsinline preload="metadata" class="w-full h-full object-contain bg-black hidden"></video>
-        <div id="product-main-icon" class="w-full h-full flex items-center justify-center text-charcoal/25"></div>
-        <button id="product-prev" aria-label="Previous photo" class="hidden absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-cream/85 hover:bg-cream flex items-center justify-center text-charcoal text-lg shadow-sm">&#8249;</button>
-        <button id="product-next" aria-label="Next photo" class="hidden absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-cream/85 hover:bg-cream flex items-center justify-center text-charcoal text-lg shadow-sm">&#8250;</button>
+    <div class="pdp">
+      <!-- Photos -->
+      <div class="pdp-media">
+        <div id="product-main-image-wrap" class="relative aspect-[3/4] bg-cream-dark overflow-hidden cursor-zoom-in">
+          <img id="product-main-image" src="" alt="" class="w-full h-full object-cover hidden">
+          <video id="product-main-video" controls playsinline preload="metadata" class="w-full h-full object-contain bg-black hidden"></video>
+          <div id="product-main-icon" class="w-full h-full flex items-center justify-center text-charcoal/25"></div>
+          <button id="product-prev" aria-label="Previous photo" class="pdp-arrow hidden left-3">&#8249;</button>
+          <button id="product-next" aria-label="Next photo" class="pdp-arrow hidden right-3">&#8250;</button>
+        </div>
+        <div id="product-thumbs" class="pdp-thumbs hidden"></div>
       </div>
 
-      <!-- Thumbnails -->
-      <div id="product-thumbs" class="hidden order-2 flex md:flex-col gap-2 overflow-x-auto md:overflow-y-auto md:max-h-[640px] lg:max-h-[780px] pb-1 md:pb-0"></div>
-
       <!-- Details -->
-      <div class="order-3 md:col-start-3 md:row-start-1 pt-1">
-        <div class="flex items-start gap-4 mb-5">
-          <div class="flex-1 min-w-0">
-            <p id="product-category" class="text-sm text-gold mb-2"></p>
-            <h2 id="product-name" class="font-serif text-3xl sm:text-4xl text-charcoal leading-tight mb-3"></h2>
-            <div id="product-price" class="product-price"></div>
-            <p id="product-craft" class="hidden mt-3 font-serif text-[17px] text-charcoal/80 leading-snug"></p>
-          </div>
-          <!-- Language / currency dial: the logo's key in its double oval. Outer ring = language,
-               inner ring = currency; labels and dots are placed by main.js. -->
-          <div class="shrink-0 flex flex-col items-center -mt-1">
-            <svg id="product-dial" viewBox="0 0 200 240" role="group" tabindex="0"
-                 aria-label="Language: ← →, currency: ↑ ↓">
-              <ellipse cx="100" cy="120" rx="96" ry="117" class="dial-line" stroke-width="1.9"/>
-              <ellipse cx="100" cy="120" rx="91" ry="112" class="dial-line" stroke-width="1.1"/>
-              <ellipse cx="100" cy="120" rx="72" ry="92" class="dial-line" stroke-width="1.2"/>
-              <ellipse cx="100" cy="120" rx="51" ry="68" class="dial-line dial-faint" stroke-width="1" stroke-dasharray="1 4"/>
-              <g class="dial-dots"></g>
-              <g class="dial-labels"></g>
-              <g class="dial-key-wrap" transform="translate(100 120) scale(.82) translate(-100 -122)">
-                <g class="dial-key">
-                  <circle cx="100" cy="60" r="3" class="dial-line" stroke-width="2"/>
-                  <circle cx="100" cy="71" r="8" class="dial-line" stroke-width="2"/>
-                  <circle cx="89" cy="82" r="8" class="dial-line" stroke-width="2"/>
-                  <circle cx="111" cy="82" r="8" class="dial-line" stroke-width="2"/>
-                  <circle cx="100" cy="93" r="8" class="dial-line" stroke-width="2"/>
-                  <path d="M100 74 L108 82 L100 90 L92 82 Z" class="dial-line" stroke-width="1.7"/>
-                  <path d="M100 101 V194 M96 106 H104 M96 109 H104" class="dial-line" stroke-width="2"/>
-                  <path d="M100 166 L104.5 170.5 L100 175 L95.5 170.5 Z" class="dial-line" stroke-width="1.9"/>
-                  <path d="M87 179 V192 M90.5 179 V192 M90.5 185.5 H100 M95 181 V190" class="dial-line" stroke-width="2"/>
-                </g>
-              </g>
-            </svg>
-            <p class="text-[11px] text-ink/60 mt-1.5 text-center max-w-[136px] leading-snug" data-t="dial_hint">{{ t('dial_hint') }}</p>
-          </div>
-        </div>
-        <dl id="product-attrs" class="hidden grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm mb-6 pb-6 border-b border-line/60"></dl>
-        <p id="product-description" class="text-sm text-ink/70 leading-relaxed mb-8 whitespace-pre-line"></p>
-        <div id="product-cart" class="flex flex-wrap items-center gap-2 mb-3"></div>
-        <div class="flex flex-wrap items-center gap-x-5 gap-y-3">
-          <a id="product-cta" href="#contact" class="inline-block bg-charcoal text-cream px-6 py-3 text-sm tracking-wide hover:bg-charcoal/90 transition">
-            <span data-t="cta_book_quote">{{ t('cta_book_quote') }}</span>
-          </a>
-          <button type="button" id="product-share" class="inline-flex items-center gap-2 py-3 text-sm text-ink/70 hover:text-charcoal transition">
+      <div class="pdp-info">
+        <h2 id="product-name" class="font-serif text-[2.3rem] sm:text-[3rem] leading-[1.05] text-charcoal"></h2>
+        <div id="product-price" class="product-price mt-3"></div>
+        <p id="product-craft" class="hidden mt-4 font-serif text-[17px] text-charcoal/80 leading-snug"></p>
+
+        <div id="product-cart" class="pdp-actions mt-7"></div>
+        <div class="flex flex-wrap items-center gap-x-6 gap-y-2 mt-4 text-sm">
+          <a id="product-cta" href="#contact" class="pdp-link"><span data-t="cta_book_quote">{{ t('cta_book_quote') }}</span></a>
+          <button type="button" id="product-share" class="pdp-link inline-flex items-center gap-2">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3M7.5 7.5L12 3l4.5 4.5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>
             <span data-t="share">{{ t('share') }}</span>
           </button>
+        </div>
+
+        <div class="pdp-sections mt-9">
+          <details class="pdp-section" id="product-description-section" open>
+            <summary><span data-t="pdp_piece">{{ t('pdp_piece') }}</span></summary>
+            <p id="product-description" class="pdp-body whitespace-pre-line"></p>
+          </details>
+          <details class="pdp-section" id="product-attrs-section">
+            <summary><span data-t="pdp_details">{{ t('pdp_details') }}</span></summary>
+            <dl id="product-attrs" class="pdp-body hidden grid grid-cols-[auto_1fr] gap-x-6 gap-y-2"></dl>
+          </details>
+          <details class="pdp-section">
+            <summary><span data-t="pdp_delivery">{{ t('pdp_delivery') }}</span></summary>
+            <div class="pdp-body space-y-3">
+              {% for i in range(1, 4) %}
+                <p><span class="font-serif text-lg text-charcoal" data-t="delivery_f{{ i }}_title">{{ t('delivery_f%d_title' % i) }}</span><br>
+                  <span data-t="delivery_f{{ i }}_text">{{ t('delivery_f%d_text' % i) }}</span></p>
+              {% endfor %}
+            </div>
+          </details>
+        </div>
+
+        <!-- Language / currency dial: the logo's key in its double oval. Outer ring = language,
+             inner ring = currency; labels and dots are placed by main.js. -->
+        <div class="flex items-center gap-4 mt-10">
+          <svg id="product-dial" viewBox="0 0 200 240" role="group" tabindex="0"
+               aria-label="Language: ← →, currency: ↑ ↓">
+            <ellipse cx="100" cy="120" rx="96" ry="117" class="dial-line" stroke-width="1.9"/>
+            <ellipse cx="100" cy="120" rx="91" ry="112" class="dial-line" stroke-width="1.1"/>
+            <ellipse cx="100" cy="120" rx="72" ry="92" class="dial-line" stroke-width="1.2"/>
+            <ellipse cx="100" cy="120" rx="51" ry="68" class="dial-line dial-faint" stroke-width="1" stroke-dasharray="1 4"/>
+            <g class="dial-dots"></g>
+            <g class="dial-labels"></g>
+            <g class="dial-key-wrap" transform="translate(100 120) scale(.82) translate(-100 -122)">
+              <g class="dial-key">
+                <circle cx="100" cy="60" r="3" class="dial-line" stroke-width="2"/>
+                <circle cx="100" cy="71" r="8" class="dial-line" stroke-width="2"/>
+                <circle cx="89" cy="82" r="8" class="dial-line" stroke-width="2"/>
+                <circle cx="111" cy="82" r="8" class="dial-line" stroke-width="2"/>
+                <circle cx="100" cy="93" r="8" class="dial-line" stroke-width="2"/>
+                <path d="M100 74 L108 82 L100 90 L92 82 Z" class="dial-line" stroke-width="1.7"/>
+                <path d="M100 101 V194 M96 106 H104 M96 109 H104" class="dial-line" stroke-width="2"/>
+                <path d="M100 166 L104.5 170.5 L100 175 L95.5 170.5 Z" class="dial-line" stroke-width="1.9"/>
+                <path d="M87 179 V192 M90.5 179 V192 M90.5 185.5 H100 M95 181 V190" class="dial-line" stroke-width="2"/>
+              </g>
+            </g>
+          </svg>
+          <p class="text-xs text-ink/75 leading-snug max-w-[11rem]" data-t="dial_hint">{{ t('dial_hint') }}</p>
         </div>
       </div>
     </div>

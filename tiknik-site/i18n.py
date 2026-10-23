@@ -247,6 +247,9 @@ UI = {
     "edition_one": {"en": "One of a kind", "ru": "Единственный экземпляр", "hy": "Միակ օրինակ"},
     "edition_n": {"en": "Only {n} made", "ru": "Тираж: {n} шт.", "hy": "Ընդամենը {n} օրինակ"},
     "share": {"en": "Share", "ru": "Поделиться", "hy": "Կիսվել"},
+    "pdp_piece": {"en": "The piece", "ru": "Об изделии", "hy": "Զգեստի մասին"},
+    "pdp_details": {"en": "Details", "ru": "Детали", "hy": "Մանրամասներ"},
+    "pdp_delivery": {"en": "Fittings & delivery", "ru": "Примерки и доставка", "hy": "Փորձեր և առաքում"},
     "link_copied": {"en": "Link copied", "ru": "Ссылка скопирована", "hy": "Հղումը պատճենված է"},
 
     # Delivery: three facts (all already stated elsewhere on the site)
@@ -307,7 +310,9 @@ JS_KEYS = (
     "back_to_catalog", "prev_item", "next_item", "cta_book_quote", "dial_hint",
     "add_to_cart", "add_buy", "add_rent", "in_cart", "cart_buy_label", "cart_rent_label", "cart_day", "cart_days",
     "cart_sent", "cart_remove", "busy_error", "review_thanks",
-    "card_or_rent", "card_rental", "handmade_hours", "edition_one", "edition_n", "share", "link_copied",
+    "card_or_rent", "card_rental", "collection", "pdp_piece", "pdp_details", "pdp_delivery",
+    "delivery_f1_title", "delivery_f1_text", "delivery_f2_title", "delivery_f2_text", "delivery_f3_title", "delivery_f3_text",
+    "handmade_hours", "edition_one", "edition_n", "share", "link_copied",
     "price_on_request", "per_day", "mode_Rent", "mode_Sale", "mode_Both", "mode_Custom",
     "load_error", "sending", "sent", "send_error", "required_error",
 )
