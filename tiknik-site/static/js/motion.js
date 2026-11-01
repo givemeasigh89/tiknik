@@ -5,6 +5,7 @@
 //   1. Product view: the card's photo flies into the large photo (FLIP), and back on close.
 //   2. "How it works": the section pins and page scroll turns the key through the photos.
 //   3. Hero: the photo and the line under it reveal on load; the photo drifts slower than the page.
+//   4. A gold thread sewn down the left margin from About to the fitting form as the page scrolls.
 //
 // Kept deliberately few: motion that answers what the visitor does, plus one moment on arrival.
 // (Headings rising word by word and the catalog arriving in a wave were tried and taken out —
@@ -211,6 +212,125 @@
     cleanups.push(function () {
       document.removeEventListener("tiknik:product-open", onProductOpen);
       delete window.TiknikMotion;
+    });
+
+    // ---------------------------------------------------------------- 4. The thread
+    // One gold thread runs down the left margin from "About" to the fitting form, sewn as the page
+    // scrolls: a tiny needle leads it, it loops a stitch at each section's heading and ties a knot
+    // at the end. The scroll is the needle: the story is sewn together as it's read.
+    var threadSections = ["about", "reviews", "delivery", "contact"]
+      .map(function (id) {
+        return document.getElementById(id);
+      })
+      .filter(Boolean);
+    var thread = null;
+    function buildThread() {
+      if (thread) thread.layer.remove();
+      thread = null;
+      if (threadSections.length < 2) return;
+      var NS = "http://www.w3.org/2000/svg";
+      var docTop = function (el) {
+        return el.getBoundingClientRect().top + window.scrollY;
+      };
+      var vw = document.documentElement.clientWidth;
+      var inner = threadSections[0].querySelector(".max-w-\\[1180px\\]") || threadSections[0];
+      var margin = Math.max(0, inner.getBoundingClientRect().left);
+      var mx = vw < 640 ? 9 : Math.max(18, Math.min(margin * 0.45, 90)); // the thread's lane
+      var amp = vw < 640 ? 3 : Math.min(14, mx * 0.35); // how far it wanders
+      var y0 = docTop(threadSections[0]) + 40;
+      var last = threadSections[threadSections.length - 1];
+      var yEnd = docTop(last) + Math.min(last.offsetHeight * 0.45, 260);
+
+      // points down the lane, wandering gently, with a loop at each heading
+      var d = "M" + mx + " " + y0;
+      var y = y0;
+      var side = 1;
+      threadSections.forEach(function (sec, i) {
+        var h = sec.querySelector("h2") || sec;
+        var hy = Math.max(y + 40, docTop(h) + h.offsetHeight / 2);
+        if (i === threadSections.length - 1) hy = Math.min(hy, yEnd - 40);
+        // wander down to the heading in soft S-bends
+        var steps = Math.max(1, Math.round((hy - y) / 260));
+        for (var k = 1; k <= steps; k++) {
+          var ny = y + ((hy - y) * k) / steps;
+          var cy = (ny - (y + ((hy - y) * (k - 1)) / steps)) / 2;
+          d += " C" + (mx + amp * side) + " " + (ny - cy * 1.4) + " " + (mx + amp * side) + " " + (ny - cy * 0.6) + " " + mx + " " + ny;
+          side = -side;
+        }
+        // a stitch loop: out to the right and round
+        var r = vw < 640 ? 4 : 8;
+        d += " c" + r * 1.6 + " " + -r * 0.2 + " " + r * 1.8 + " " + r * 1.6 + " " + r * 0.6 + " " + r * 1.7 +
+             " c" + -r * 1.1 + " " + r * 0.1 + " " + -r * 1.1 + " " + -r * 1.2 + " " + -r * 0.6 + " " + -r * 0.5;
+        y = hy + r * 0.5;
+      });
+      if (yEnd > y + 20) d += " C" + (mx - amp) + " " + (y + (yEnd - y) * 0.4) + " " + (mx + amp) + " " + (y + (yEnd - y) * 0.7) + " " + mx + " " + yEnd;
+
+      var top = Math.floor(y0 - 20);
+      var layer = document.createElementNS(NS, "svg");
+      layer.setAttribute("class", "page-thread");
+      layer.setAttribute("aria-hidden", "true");
+      layer.style.top = top + "px";
+      layer.style.height = Math.ceil(yEnd - top + 30) + "px";
+      layer.setAttribute("viewBox", "0 " + top + " " + vw + " " + Math.ceil(yEnd - top + 30));
+      var path = document.createElementNS(NS, "path");
+      path.setAttribute("d", d);
+      path.setAttribute("class", "page-thread-line");
+      var knot = document.createElementNS(NS, "circle");
+      knot.setAttribute("class", "page-thread-knot");
+      knot.setAttribute("cx", mx); knot.setAttribute("cy", yEnd); knot.setAttribute("r", vw < 640 ? 2.2 : 3);
+      var needle = document.createElementNS(NS, "line");
+      needle.setAttribute("class", "page-thread-needle");
+      layer.appendChild(path); layer.appendChild(knot); layer.appendChild(needle);
+      document.body.appendChild(layer);
+
+      // length along the thread for each height, so the tip can follow the reader
+      var len = path.getTotalLength();
+      var samples = [];
+      for (var s = 0; s <= 400; s++) {
+        var p = path.getPointAtLength((len * s) / 400);
+        samples.push([p.y, (len * s) / 400]);
+      }
+      path.style.strokeDasharray = len + " " + len;
+      thread = { layer: layer, path: path, needle: needle, knot: knot, len: len, samples: samples, yEnd: yEnd };
+      drawThread();
+    }
+    function lengthAt(yy) {
+      var best = 0;
+      for (var i = 0; i < thread.samples.length; i++) {
+        if (thread.samples[i][0] <= yy) best = Math.max(best, thread.samples[i][1]);
+      }
+      return best;
+    }
+    var shown = 0;
+    function drawThread() {
+      if (!thread) return;
+      var target = lengthAt(window.scrollY + window.innerHeight * 0.62);
+      shown = target; // follows the reader both ways
+      thread.path.style.strokeDashoffset = String(thread.len - shown);
+      var tip = thread.path.getPointAtLength(Math.max(0, shown));
+      var back = thread.path.getPointAtLength(Math.max(0, shown - 1.5));
+      var ang = Math.atan2(tip.y - back.y, tip.x - back.x);
+      var nl = window.innerWidth < 640 ? 9 : 15;
+      thread.needle.setAttribute("x1", tip.x); thread.needle.setAttribute("y1", tip.y);
+      thread.needle.setAttribute("x2", tip.x + Math.cos(ang) * nl); thread.needle.setAttribute("y2", tip.y + Math.sin(ang) * nl);
+      var done = shown >= thread.len - 1;
+      thread.needle.style.opacity = shown > 2 && !done ? "1" : "0";
+      thread.knot.style.opacity = done ? "1" : "0";
+    }
+    var threadRaf = 0;
+    function onThreadScroll() {
+      if (threadRaf) return;
+      threadRaf = requestAnimationFrame(function () {
+        threadRaf = 0;
+        drawThread();
+      });
+    }
+    window.addEventListener("scroll", onThreadScroll, { passive: true });
+    ScrollTrigger.addEventListener("refresh", buildThread);
+    cleanups.push(function () {
+      window.removeEventListener("scroll", onThreadScroll);
+      ScrollTrigger.removeEventListener("refresh", buildThread);
+      if (thread) thread.layer.remove();
     });
 
     // Layout changes after load (images, reviews, fonts) move trigger positions: refresh, debounced.

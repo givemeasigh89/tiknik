@@ -216,11 +216,21 @@
      in the logo's oval with the Armenian word set large beside it */
   .about-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.75rem; align-items: center; }
   .about-row + .about-row { margin-top: 4.5rem; }
-  .about-photo, .about-cameo { margin: 0; }
+  .about-photo, .about-print { margin: 0; }
   .about-photo img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; background: #E4E1D8; }
-  .about-cameo { justify-self: center; width: min(78%, 360px); padding: 10px; border: 1px solid rgba(46,44,41,.55);
-                 border-radius: 50%; box-shadow: inset 0 0 0 5px #EFEEEA, inset 0 0 0 6px rgba(46,44,41,.35); }
-  .about-cameo img { display: block; width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 50%; }
+  /* The childhood photo as an old print sewn onto the page: a pale mount, a slight tilt, a gold stitch round it */
+  .about-print { position: relative; justify-self: center; width: min(82%, 380px); padding: 14px 14px 46px; background: #F8F7F3;
+                 transform: rotate(-1.6deg); box-shadow: 0 1px 2px rgba(46,44,41,.08), 0 22px 40px -24px rgba(46,44,41,.45); }
+  .about-print::after { content: ""; position: absolute; inset: 6px; border: 1px dashed rgba(164,143,102,.75); pointer-events: none; }
+  .about-print img { display: block; width: 100%; aspect-ratio: 1 / 1; object-fit: cover; }
+  .about-print figcaption { position: absolute; left: 0; right: 0; bottom: 14px; text-align: center;
+                            font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1rem; color: rgba(58,58,58,.8); }
+
+  /* The page thread (static/js/motion.js) */
+  .page-thread { position: absolute; left: 0; width: 100%; z-index: 5; pointer-events: none; overflow: visible; }
+  .page-thread-line { fill: none; stroke: #A48F66; stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; }
+  .page-thread-needle { stroke: #6f6450; stroke-width: 1.4; stroke-linecap: round; transition: opacity .3s ease; }
+  .page-thread-knot { fill: #A48F66; opacity: 0; transition: opacity .4s ease; }
   .about-word { font-family: 'Noto Serif Armenian', 'Cormorant Garamond', serif; font-weight: 400; color: #2E2C29;
                 font-size: clamp(3rem, 7vw, 5.5rem); line-height: 1; letter-spacing: -.01em; }
   .about-gloss { margin-top: .6rem; font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.2rem; color: #A48F66; }
@@ -572,14 +582,15 @@
 
 <!-- ============================== ABOUT ============================== -->
 <!-- The story in three chapters, each with its photo (static/img/about/1–3.jpg); text in i18n.py
-     (about_*). The childhood photo sits in the logo's oval, like a cameo. -->
+     (about_*). The childhood photo is an old print stitched onto the page. -->
 <section id="about" class="about py-16 sm:py-24">
   <div class="max-w-[1180px] mx-auto px-5 sm:px-8">
 
     <!-- I. The name -->
     <div class="about-row">
-      <figure class="about-cameo">
+      <figure class="about-print">
         <img src="{{ url_for('static', filename='img/about/1.jpg') }}" alt="{{ t('about_alt1') }}" loading="lazy">
+        <figcaption>Kendani Tiknik</figcaption>
       </figure>
       <div class="about-text">
         <h2 class="about-word" lang="hy">Տիկնիկ</h2>
