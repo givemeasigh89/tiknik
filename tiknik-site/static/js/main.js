@@ -1442,6 +1442,14 @@
     });
   }
 
+  // "Delivery → Worldwide" opens that row (the link itself scrolls there).
+  document.querySelectorAll(".js-dl-link").forEach(function (link) {
+    link.addEventListener("click", function () {
+      var row = document.getElementById("dl-" + link.getAttribute("data-dl"));
+      if (row) row.open = true;
+    });
+  });
+
   // "Catalog → Corsets" opens the catalog with that tab chosen (the link itself scrolls there).
   document.querySelectorAll(".js-cat-link").forEach(function (link) {
     link.addEventListener("click", function () {

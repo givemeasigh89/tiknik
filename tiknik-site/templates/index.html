@@ -251,18 +251,40 @@
   .process-remote-title { font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-size: 1.15rem; color: #2E2C29; margin-bottom: .2rem; }
   @media (max-width: 1023px) { .process-remote { margin-left: auto; margin-right: auto; text-align: center; } }
 
-  /* Delivery: heading on the left, four blocks on the right */
-  .dl { display: grid; gap: 2.5rem; }
+  /* Delivery: heading on the left, four folding rows on the right */
+  .dl { display: grid; gap: 2rem; }
   @media (min-width: 900px) { .dl { grid-template-columns: minmax(0, .8fr) minmax(0, 2fr); gap: 4rem; } .dl h2 { position: sticky; top: 6rem; align-self: start; } }
-  .dl-blocks { display: grid; gap: 2.25rem 3rem; }
-  @media (min-width: 700px) { .dl-blocks { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-  .dl-block { border-top: 1px solid rgba(239,238,234,.18); padding-top: 1.1rem; }
-  .dl-block h3 { font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-size: 1.6rem; color: #EFEEEA; margin-bottom: .6rem; }
-  .dl-block p, .dl-block li { font-size: .9rem; line-height: 1.75; color: rgba(239,238,234,.75); }
-  .dl-block p + p { margin-top: .75rem; }
-  .dl-block li { position: relative; padding-left: 1.1rem; }
-  .dl-block li + li { margin-top: .55rem; }
-  .dl-block li::before { content: ""; position: absolute; left: 0; top: .8em; width: 6px; height: 1px; background: #A48F66; }
+  .dl-item { border-top: 1px solid rgba(239,238,234,.18); }
+  .dl-item:last-child { border-bottom: 1px solid rgba(239,238,234,.18); }
+  .dl-item summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 1.5rem;
+                     align-items: baseline; padding: 1.35rem 0; }
+  .dl-item summary::-webkit-details-marker { display: none; }
+  .dl-item summary::after { content: ""; grid-row: 1 / span 2; grid-column: 2; align-self: center; width: 14px; height: 14px;
+                            background: linear-gradient(#EFEEEA, #EFEEEA) center / 14px 1px no-repeat,
+                                        linear-gradient(#EFEEEA, #EFEEEA) center / 1px 14px no-repeat;
+                            transition: transform .45s cubic-bezier(.16,1,.3,1); }
+  .dl-item[open] summary::after { transform: rotate(45deg); }
+  .dl-t { font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-size: 1.75rem; line-height: 1.15; color: #EFEEEA; }
+  .dl-sum { grid-column: 1; margin-top: .3rem; font-size: 15px; color: rgba(239,238,234,.72); }
+  .dl-item:hover .dl-t { color: #fff; }
+  .dl-body { padding: 0 0 1.6rem; max-width: 40rem; animation: dlIn .5s cubic-bezier(.16,1,.3,1); }
+  @keyframes dlIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+  .dl-body p, .dl-body li { font-size: 15px; line-height: 1.75; color: rgba(239,238,234,.8); }
+  .dl-body p + p { margin-top: .8rem; }
+  .dl-body li { position: relative; padding-left: 1.1rem; }
+  .dl-body li + li { margin-top: .6rem; }
+  .dl-body li::before { content: ""; position: absolute; left: 0; top: .85em; width: 6px; height: 1px; background: #A48F66; }
+  @media (prefers-reduced-motion: reduce) { .dl-body { animation: none; } }
+
+  /* Contact: words on the left, the form on the right with labels above the fields */
+  .ct { display: grid; gap: 2.5rem; }
+  @media (min-width: 900px) { .ct { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 5rem; } }
+  .ct-field { display: flex; flex-direction: column; gap: .4rem; }
+  .ct-field span { font-size: 13px; color: rgba(58,58,58,.8); }
+  .ct-field input, .ct-field select, .ct-field textarea { border: 0; border-bottom: 1px solid rgba(46,44,41,.35); background: transparent;
+                     padding: .55rem 0; font-size: 15px; color: #2E2C29; border-radius: 0; transition: border-color .2s ease; }
+  .ct-field input:focus, .ct-field select:focus, .ct-field textarea:focus { outline: none; border-color: #2E2C29; }
+  .ct-field textarea { resize: vertical; min-height: 5.5rem; }
 
   /* Cart */
   .card-cart { position: absolute; right: .6rem; bottom: .6rem; z-index: 3; width: 40px; height: 40px; border-radius: 9999px;
@@ -433,8 +455,20 @@
       </div>
       <a href="#process" class="hover:text-charcoal transition">{{ t('nav_process') }}</a>
       <a href="#about" class="hover:text-charcoal transition">{{ t('nav_about') }}</a>
-      <a href="#reviews" class="hover:text-charcoal transition">{{ t('nav_reviews') }}</a>
-      <a href="#delivery" class="hover:text-charcoal transition">{{ t('nav_delivery') }}</a>
+      {% if has_reviews %}<a href="#reviews" class="hover:text-charcoal transition">{{ t('nav_reviews') }}</a>{% endif %}
+      <div class="nav-drop relative">
+        <a href="#delivery" class="hover:text-charcoal transition inline-flex items-center gap-1 py-2">
+          {{ t('nav_delivery') }}
+          <svg class="w-3 h-3 opacity-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </a>
+        <div class="nav-drop-menu absolute left-1/2 top-full -translate-x-1/2 pt-2">
+          <div class="bg-cream border border-line/70 shadow-[0_18px_40px_-20px_rgba(46,44,41,.45)] py-2 min-w-[200px]">
+            {% for k in ['local', 'intl', 'pack', 'cond'] %}
+              <a href="#dl-{{ k }}" data-dl="{{ k }}" class="js-dl-link block px-5 py-2 hover:bg-cream-dark/70 hover:text-charcoal transition whitespace-nowrap">{{ t('dl_%s_title' % k) }}</a>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
       <a href="#contact" class="hover:text-charcoal transition">{{ t('nav_contact') }}</a>
     </nav>
     <div class="flex items-center gap-2 sm:gap-4">
@@ -467,8 +501,13 @@
       </div>
       <a href="#process" class="py-2.5 border-t border-line/40">{{ t('nav_process') }}</a>
       <a href="#about" class="py-2.5 border-t border-line/40">{{ t('nav_about') }}</a>
-      <a href="#reviews" class="py-2.5 border-t border-line/40">{{ t('nav_reviews') }}</a>
+      {% if has_reviews %}<a href="#reviews" class="py-2.5 border-t border-line/40">{{ t('nav_reviews') }}</a>{% endif %}
       <a href="#delivery" class="py-2.5 border-t border-line/40">{{ t('nav_delivery') }}</a>
+      <div class="flex flex-wrap gap-x-4 gap-y-1 pl-3 pb-2 text-sm text-ink/75">
+        {% for k in ['local', 'intl', 'pack', 'cond'] %}
+          <a href="#dl-{{ k }}" data-dl="{{ k }}" class="js-dl-link py-1">{{ t('dl_%s_title' % k) }}</a>
+        {% endfor %}
+      </div>
       <a href="#contact" class="py-2.5 border-t border-line/40">{{ t('nav_contact') }}</a>
       <a href="#contact" class="sm:hidden mt-3 text-center text-sm tracking-wide bg-charcoal text-cream px-4 py-3">{{ t('book_fitting') }}</a>
     </nav>
@@ -481,17 +520,10 @@
 <section class="hero-bg aspect-[4/5] sm:aspect-[16/10] lg:aspect-[16/9] w-full pt-24"></section>
 
 <!-- ============================== HERO CTA STRIP ============================== -->
-<section id="intro" class="relative z-10 bg-cream text-charcoal text-center px-6 py-12 sm:py-14 border-b border-line/60">
-  <p class="font-serif text-xl sm:text-2xl max-w-xl mx-auto mb-7 text-charcoal/90">
-    {{ t('hero_tagline') }}
-  </p>
-  <div class="flex items-center justify-center gap-3 flex-wrap">
-    <a href="#contact" class="bg-charcoal text-cream px-6 py-3 text-sm tracking-wide hover:bg-charcoal/90 transition">
-      {{ t('cta_book_quote') }}
-    </a>
-    <a href="#catalog" class="border border-charcoal/40 text-charcoal px-6 py-3 text-sm tracking-wide hover:bg-charcoal/5 transition">
-      {{ t('cta_view_catalog') }}
-    </a>
+<section id="intro" class="relative z-10 bg-cream text-charcoal px-5 sm:px-8 py-14 sm:py-20 border-b border-line/60">
+  <div class="max-w-[1180px] mx-auto flex flex-col sm:flex-row sm:items-end justify-between gap-6 sm:gap-12">
+    <p class="font-serif text-[1.65rem] sm:text-[2.3rem] leading-[1.2] max-w-2xl text-charcoal">{{ t('hero_tagline') }}</p>
+    <a href="#catalog" class="pdp-link shrink-0 text-[15px]">{{ t('cta_view_catalog') }}</a>
   </div>
 </section>
 
@@ -520,7 +552,7 @@
 </section>
 
 <!-- ============================== PROCESS ============================== -->
-<section id="process" class="bg-panel/60 py-8 sm:py-14 lg:py-16 overflow-hidden">
+<section id="process" class="py-8 sm:py-14 lg:py-16 overflow-hidden border-t border-line/60">
   <div class="max-w-6xl mx-auto px-5">
     <h2 class="font-serif text-[1.7rem] leading-tight sm:text-4xl text-charcoal text-center sm:mb-2">{{ t('process_title') }}</h2>
 
@@ -531,7 +563,6 @@
          on wide screens the text sits beside the ring. -->
     <div class="flex flex-col lg:flex-row items-center justify-center lg:gap-12">
     <div class="flex items-center justify-center gap-6 lg:gap-8">
-      <p class="hidden md:block text-2xl tracking-[.12em] text-charcoal/80 leading-snug select-none" aria-hidden="true">ES<br>TD</p>
       <div id="process-ring" class="process-ring" tabindex="0" role="group" aria-label="{{ t('process_hint') }}">
         <div class="process-frame">
           {# photos in the order of the six stages: measuring, pattern, toile, fabric, sewing, the finished piece #}
@@ -570,7 +601,6 @@
           </g>
         </svg>
       </div>
-      <p class="hidden md:block text-2xl tracking-[.12em] text-charcoal/80 leading-snug select-none" aria-hidden="true">20<br>26</p>
     </div>
 
     <div class="w-full lg:w-[470px] shrink-0">
@@ -580,7 +610,7 @@
         <div class="process-stage{{ ' is-active' if i == 1 }}" data-stage="{{ i - 1 }}">
           <p class="font-serif text-xl sm:text-2xl text-gold leading-none mb-1 sm:mb-2">{{ ['I', 'II', 'III', 'IV', 'V', 'VI'][i - 1] }}</p>
           <h3 class="font-serif text-[1.45rem] sm:text-3xl leading-tight text-charcoal mb-1.5 sm:mb-3">{{ t('stage%d_title' % i) }}</h3>
-          <p class="text-[13px] sm:text-[15px] text-ink/75 leading-relaxed">{{ t('stage%d_text' % i) }}</p>
+          <p class="text-[15px] text-ink/80 leading-relaxed">{{ t('stage%d_text' % i) }}</p>
         </div>
       {% endfor %}
     </div>
@@ -641,7 +671,6 @@
       <div class="about-text">
         <p class="about-p">{{ t('about_p3') }}</p>
         <p class="about-quote">{{ t('about_quote') }}</p>
-        <img src="{{ url_for('static', filename='img/logo-nav.png') }}" alt="" class="h-10 w-auto mt-8 opacity-80" aria-hidden="true">
       </div>
     </div>
 
@@ -650,87 +679,100 @@
 
 <!-- ============================== REVIEWS ============================== -->
 <!-- Cards come from /api/reviews (approved in /admin); static/js/reviews.js draws them and runs the form. -->
-<section id="reviews" class="bg-panel/60 py-16 sm:py-20 overflow-hidden">
-  <div class="max-w-6xl mx-auto px-5 text-center mb-8 sm:mb-10">
-    <h2 class="font-serif text-3xl sm:text-4xl text-charcoal mb-5">{{ t('reviews_title') }}</h2>
-    <p id="reviews-empty" class="hidden font-serif text-lg text-ink/60 mb-5">{{ t('reviews_empty') }}</p>
-    <button type="button" id="review-open" class="text-sm tracking-wide border border-charcoal/40 text-charcoal px-6 py-2.5 hover:bg-charcoal hover:text-cream transition">
-      {{ t('review_add') }}
-    </button>
+{% if has_reviews %}
+<section id="reviews" class="py-16 sm:py-24 overflow-hidden border-t border-line/60">
+  <div class="max-w-[1180px] mx-auto px-5 sm:px-8 mb-8 sm:mb-10 flex items-end justify-between gap-6 flex-wrap">
+    <h2 class="font-serif text-3xl sm:text-5xl text-charcoal leading-tight">{{ t('reviews_title') }}</h2>
+    <button type="button" class="js-review-open pdp-link text-[15px]">{{ t('review_add') }}</button>
   </div>
+  <p id="reviews-empty" class="hidden"></p>
   <div id="reviews-track" class="reviews-track"></div>
 </section>
+{% endif %}
 
 <!-- ============================== DELIVERY ============================== -->
 <section id="delivery" class="bg-charcoal text-cream py-16 sm:py-24">
   <div class="max-w-[1180px] mx-auto px-5 sm:px-8 dl">
     <h2 class="font-serif text-3xl sm:text-5xl leading-tight">{{ t('dl_title') }}</h2>
-    <div class="dl-blocks">
-      {% for k in ['local', 'intl', 'pack'] %}
-        <div class="dl-block">
-          <h3>{{ t('dl_%s_title' % k) }}</h3>
-          {% for para in t('dl_%s' % k).split('\n\n') %}<p>{{ para }}</p>{% endfor %}
-        </div>
+    <div class="dl-list">
+      {% for k in ['local', 'intl', 'pack', 'cond'] %}
+        <details class="dl-item" id="dl-{{ k }}">
+          <summary>
+            <span class="dl-t">{{ t('dl_%s_title' % k) }}</span>
+            <span class="dl-sum">{{ t('dl_%s_sum' % k) }}</span>
+          </summary>
+          <div class="dl-body">
+            {% if k == 'cond' %}
+              <ul>{% for line in t('dl_cond').split('\n') %}<li>{{ line }}</li>{% endfor %}</ul>
+            {% else %}
+              {% for para in t('dl_%s' % k).split('\n\n') %}<p>{{ para }}</p>{% endfor %}
+            {% endif %}
+          </div>
+        </details>
       {% endfor %}
-      <div class="dl-block">
-        <h3>{{ t('dl_cond_title') }}</h3>
-        <ul>{% for line in t('dl_cond').split('\n') %}<li>{{ line }}</li>{% endfor %}</ul>
-      </div>
     </div>
   </div>
 </section>
 
 <!-- ============================== CONTACT ============================== -->
-<section id="contact" class="max-w-xl mx-auto px-5 py-16">
-  <h2 class="font-serif text-3xl sm:text-4xl text-charcoal text-center mb-5">{{ t('contact_title') }}</h2>
-  <div class="flex items-center justify-center flex-wrap gap-3 mb-8">
-    <a href="{{ instagram }}" target="_blank" rel="noopener" class="contact-link">
-      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".8" fill="currentColor"/></svg>
-      @{{ instagram.rstrip('/').split('/')[-1] }}
-    </a>
-    {% if whatsapp %}
-      <a href="https://wa.me/{{ whatsapp }}" target="_blank" rel="noopener" class="contact-link">
-        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 20l1.3-4A8 8 0 1 1 8 18.7L4 20z"/><path d="M9.5 9c0 3 2.5 5.5 5.5 5.5l1-1.5-2-1-1 1c-1 0-2.5-1.5-2.5-2.5l1-1-1-2L9.5 9z" stroke-width="1.1"/></svg>
-        WhatsApp
-      </a>
-    {% endif %}
+<section id="contact" class="py-16 sm:py-24 border-t border-line/60">
+  <div class="max-w-[1180px] mx-auto px-5 sm:px-8 ct">
+    <div>
+      <h2 class="font-serif text-3xl sm:text-5xl text-charcoal leading-tight">{{ t('contact_title') }}</h2>
+      <p class="mt-5 text-[15px] leading-relaxed text-ink/80 max-w-md">{{ t('contact_lead') }}</p>
+      <div class="flex items-center flex-wrap gap-3 mt-7">
+        <a href="{{ instagram }}" target="_blank" rel="noopener" class="contact-link">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".8" fill="currentColor"/></svg>
+          @{{ instagram.rstrip('/').split('/')[-1] }}
+        </a>
+        {% if whatsapp %}
+          <a href="https://wa.me/{{ whatsapp }}" target="_blank" rel="noopener" class="contact-link">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 20l1.3-4A8 8 0 1 1 8 18.7L4 20z"/><path d="M9.5 9c0 3 2.5 5.5 5.5 5.5l1-1.5-2-1-1 1c-1 0-2.5-1.5-2.5-2.5l1-1-1-2L9.5 9z" stroke-width="1.1"/></svg>
+            WhatsApp
+          </a>
+        {% endif %}
+      </div>
+    </div>
+    <form id="quote-form" class="grid sm:grid-cols-2 gap-x-6 gap-y-5">
+      <label class="ct-field"><span>{{ t('form_label_name') }}</span>
+        <input name="name" required autocomplete="name"></label>
+      <label class="ct-field"><span>{{ t('form_label_contact') }}</span>
+        <input name="contact" required autocomplete="tel"></label>
+      <label class="ct-field sm:col-span-2"><span>{{ t('form_label_interest') }}</span>
+        <select name="category">
+          <option value=""></option>
+          {% for cat in categories %}<option value="{{ cat.slug }}">{{ cat.name }}</option>{% endfor %}
+        </select></label>
+      <label class="ct-field sm:col-span-2"><span>{{ t('form_label_message') }}</span>
+        <textarea name="message" rows="3"></textarea></label>
+      <button type="submit" class="sm:col-span-2 justify-self-start bg-charcoal text-cream px-8 py-3.5 text-[15px] tracking-wide hover:bg-charcoal/90 transition mt-2">
+        {{ t('form_send') }}
+      </button>
+      <p id="quote-status" class="sm:col-span-2 text-sm"></p>
+    </form>
   </div>
-  <form id="quote-form" class="grid sm:grid-cols-2 gap-4">
-    <label class="sr-only" for="q-name">{{ t('form_name') }}</label>
-    <input id="q-name" name="name" required autocomplete="name" placeholder="{{ t('form_name') }}"
-      class="border border-charcoal/25 bg-transparent px-3 py-3 text-sm focus:outline-none focus:border-charcoal">
-    <label class="sr-only" for="q-contact">{{ t('form_contact') }}</label>
-    <input id="q-contact" name="contact" required autocomplete="tel" placeholder="{{ t('form_contact') }}"
-      class="border border-charcoal/25 bg-transparent px-3 py-3 text-sm focus:outline-none focus:border-charcoal">
-    <select name="category" aria-label="{{ t('form_interest') }}" class="sm:col-span-2 border border-charcoal/25 bg-transparent px-3 py-3 text-sm focus:outline-none focus:border-charcoal">
-      <option value="">{{ t('form_interest') }}</option>
-      {% for cat in categories %}
-        <option value="{{ cat.slug }}">{{ cat.name }}</option>
-      {% endfor %}
-    </select>
-    <textarea name="message" rows="4" aria-label="{{ t('form_message') }}" placeholder="{{ t('form_message') }}"
-      class="sm:col-span-2 border border-charcoal/25 bg-transparent px-3 py-3 text-sm focus:outline-none focus:border-charcoal"></textarea>
-    <button type="submit" class="sm:col-span-2 bg-charcoal text-cream px-6 py-3 text-sm tracking-wide hover:bg-charcoal/90 transition">
-      {{ t('form_send') }}
-    </button>
-    <p id="quote-status" class="sm:col-span-2 text-sm mt-1"></p>
-  </form>
 </section>
 
 <!-- ============================== FOOTER ============================== -->
-<footer class="border-t border-line/60 py-10">
-  <div class="max-w-6xl mx-auto px-5 grid gap-8 sm:grid-cols-[1fr_auto_1fr] items-center text-center sm:text-left">
-    <div class="flex flex-col items-center sm:items-start gap-2">
-      <img src="{{ url_for('static', filename='img/logo-nav.png') }}" alt="Tiknik" class="h-9 w-auto">
-      <p class="font-serif text-lg text-charcoal/85">{{ t('handmade_in') }}</p>
+<footer class="border-t border-line/60 py-12">
+  <div class="max-w-[1180px] mx-auto px-5 sm:px-8 grid gap-10 sm:grid-cols-3 text-sm">
+    <div class="flex flex-col gap-3">
+      <img src="{{ url_for('static', filename='img/logo-nav.png') }}" alt="Tiknik" class="h-10 w-auto self-start">
+      <p class="font-serif text-xl text-charcoal">{{ t('handmade_in') }}</p>
     </div>
-    <div class="flex items-center justify-center gap-6 text-sm text-ink/75">
-      <a href="{{ instagram }}" target="_blank" rel="noopener" class="hover:text-charcoal transition">Instagram</a>
-      {% if whatsapp %}<a href="https://wa.me/{{ whatsapp }}" target="_blank" rel="noopener" class="hover:text-charcoal transition">WhatsApp</a>{% endif %}
-    </div>
-    <div class="text-sm text-ink/75 sm:text-right">
+    <nav class="flex flex-col gap-2 text-ink/80">
+      <a href="#catalog" class="hover:text-charcoal">{{ t('nav_catalog') }}</a>
+      <a href="#process" class="hover:text-charcoal">{{ t('nav_process') }}</a>
+      <a href="#about" class="hover:text-charcoal">{{ t('nav_about') }}</a>
+      <a href="#delivery" class="hover:text-charcoal">{{ t('nav_delivery') }}</a>
+      <a href="#contact" class="hover:text-charcoal">{{ t('nav_contact') }}</a>
+    </nav>
+    <div class="flex flex-col gap-2 text-ink/80">
+      <a href="{{ instagram }}" target="_blank" rel="noopener" class="hover:text-charcoal">Instagram</a>
+      {% if whatsapp %}<a href="https://wa.me/{{ whatsapp }}" target="_blank" rel="noopener" class="hover:text-charcoal">WhatsApp</a>{% endif %}
       {% if hours %}<p>{{ t('hours_label') }}: {{ hours }}</p>{% endif %}
-      <p class="text-xs text-ink/75 mt-1">&copy; Tiknik</p>
+      <button type="button" class="js-review-open text-left hover:text-charcoal">{{ t('review_add') }}</button>
+      <p class="text-xs text-ink/75 mt-2">&copy; Tiknik</p>
     </div>
   </div>
 </footer>

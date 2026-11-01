@@ -10,14 +10,14 @@ LANG_LABELS = {"en": "EN", "ru": "RU", "hy": "ARM"}
 UI = {
     # <head>
     "title": {
-        "en": "Tiknik — Bespoke Bridal & Couture",
-        "ru": "Tiknik — свадебные наряды и couture на заказ",
-        "hy": "Tiknik — հարսանյաց զգեստներ և couture՝ պատվերով",
+        "en": "Tiknik | Bespoke Bridal & Couture",
+        "ru": "Tiknik | свадебные наряды и couture на заказ",
+        "hy": "Tiknik | հարսանյաց զգեստներ և couture՝ պատվերով",
     },
     "meta_description": {
-        "en": "Tiknik — bespoke bridal corsets, gowns, veils and accessories. Rent or order made-to-measure.",
-        "ru": "Tiknik — свадебные корсеты, платья, фаты и аксессуары на заказ. Аренда или пошив по вашим меркам.",
-        "hy": "Tiknik — հարսանյաց կորսետներ, զգեստներ, քողեր և աքսեսուարներ՝ պատվերով։ Վարձույթ կամ կարում՝ ձեր չափսերով։",
+        "en": "Tiknik: bespoke bridal corsets, gowns, veils and accessories. Rent or order made-to-measure.",
+        "ru": "Tiknik: свадебные корсеты, платья, фаты и аксессуары на заказ. Аренда или пошив по вашим меркам.",
+        "hy": "Tiknik. հարսանյաց կորսետներ, զգեստներ, քողեր և աքսեսուարներ՝ պատվերով։ Վարձույթ կամ կարում՝ ձեր չափսերով։",
     },
 
     # Header
@@ -29,9 +29,9 @@ UI = {
 
     # Hero
     "hero_tagline": {
-        "en": "Bespoke bridal corsets, gowns, veils and accessories — to rent or to keep.",
-        "ru": "Свадебные корсеты, платья, фаты и аксессуары на заказ — напрокат или навсегда.",
-        "hy": "Հարսանյաց կորսետներ, զգեստներ, քողեր և աքսեսուարներ՝ պատվերով — վարձույթով կամ ընդմիշտ։",
+        "en": "Bridal gowns and couture, sewn by hand in Yerevan for one bride at a time.",
+        "ru": "Свадебные платья и couture, сшитые вручную в Ереване, для каждой невесты отдельно.",
+        "hy": "Հարսանյաց զգեստներ և couture՝ ձեռքով կարված Երևանում, յուրաքանչյուր հարսնացուի համար առանձին։",
     },
     "cta_book_quote": {
         "en": "Book a Fitting or Request a Quote",
@@ -116,7 +116,7 @@ UI = {
     "worldwide_text": {
         "en": "Based in Yerevan, working with clients worldwide. Remote measurement guides, video fittings and "
               "international shipping available for custom and made-to-order pieces.",
-        "ru": "Мы находимся в Ереване и работаем с клиентами по всему миру. Для изделий на заказ — инструкции "
+        "ru": "Мы находимся в Ереване и работаем с клиентами по всему миру. Для изделий на заказ инструкции "
               "по снятию мерок, примерки по видеосвязи и международная доставка.",
         "hy": "Գտնվում ենք Երևանում և աշխատում ենք ամբողջ աշխարհի հաճախորդների հետ։ Պատվերով իրերի համար՝ "
               "չափսեր վերցնելու ուղեցույց, տեսազանգով փորձ և միջազգային առաքում։",
@@ -137,7 +137,20 @@ UI = {
         "ru": "Расскажите немного о том, что вы ищете",
         "hy": "Պատմեք մի փոքր, թե ինչ եք փնտրում",
     },
-    "form_send": {"en": "Send Request", "ru": "Отправить заявку", "hy": "Ուղարկել հայտը"},
+    "form_send": {"en": "Request a fitting", "ru": "Записаться на примерку", "hy": "Գրանցվել փորձի"},
+    "contact_lead": {
+        "en": "Tell us about your day and the dress you imagine. We reply personally, usually within a day.",
+        "ru": "Расскажите о своём дне и платье, которое вы представляете. Мы ответим лично, обычно в течение дня.",
+        "hy": "Պատմեք ձեր օրվա և ձեր պատկերացրած զգեստի մասին։ Մենք կպատասխանենք անձամբ, սովորաբար մեկ օրվա ընթացքում։",
+    },
+    "form_label_name": {"en": "Name", "ru": "Имя", "hy": "Անուն"},
+    "form_label_contact": {"en": "Phone, WhatsApp or Instagram", "ru": "Телефон, WhatsApp или Instagram", "hy": "Հեռախոս, WhatsApp կամ Instagram"},
+    "form_label_interest": {"en": "Interested in", "ru": "Интересует", "hy": "Հետաքրքրում է"},
+    "form_label_message": {"en": "Your wedding and wishes", "ru": "Ваша свадьба и пожелания", "hy": "Ձեր հարսանիքը և ցանկությունները"},
+    "dl_local_sum": {"en": "Free collection in Yerevan or local delivery", "ru": "Бесплатно: в ателье в Ереване или доставка по стране", "hy": "Անվճար՝ Երևանում կամ առաքում"},
+    "dl_intl_sum": {"en": "Registered post with tracking, 10–30 days", "ru": "Заказной почтой с трек-номером, 10–30 дней", "hy": "Պատվիրված փոստով, հետևման համարով, 10–30 օր"},
+    "dl_pack_sum": {"en": "A protective garment bag, ready to wear, with care notes", "ru": "Защитный чехол, готово к носке, инструкция по уходу", "hy": "Պաշտպանիչ պարկ, պատրաստ հագնելու, խնամքի հրահանգներ"},
+    "dl_cond_sum": {"en": "Dispatch dates, tracking and customs", "ru": "Даты отправки, отслеживание и таможня", "hy": "Ուղարկման ամսաթվեր, հետևում և մաքսային հարցեր"},
 
     # Product overlay
     "back_to_catalog": {"en": "Back to Catalog", "ru": "Назад к каталогу", "hy": "Վերադառնալ կատալոգ"},
@@ -145,7 +158,7 @@ UI = {
     "next_item": {"en": "Next item", "ru": "Следующий", "hy": "Հաջորդը"},
     "zoom_hint": {
         "en": "Scroll or double-click to zoom · drag to pan · Esc to close",
-        "ru": "Колесо мыши или двойной клик — увеличить · перетащите — сдвинуть · Esc — закрыть",
+        "ru": "Колесо мыши или двойной клик: увеличить, перетащите: сдвинуть, Esc: закрыть",
         "hy": "Մկնիկի անիվ կամ կրկնակի սեղմում՝ խոշորացնել · քաշել՝ տեղաշարժել · Esc՝ փակել",
     },
 
@@ -257,14 +270,14 @@ UI = {
         "hy": "Առանց գրանցման և կանխավճարի։ Մենք կկապվենք ձեզ հետ՝ չափսը, ամսաթվերը և վճարումը ճշտելու համար։",
     },
     "cart_sent": {
-        "en": "Thank you! Order №{n} is with us — we'll be in touch shortly.",
-        "ru": "Спасибо! Заказ №{n} у нас — скоро свяжемся с вами.",
+        "en": "Thank you! Order №{n} is with us. We'll be in touch shortly.",
+        "ru": "Спасибо! Заказ №{n} у нас, скоро свяжемся с вами.",
         "hy": "Շնորհակալություն։ №{n} պատվերը ստացել ենք, շուտով կկապվենք ձեզ հետ։",
     },
     "cart_remove": {"en": "Remove", "ru": "Убрать", "hy": "Հեռացնել"},
     "busy_error": {
-        "en": "Too many requests — please try again in a few minutes.",
-        "ru": "Слишком много запросов — попробуйте через несколько минут.",
+        "en": "Too many requests. Please try again in a few minutes.",
+        "ru": "Слишком много запросов. Попробуйте через несколько минут.",
         "hy": "Չափազանց շատ հարցումներ, փորձեք մի քանի րոպեից։",
     },
 
@@ -298,7 +311,7 @@ UI = {
     # Delivery: three facts (all already stated elsewhere on the site)
     # Delivery & shipping section (and the short version in the product view)
     "dl_title": {"en": "Delivery & Shipping", "ru": "Доставка", "hy": "Առաքում"},
-    "dl_local_title": {"en": "Armenia", "ru": "Армения", "hy": "Հայաստան"},
+    "dl_local_title": {"en": "Local", "ru": "По Армении", "hy": "Հայաստանում"},
     "dl_local": {
         "en": "Brides in Armenia can collect their dresses directly from our Yerevan atelier or arrange local delivery. Both options are complimentary.\n\nA final fitting is available before collection. We recommend receiving your dress at least 1–2 weeks before the wedding.",
         "ru": "Невесты в Армении могут забрать платье прямо в нашем ателье в Ереване или заказать доставку по стране. Оба варианта бесплатны.\n\nПеред тем как забрать платье, можно пройти финальную примерку. Мы советуем получить платье минимум за 1–2 недели до свадьбы.",
@@ -359,7 +372,7 @@ UI = {
     },
     "sending": {"en": "Sending…", "ru": "Отправляем…", "hy": "Ուղարկվում է…"},
     "sent": {
-        "en": "Thank you — we've received your request and will be in touch shortly.",
+        "en": "Thank you. We've received your request and will be in touch shortly.",
         "ru": "Спасибо! Мы получили вашу заявку и скоро свяжемся с вами.",
         "hy": "Շնորհակալություն։ Ձեր հայտը ստացել ենք և շուտով կկապվենք ձեզ հետ։",
     },

@@ -4,8 +4,7 @@
 (function () {
   "use strict";
 
-  var track = document.getElementById("reviews-track");
-  if (!track) return;
+  var track = document.getElementById("reviews-track"); // only there once a review is published
 
   var LANG = window.TIKNIK_LANG || "en";
   var I18N = (window.TIKNIK_I18N || {})[LANG] || {};
@@ -56,7 +55,7 @@
   }
 
   // Tapping a photo shows the review's next photo.
-  track.addEventListener("click", function (e) {
+  if (track) track.addEventListener("click", function (e) {
     var box = e.target.closest(".review-photo");
     if (!box) return;
     var r = reviews[parseInt(box.getAttribute("data-i"), 10)];
@@ -74,7 +73,7 @@
     box.querySelector(".count").textContent = p + 1 + " / " + r.photos.length;
   });
 
-  fetch("/api/reviews")
+  if (track) fetch("/api/reviews")
     .then(function (res) {
       return res.json();
     })
@@ -85,7 +84,7 @@
     .catch(function () {
       render();
     });
-  window.addEventListener("resize", function () {
+  if (track) window.addEventListener("resize", function () {
     track.classList.toggle("centered", track.scrollWidth <= track.clientWidth + 1);
   });
 
@@ -97,10 +96,12 @@
   var status = document.getElementById("review-status");
   var picked = []; // [{blob, url}]
 
-  document.getElementById("review-open").addEventListener("click", function () {
-    status.classList.add("hidden");
-    if (dialog.showModal) dialog.showModal();
-    else dialog.setAttribute("open", "");
+  document.querySelectorAll(".js-review-open").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      status.classList.add("hidden");
+      if (dialog.showModal) dialog.showModal();
+      else dialog.setAttribute("open", "");
+    });
   });
   form.querySelector(".js-review-close").addEventListener("click", function () {
     dialog.close();

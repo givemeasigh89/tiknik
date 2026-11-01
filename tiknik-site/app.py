@@ -530,6 +530,7 @@ def index(lang=None, item_id=None):
         rub_rate=get_setting(db, "rub_rate", "4.2"),
         instagram=get_setting(db, "instagram", DEFAULT_INSTAGRAM),
         whatsapp=get_setting(db, "whatsapp", ""),
+        has_reviews=bool(db.execute("SELECT 1 FROM reviews WHERE status = 'approved' LIMIT 1").fetchone()),
         motion=get_setting(db, "motion", "1") == "1",
     ))
     resp.set_cookie("lang", lang, max_age=365 * 24 * 3600, samesite="Lax")
