@@ -245,6 +245,25 @@
     .about-row--last { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); }
   }
 
+  /* Process: the remote-ordering note under the stages */
+  .process-remote { margin-top: 1.4rem; padding-top: 1rem; border-top: 1px solid rgba(46,44,41,.14); font-size: 13px;
+                    line-height: 1.6; color: rgba(58,58,58,.82); max-width: 34rem; }
+  .process-remote-title { font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-size: 1.15rem; color: #2E2C29; margin-bottom: .2rem; }
+  @media (max-width: 1023px) { .process-remote { margin-left: auto; margin-right: auto; text-align: center; } }
+
+  /* Delivery: heading on the left, four blocks on the right */
+  .dl { display: grid; gap: 2.5rem; }
+  @media (min-width: 900px) { .dl { grid-template-columns: minmax(0, .8fr) minmax(0, 2fr); gap: 4rem; } .dl h2 { position: sticky; top: 6rem; align-self: start; } }
+  .dl-blocks { display: grid; gap: 2.25rem 3rem; }
+  @media (min-width: 700px) { .dl-blocks { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .dl-block { border-top: 1px solid rgba(239,238,234,.18); padding-top: 1.1rem; }
+  .dl-block h3 { font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-size: 1.6rem; color: #EFEEEA; margin-bottom: .6rem; }
+  .dl-block p, .dl-block li { font-size: .9rem; line-height: 1.75; color: rgba(239,238,234,.75); }
+  .dl-block p + p { margin-top: .75rem; }
+  .dl-block li { position: relative; padding-left: 1.1rem; }
+  .dl-block li + li { margin-top: .55rem; }
+  .dl-block li::before { content: ""; position: absolute; left: 0; top: .8em; width: 6px; height: 1px; background: #A48F66; }
+
   /* Cart */
   .card-cart { position: absolute; right: .6rem; bottom: .6rem; z-index: 3; width: 40px; height: 40px; border-radius: 9999px;
                display: inline-flex; align-items: center; justify-content: center; color: #2E2C29;
@@ -515,7 +534,8 @@
       <p class="hidden md:block text-2xl tracking-[.12em] text-charcoal/80 leading-snug select-none" aria-hidden="true">ES<br>TD</p>
       <div id="process-ring" class="process-ring" tabindex="0" role="group" aria-label="{{ t('process_hint') }}">
         <div class="process-frame">
-          {% for n in range(1, 13) %}
+          {# photos in the order of the six stages: measuring, pattern, toile, fabric, sewing, the finished piece #}
+          {% for f in ['04', '07', '03', '08', '09', '01', '02', '05', '06', '10', '11', '12'] %}{% set n = f|int %}
             <img src="{{ url_for('static', filename='img/process/%02d.jpg' % n) }}" alt="" class="process-photo" draggable="false"{% if n > 2 %} loading="lazy"{% endif %}>
           {% endfor %}
           <div class="process-leak"></div>
@@ -556,9 +576,9 @@
     <div class="w-full lg:w-[470px] shrink-0">
     <!-- Stage text: the JS shows the one for the photo the key points at. -->
     <div class="process-stages relative max-w-xl mx-auto lg:mx-0 text-center lg:text-left" aria-live="polite">
-      {% for i in range(1, 6) %}
+      {% for i in range(1, 7) %}
         <div class="process-stage{{ ' is-active' if i == 1 }}" data-stage="{{ i - 1 }}">
-          <p class="font-serif text-xl sm:text-2xl text-gold leading-none mb-1 sm:mb-2">{{ ['I', 'II', 'III', 'IV', 'V'][i - 1] }}</p>
+          <p class="font-serif text-xl sm:text-2xl text-gold leading-none mb-1 sm:mb-2">{{ ['I', 'II', 'III', 'IV', 'V', 'VI'][i - 1] }}</p>
           <h3 class="font-serif text-[1.45rem] sm:text-3xl leading-tight text-charcoal mb-1.5 sm:mb-3">{{ t('stage%d_title' % i) }}</h3>
           <p class="text-[13px] sm:text-[15px] text-ink/75 leading-relaxed">{{ t('stage%d_text' % i) }}</p>
         </div>
@@ -568,13 +588,17 @@
     <div class="flex items-center justify-center lg:justify-start gap-1 sm:gap-2 mt-3 sm:mt-6">
       <button type="button" class="process-step w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-charcoal/20 hover:border-charcoal text-charcoal hidden min-[400px]:flex items-center justify-center shrink-0" data-dir="-1" aria-label="{{ t('process_prev') }}">&#8249;</button>
       <div class="flex flex-wrap justify-center lg:justify-start">
-        {% for i in range(1, 6) %}
+        {% for i in range(1, 7) %}
           <button type="button" class="process-chip px-1.5 sm:px-2.5 py-2 text-[13px] sm:text-sm" data-stage="{{ i - 1 }}">{{ t('stage%d_short' % i) }}</button>
         {% endfor %}
       </div>
       <button type="button" class="process-step w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-charcoal/20 hover:border-charcoal text-charcoal hidden min-[400px]:flex items-center justify-center shrink-0" data-dir="1" aria-label="{{ t('process_next') }}">&#8250;</button>
     </div>
     <p class="text-xs text-ink/75 text-center lg:text-left mt-2 sm:mt-3">{{ t('process_hint') }}</p>
+    <div class="process-remote">
+      <p class="process-remote-title">{{ t('process_remote_title') }}</p>
+      <p>{{ t('process_remote_text') }}</p>
+    </div>
     </div>
     </div>
   </div>
@@ -638,16 +662,20 @@
 </section>
 
 <!-- ============================== DELIVERY ============================== -->
-<section id="delivery" class="bg-charcoal text-cream py-16">
-  <div class="max-w-4xl mx-auto px-5 text-center">
-    <h2 class="font-serif text-3xl sm:text-4xl mb-10">{{ t('worldwide_title') }}</h2>
-    <div class="grid sm:grid-cols-3 gap-8 sm:gap-10 text-left sm:text-center">
-      {% for i in range(1, 4) %}
-        <div class="border-t border-cream/15 pt-5">
-          <p class="font-serif text-2xl text-cream mb-2">{{ t('delivery_f%d_title' % i) }}</p>
-          <p class="text-sm text-cream/70 leading-relaxed">{{ t('delivery_f%d_text' % i) }}</p>
+<section id="delivery" class="bg-charcoal text-cream py-16 sm:py-24">
+  <div class="max-w-[1180px] mx-auto px-5 sm:px-8 dl">
+    <h2 class="font-serif text-3xl sm:text-5xl leading-tight">{{ t('dl_title') }}</h2>
+    <div class="dl-blocks">
+      {% for k in ['local', 'intl', 'pack'] %}
+        <div class="dl-block">
+          <h3>{{ t('dl_%s_title' % k) }}</h3>
+          {% for para in t('dl_%s' % k).split('\n\n') %}<p>{{ para }}</p>{% endfor %}
         </div>
       {% endfor %}
+      <div class="dl-block">
+        <h3>{{ t('dl_cond_title') }}</h3>
+        <ul>{% for line in t('dl_cond').split('\n') %}<li>{{ line }}</li>{% endfor %}</ul>
+      </div>
     </div>
   </div>
 </section>

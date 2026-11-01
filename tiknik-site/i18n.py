@@ -61,48 +61,53 @@ UI = {
     "process_prev": {"en": "Previous", "ru": "Назад", "hy": "Նախորդը"},
     "process_next": {"en": "Next", "ru": "Дальше", "hy": "Հաջորդը"},
     # The five stages of the process ring (static/js/process.js); *_short is the label under the text.
-    "stage1_short": {"en": "Fabric", "ru": "Ткань", "hy": "Կտոր"},
-    "stage1_title": {"en": "Choosing the Fabric", "ru": "Выбор ткани", "hy": "Կտորի ընտրություն"},
+    "stage1_short": {"en": "Design", "ru": "Дизайн", "hy": "Դիզայն"},
+    "stage1_title": {"en": "Consultation & Design", "ru": "Консультация и дизайн", "hy": "Խորհրդատվություն և դիզայն"},
     "stage1_text": {
-        "en": "We choose the fabric together: colour, texture, the way it drapes. If you can't come in, "
-              "you get a detailed report with photos of every option.",
-        "ru": "Вместе выбираем ткань: цвет, фактуру, то, как она ложится. Если вы не можете приехать — "
-              "пришлём подробный отчёт с фото каждого варианта.",
-        "hy": "Միասին ընտրում ենք կտորը՝ գույնը, ֆակտուրան, թե ինչպես է այն իջնում։ Եթե չեք կարող գալ, "
-              "կուղարկենք մանրամասն հաշվետվություն՝ յուրաքանչյուր տարբերակի լուսանկարներով։",
+        "en": "Once an order is confirmed, we discuss the desired design, individual preferences and take the bride's measurements.",
+        "ru": "После подтверждения заказа мы обсуждаем желаемый дизайн, ваши пожелания и снимаем мерки невесты.",
+        "hy": "Պատվերը հաստատելուց հետո քննարկում ենք ցանկալի դիզայնը, անհատական նախասիրությունները և վերցնում հարսնացուի չափսերը։",
     },
-    "stage2_short": {"en": "Measure", "ru": "Мерки", "hy": "Չափսեր"},
-    "stage2_title": {"en": "Precise Measurements", "ru": "Точные мерки", "hy": "Ճշգրիտ չափսեր"},
+    "stage2_short": {"en": "Pattern", "ru": "Выкройка", "hy": "Ձևվածք"},
+    "stage2_title": {"en": "Pattern Making", "ru": "Построение выкройки", "hy": "Ձևվածքի պատրաստում"},
     "stage2_text": {
-        "en": "Exact measurements and a pattern drafted for your proportions alone, then checked at a fitting.",
-        "ru": "Снимаем точные мерки и строим выкройку только под ваши пропорции, затем проверяем её на примерке.",
-        "hy": "Վերցնում ենք ճշգրիտ չափսերը և կառուցում ձևվածք միայն ձեր համամասնություններով, "
-              "ապա ստուգում փորձի ժամանակ։",
+        "en": "An individual pattern is drafted according to the bride's measurements and chosen design.",
+        "ru": "По меркам невесты и выбранному дизайну строится индивидуальная выкройка.",
+        "hy": "Հարսնացուի չափսերով և ընտրված դիզայնով կառուցվում է անհատական ձևվածք։",
     },
-    "stage3_short": {"en": "Sewing", "ru": "Пошив", "hy": "Կարում"},
-    "stage3_title": {"en": "Sewing, Fully Reported", "ru": "Пошив под полным контролем", "hy": "Կարում՝ լիարժեք վերահսկողությամբ"},
+    "stage3_short": {"en": "Toile", "ru": "Макет", "hy": "Մակետ"},
+    "stage3_title": {"en": "Toile & First Fitting", "ru": "Макет и первая примерка", "hy": "Մակետ և առաջին փորձ"},
     "stage3_text": {
-        "en": "Every stage of sewing is documented: you get progress reports and see your piece come together.",
-        "ru": "Каждый этап пошива фиксируем: вы получаете отчёты и видите, как рождается ваша вещь.",
-        "hy": "Կարի յուրաքանչյուր փուլը փաստագրում ենք. դուք ստանում եք հաշվետվություններ "
-              "և տեսնում, թե ինչպես է ստեղծվում ձեր զգեստը։",
+        "en": "A preliminary version of the dress (toile) is made in simple fabric to check the silhouette, proportions and fit before any final materials are used.",
+        "ru": "Из простой ткани шьётся предварительная версия платья (макет), чтобы проверить силуэт, пропорции и посадку до работы с основными материалами.",
+        "hy": "Պարզ կտորից կարվում է զգեստի նախնական տարբերակը (մակետ)՝ սիլուետը, համամասնությունները և նստվածքը ստուգելու համար, նախքան հիմնական նյութերով աշխատելը։",
     },
-    "stage4_short": {"en": "The Look", "ru": "Образ", "hy": "Կերպար"},
-    "stage4_title": {"en": "The Look Is Born", "ru": "Рождение образа", "hy": "Կերպարի ծնունդը"},
+    "stage4_short": {"en": "Fabric", "ru": "Ткань", "hy": "Կտոր"},
+    "stage4_title": {"en": "Fabric Selection", "ru": "Выбор ткани", "hy": "Կտորի ընտրություն"},
     "stage4_text": {
-        "en": "Final fittings: the piece is almost ready and the look comes together, down to the last detail.",
-        "ru": "Финальные примерки: вещь почти готова, образ собирается до последней детали.",
-        "hy": "Վերջին փորձերը. զգեստը գրեթե պատրաստ է, կերպարն ամբողջանում է մինչև վերջին մանրուքը։",
+        "en": "We present carefully selected fabrics, vintage lace, colours and textures for the bride's approval.",
+        "ru": "Мы предлагаем невесте на утверждение тщательно подобранные ткани, винтажное кружево, цвета и фактуры.",
+        "hy": "Հարսնացուի հաստատմանն ենք ներկայացնում խնամքով ընտրված կտորներ, վինտաժային ժանյակ, գույներ և ֆակտուրաներ։",
     },
-    "stage5_short": {"en": "Its Life", "ru": "Жизнь", "hy": "Կյանք"},
-    "stage5_title": {"en": "A Life of Its Own", "ru": "Новая жизнь наряда", "hy": "Զգեստի նոր կյանքը"},
+    "stage5_short": {"en": "Sewing", "ru": "Пошив", "hy": "Կարում"},
+    "stage5_title": {"en": "Dressmaking & Second Fitting", "ru": "Пошив и вторая примерка", "hy": "Կարում և երկրորդ փորձ"},
     "stage5_text": {
-        "en": "Your piece goes out into the world: the wedding, the party, the first dance. "
-              "2–4 months for bridal gowns, express on request.",
-        "ru": "Наряд выходит в свет: свадьба, праздник, первый танец. "
-              "Свадебное платье — 2–4 месяца, срочный пошив по запросу.",
-        "hy": "Զգեստը դուրս է գալիս աշխարհ՝ հարսանիք, տոն, առաջին պար։ "
-              "Հարսանյաց զգեստը՝ 2–4 ամիս, շտապ պատվերը՝ ըստ պահանջի։",
+        "en": "The final dress is created using the approved materials, followed by a second fitting and any necessary adjustments.",
+        "ru": "Платье шьётся из утверждённых материалов, затем проходит вторая примерка и необходимые доработки.",
+        "hy": "Զգեստը կարվում է հաստատված նյութերից, որից հետո անցկացվում է երկրորդ փորձը և անհրաժեշտ ճշգրտումները։",
+    },
+    "stage6_short": {"en": "Completion", "ru": "Готово", "hy": "Ավարտ"},
+    "stage6_title": {"en": "Completion", "ru": "Завершение", "hy": "Ավարտ"},
+    "stage6_text": {
+        "en": "Once every detail and the fit are approved, the dress is finished and prepared for delivery.",
+        "ru": "Когда каждая деталь и посадка утверждены, платье завершается и готовится к передаче.",
+        "hy": "Երբ յուրաքանչյուր մանրուք և նստվածքը հաստատված են, զգեստն ավարտվում է և պատրաստվում հանձնման։",
+    },
+    "process_remote_title": {"en": "Remote ordering", "ru": "Заказ из другой страны", "hy": "Հեռավար պատվեր"},
+    "process_remote_text": {
+        "en": "For brides abroad, the process is managed entirely online. Measurements, photographs and videos are shared throughout each stage, allowing the bride to review designs, fabrics, fittings and adjustments remotely.",
+        "ru": "Для невест из других стран весь процесс проходит онлайн. На каждом этапе мы обмениваемся мерками, фото и видео, и невеста видит дизайн, ткани, примерки и доработки удалённо.",
+        "hy": "Արտերկրում գտնվող հարսնացուների համար ամբողջ ընթացքը կազմակերպվում է առցանց։ Յուրաքանչյուր փուլում փոխանակում ենք չափսեր, լուսանկարներ և տեսանյութեր, և հարսնացուն հեռավար տեսնում է դիզայնը, կտորները, փորձերն ու ճշգրտումները։",
     },
 
     # Worldwide
@@ -291,23 +296,49 @@ UI = {
     "link_copied": {"en": "Link copied", "ru": "Ссылка скопирована", "hy": "Հղումը պատճենված է"},
 
     # Delivery: three facts (all already stated elsewhere on the site)
-    "delivery_f1_title": {"en": "2–4 months", "ru": "2–4 месяца", "hy": "2–4 ամիս"},
+    # Delivery & shipping section (and the short version in the product view)
+    "dl_title": {"en": "Delivery & Shipping", "ru": "Доставка", "hy": "Առաքում"},
+    "dl_local_title": {"en": "Armenia", "ru": "Армения", "hy": "Հայաստան"},
+    "dl_local": {
+        "en": "Brides in Armenia can collect their dresses directly from our Yerevan atelier or arrange local delivery. Both options are complimentary.\n\nA final fitting is available before collection. We recommend receiving your dress at least 1–2 weeks before the wedding.",
+        "ru": "Невесты в Армении могут забрать платье прямо в нашем ателье в Ереване или заказать доставку по стране. Оба варианта бесплатны.\n\nПеред тем как забрать платье, можно пройти финальную примерку. Мы советуем получить платье минимум за 1–2 недели до свадьбы.",
+        "hy": "Հայաստանում հարսնացուները կարող են զգեստը վերցնել անմիջապես մեր երևանյան արվեստանոցից կամ պատվիրել առաքում։ Երկու տարբերակն էլ անվճար են։\n\nՎերցնելուց առաջ հնարավոր է վերջին փորձը։ Խորհուրդ ենք տալիս զգեստը ստանալ հարսանիքից առնվազն 1–2 շաբաթ առաջ։",
+    },
+    "dl_intl_title": {"en": "Worldwide", "ru": "По всему миру", "hy": "Ամբողջ աշխարհում"},
+    "dl_intl": {
+        "en": "Tiknik ships worldwide via registered post. Each order is carefully packaged in a protective garment bag, with a box provided when necessary.\n\nA tracking number and all necessary shipping information are provided once the order is dispatched. Estimated delivery time is 10–30 days, depending on the destination.\n\nShipping costs are calculated individually according to the destination and package weight. Customs duties and import taxes, if applicable, are the responsibility of the recipient.\n\nExpress shipping is available upon request at an additional cost.",
+        "ru": "Tiknik отправляет заказы по всему миру заказной почтой. Каждый заказ бережно упакован в защитный чехол для одежды, при необходимости в коробку.\n\nПосле отправки вы получаете трек-номер и всю нужную информацию. Срок доставки 10–30 дней, в зависимости от страны.\n\nСтоимость доставки рассчитывается индивидуально по стране и весу посылки. Таможенные пошлины и налоги на ввоз, если они есть, оплачивает получатель.\n\nПо запросу возможна экспресс-доставка за дополнительную плату.",
+        "hy": "Tiknik-ը առաքում է ամբողջ աշխարհով՝ պատվիրված փոստով։ Յուրաքանչյուր պատվեր խնամքով փաթեթավորվում է պաշտպանիչ հագուստապարկում, անհրաժեշտության դեպքում՝ տուփում։\n\nՈւղարկելուց հետո տրամադրվում է հետևման համար և առաքման ողջ տեղեկատվությունը։ Առաքման ժամկետը 10–30 օր է՝ կախված երկրից։\n\nԱռաքման արժեքը հաշվարկվում է անհատապես՝ ըստ երկրի և ծանրոցի քաշի։ Մաքսատուրքերը և ներմուծման հարկերը, եթե կան, վճարում է ստացողը։\n\nՊահանջով հնարավոր է էքսպրես առաքում՝ լրացուցիչ վճարով։",
+    },
+    "dl_pack_title": {"en": "Packaging & care", "ru": "Упаковка и уход", "hy": "Փաթեթավորում և խնամք"},
+    "dl_pack": {
+        "en": "Dresses are prepared for shipping as close to ready-to-wear as possible. Each order includes care instructions to help preserve the garment and its delicate details.",
+        "ru": "Платья готовятся к отправке так, чтобы их можно было надеть почти сразу. К каждому заказу прилагается инструкция по уходу, чтобы сохранить вещь и её тонкие детали.",
+        "hy": "Զգեստները առաքման են պատրաստվում հնարավորինս պատրաստ հագնելու վիճակում։ Յուրաքանչյուր պատվերի հետ տրվում են խնամքի հրահանգներ՝ զգեստը և նրա նուրբ մանրուքները պահպանելու համար։",
+    },
+    "dl_cond_title": {"en": "Conditions", "ru": "Условия", "hy": "Պայմաններ"},
+    "dl_cond": {
+        "en": "Dispatch dates can be arranged in advance to fit the bride's wedding schedule.\nOnce dispatched, tracking information is provided for every international order.\nIn case of postal issues originating in Armenia, Tiknik will help the customer contact the postal service and resolve the matter.\nImport duties, customs fees and any additional taxes are the responsibility of the recipient.\nTiknik is not responsible for customs delays or charges imposed by the destination country.",
+        "ru": "Дату отправки можно согласовать заранее под дату свадьбы.\nДля каждого международного заказа после отправки предоставляется трек-номер.\nЕсли проблема с почтой возникла на стороне Армении, Tiknik поможет связаться с почтовой службой и решить вопрос.\nВвозные пошлины, таможенные сборы и дополнительные налоги оплачивает получатель.\nTiknik не отвечает за задержки на таможне и сборы, установленные страной назначения.",
+        "hy": "Առաքման ամսաթիվը կարելի է նախապես համաձայնեցնել հարսանիքի ժամանակացույցով։\nՅուրաքանչյուր միջազգային պատվերի համար ուղարկելուց հետո տրամադրվում է հետևման համար։\nԵթե փոստային խնդիրը ծագել է Հայաստանում, Tiknik-ը կօգնի կապվել փոստային ծառայության հետ և լուծել հարցը։\nՆերմուծման տուրքերը, մաքսային վճարները և լրացուցիչ հարկերը վճարում է ստացողը։\nTiknik-ը պատասխանատվություն չի կրում նպատակակետ երկրի մաքսային ուշացումների կամ վճարների համար։",
+    },
+    "delivery_f1_title": {"en": "Armenia", "ru": "Армения", "hy": "Հայաստան"},
     "delivery_f1_text": {
-        "en": "for a bridal gown made to your measurements. Express on request.",
-        "ru": "на свадебное платье по вашим меркам. Срочный пошив по запросу.",
-        "hy": "հարսանյաց զգեստի համար՝ ձեր չափսերով։ Շտապ պատվերը՝ ըստ պահանջի։",
+        "en": "Free collection from our Yerevan atelier or local delivery, with a final fitting before collection.",
+        "ru": "Бесплатно: забрать в ателье в Ереване или доставка по стране, с финальной примеркой.",
+        "hy": "Անվճար՝ վերցնել երևանյան արվեստանոցից կամ առաքում, վերջին փորձով։",
     },
-    "delivery_f2_title": {"en": "Fittings by video", "ru": "Примерки по видеосвязи", "hy": "Փորձեր տեսազանգով"},
+    "delivery_f2_title": {"en": "Worldwide", "ru": "По всему миру", "hy": "Ամբողջ աշխարհում"},
     "delivery_f2_text": {
-        "en": "With a step-by-step guide to taking your own measurements.",
-        "ru": "С понятной инструкцией, как снять мерки самостоятельно.",
-        "hy": "Քայլ առ քայլ ուղեցույցով, թե ինչպես ինքներդ վերցնել չափսերը։",
+        "en": "Registered post with tracking, 10–30 days. Shipping is calculated individually; express on request.",
+        "ru": "Заказной почтой с трек-номером, 10–30 дней. Стоимость рассчитывается индивидуально; экспресс по запросу.",
+        "hy": "Պատվիրված փոստով՝ հետևման համարով, 10–30 օր։ Արժեքը հաշվարկվում է անհատապես, էքսպրեսը՝ ըստ պահանջի։",
     },
-    "delivery_f3_title": {"en": "Shipped worldwide", "ru": "Доставка по всему миру", "hy": "Առաքում ամբողջ աշխարհով"},
+    "delivery_f3_title": {"en": "Remote fittings", "ru": "Удалённые примерки", "hy": "Հեռավար փորձեր"},
     "delivery_f3_text": {
-        "en": "From our atelier in Yerevan to your door.",
-        "ru": "Из нашего ателье в Ереване прямо к вам.",
-        "hy": "Մեր արվեստանոցից Երևանում՝ մինչև ձեր դուռը։",
+        "en": "Abroad, every stage is shared online: measurements, photos and videos of fabrics and fittings.",
+        "ru": "Из другой страны всё проходит онлайн: мерки, фото и видео тканей и примерок на каждом этапе.",
+        "hy": "Արտերկրից ամեն ինչ առցանց է՝ չափսեր, կտորների և փորձերի լուսանկարներ ու տեսանյութեր։",
     },
 
     # Footer

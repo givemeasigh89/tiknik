@@ -23,9 +23,9 @@
   var N = photos.length; // 12
   var STEP = 360 / N; // degrees per photo
   // Which stage each photo belongs to, and the photo each stage starts at.
-  var STAGE_OF = [0, 0, 1, 1, 2, 2, 2, 3, 3, 4, 4, 4];
-  var STAGE_START = [0, 2, 4, 7, 9];
-  var NUMERALS = ["I", "II", "III", "IV", "V"];
+  var STAGE_OF = [0, 0, 1, 2, 2, 3, 3, 4, 4, 5, 5, 5];
+  var STAGE_START = [0, 2, 3, 5, 7, 9];
+  var NUMERALS = ["I", "II", "III", "IV", "V", "VI"];
 
   var CX = 100, CY = 120, TRACK_RX = 87.5, TRACK_RY = 107.5;
   var KEY_RX = 95.5, KEY_RY = 115.5; // the key's tip rests on the outer double line
