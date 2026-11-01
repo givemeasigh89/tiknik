@@ -33,6 +33,9 @@
 {% if lang == 'hy' %}
 <!-- The site fonts have no Armenian letters; these fill in just those glyphs. -->
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Armenian:wght@300;400;500&family=Noto+Serif+Armenian:wght@400;500;600&display=swap" rel="stylesheet">
+{% else %}
+<!-- Just the six letters of the word Տիկնիկ in About, so it's set in a real Armenian serif. -->
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Armenian:wght@400&text=%D5%8F%D5%AB%D5%AF%D5%B6%D5%AB%D5%AF&display=swap" rel="stylesheet">
 {% endif %}
 
 <style>
@@ -208,6 +211,29 @@
   .cart-toast-open { padding: .45rem .8rem; border: 1px solid rgba(239,238,234,.35); font-size: .85rem; transition: background .2s, color .2s; }
   .cart-toast-open:hover { background: #EFEEEA; color: #2E2C29; }
   .thread-layer { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 95; pointer-events: none; overflow: visible; }
+
+  /* About: three chapters, photo and text side by side, alternating; the first photo is a cameo
+     in the logo's oval with the Armenian word set large beside it */
+  .about-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.75rem; align-items: center; }
+  .about-row + .about-row { margin-top: 4.5rem; }
+  .about-photo, .about-cameo { margin: 0; }
+  .about-photo img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; background: #E4E1D8; }
+  .about-cameo { justify-self: center; width: min(78%, 360px); padding: 10px; border: 1px solid rgba(46,44,41,.55);
+                 border-radius: 50%; box-shadow: inset 0 0 0 5px #EFEEEA, inset 0 0 0 6px rgba(46,44,41,.35); }
+  .about-cameo img { display: block; width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 50%; }
+  .about-word { font-family: 'Noto Serif Armenian', 'Cormorant Garamond', serif; font-weight: 400; color: #2E2C29;
+                font-size: clamp(3rem, 7vw, 5.5rem); line-height: 1; letter-spacing: -.01em; }
+  .about-gloss { margin-top: .6rem; font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.2rem; color: #A48F66; }
+  .about-p { margin-top: 1.4rem; font-size: 1rem; line-height: 1.85; color: rgba(58,58,58,.88); max-width: 34rem; }
+  .about-quote { margin-top: 1.6rem; font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-style: italic;
+                 font-size: clamp(1.5rem, 2.4vw, 2rem); line-height: 1.3; color: #2E2C29; max-width: 26rem; }
+  @media (min-width: 900px) {
+    .about-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 5rem; }
+    .about-row + .about-row { margin-top: 7rem; }
+    .about-row--flip .about-photo { order: 2; }
+    .about-photo--tall { width: 82%; justify-self: end; }
+    .about-row--last { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); }
+  }
 
   /* Cart */
   .card-cart { position: absolute; right: .6rem; bottom: .6rem; z-index: 3; width: 40px; height: 40px; border-radius: 9999px;
@@ -545,26 +571,45 @@
 </section>
 
 <!-- ============================== ABOUT ============================== -->
-<!-- Text lives in i18n.py (about_*); photos are static/img/about/1–3.jpg — replace either freely. -->
-<section id="about" class="py-16 sm:py-20">
-  <div class="max-w-6xl mx-auto px-5 grid lg:grid-cols-[1fr_1.1fr] gap-10 lg:gap-16 items-center">
-    <div class="order-2 lg:order-1 max-w-lg">
-      <h2 class="font-serif text-3xl sm:text-4xl text-charcoal mb-6 leading-tight">{{ t('about_title') }}</h2>
-      <p class="text-[15px] text-ink/75 leading-relaxed mb-4">{{ t('about_p1') }}</p>
-      <p class="text-[15px] text-ink/75 leading-relaxed">{{ t('about_p2') }}</p>
-      <img src="{{ url_for('static', filename='img/logo-nav.png') }}" alt="" class="h-10 w-auto mt-8 opacity-70" aria-hidden="true">
-    </div>
-    <div class="order-1 lg:order-2 grid grid-cols-[1.3fr_1fr] grid-rows-2 gap-3 sm:gap-4 aspect-[6/5]">
-      <div class="row-span-2 overflow-hidden bg-cream-dark">
-        <img src="{{ url_for('static', filename='img/about/1.jpg') }}" alt="" loading="lazy" class="w-full h-full object-cover">
-      </div>
-      <div class="overflow-hidden bg-cream-dark">
-        <img src="{{ url_for('static', filename='img/about/2.jpg') }}" alt="" loading="lazy" class="w-full h-full object-cover">
-      </div>
-      <div class="overflow-hidden bg-cream-dark">
-        <img src="{{ url_for('static', filename='img/about/3.jpg') }}" alt="" loading="lazy" class="w-full h-full object-cover">
+<!-- The story in three chapters, each with its photo (static/img/about/1–3.jpg); text in i18n.py
+     (about_*). The childhood photo sits in the logo's oval, like a cameo. -->
+<section id="about" class="about py-16 sm:py-24">
+  <div class="max-w-[1180px] mx-auto px-5 sm:px-8">
+
+    <!-- I. The name -->
+    <div class="about-row">
+      <figure class="about-cameo">
+        <img src="{{ url_for('static', filename='img/about/1.jpg') }}" alt="{{ t('about_alt1') }}" loading="lazy">
+      </figure>
+      <div class="about-text">
+        <h2 class="about-word" lang="hy">Տիկնիկ</h2>
+        <p class="about-gloss">{{ t('about_gloss') }}</p>
+        <p class="about-p">{{ t('about_p1') }}</p>
       </div>
     </div>
+
+    <!-- II. The craft -->
+    <div class="about-row about-row--flip">
+      <figure class="about-photo about-photo--tall">
+        <img src="{{ url_for('static', filename='img/about/2.jpg') }}" alt="{{ t('about_alt2') }}" loading="lazy">
+      </figure>
+      <div class="about-text">
+        <p class="about-p">{{ t('about_p2') }}</p>
+      </div>
+    </div>
+
+    <!-- III. The heirloom -->
+    <div class="about-row about-row--last">
+      <figure class="about-photo">
+        <img src="{{ url_for('static', filename='img/about/3.jpg') }}" alt="{{ t('about_alt3') }}" loading="lazy">
+      </figure>
+      <div class="about-text">
+        <p class="about-p">{{ t('about_p3') }}</p>
+        <p class="about-quote">{{ t('about_quote') }}</p>
+        <img src="{{ url_for('static', filename='img/logo-nav.png') }}" alt="" class="h-10 w-auto mt-8 opacity-80" aria-hidden="true">
+      </div>
+    </div>
+
   </div>
 </section>
 

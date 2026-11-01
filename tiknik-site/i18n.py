@@ -158,25 +158,57 @@ UI = {
     "nav_menu": {"en": "Menu", "ru": "Меню", "hy": "Մենյու"},
     "delivery": {"en": "Delivery & Shipping", "ru": "Доставка", "hy": "Առաքում"},
 
-    # About us (a first draft; the atelier's own text replaces it)
-    "about_eyebrow": {"en": "About Us", "ru": "О нас", "hy": "Մեր մասին"},
-    "about_title": {"en": "A Small Atelier in Yerevan", "ru": "Маленькое ателье в Ереване", "hy": "Փոքրիկ արվեստանոց Երևանում"},
+    # About us: the atelier's story in three chapters (static/img/about/1–3.jpg go with them)
+    "about_gloss": {
+        "en": "tiknik: “doll”, in Armenian",
+        "ru": "тикник: «кукла» по-армянски",
+        "hy": "տիկնիկ",
+    },
     "about_p1": {
-        "en": "Tiknik is a small bespoke atelier in Yerevan. We make bridal gowns, corsets and evening pieces by hand, "
-              "each one for a single person, from the fabric we choose together to the last stitch.",
-        "ru": "Tiknik — небольшое ателье в Ереване. Мы вручную создаём свадебные платья, корсеты и вечерние наряды — "
-              "каждый для одного человека, от выбора ткани до последнего стежка.",
-        "hy": "Tiknik-ը փոքրիկ արվեստանոց է Երևանում։ Մենք ձեռքով ստեղծում ենք հարսանյաց զգեստներ, կորսետներ "
-              "և երեկոյան զգեստներ՝ յուրաքանչյուրը մեկ մարդու համար, կտորի ընտրությունից մինչև վերջին կարը։",
+        "en": "Tiknik, meaning doll in Armenian, has its roots in a childhood memory. When her grandmother took her "
+              "to a children's beauty competition, she wore specially made dresses and was given the title "
+              "Kendani Tiknik, the Living Doll. Years later, this name became the identity of a bridal house shaped "
+              "by a lasting appreciation for beautiful garments, individuality and craftsmanship.",
+        "ru": "Tiknik, что по-армянски значит «кукла», берёт начало в детском воспоминании. Бабушка привела её "
+              "на детский конкурс красоты: на ней были платья, сшитые специально для этого дня, и ей дали титул "
+              "Kendani Tiknik, «Живая кукла». Годы спустя это имя стало именем свадебного дома, который вырос "
+              "из любви к красивой одежде, индивидуальности и ручной работе.",
+        "hy": "Tiknik անունը, որ հայերեն նշանակում է «տիկնիկ», սկիզբ է առնում մանկության մի հիշողությունից։ "
+              "Տատիկը նրան տարավ մանկական գեղեցկության մրցույթի. նա կրում էր հատուկ կարված զգեստներ և "
+              "արժանացավ «Կենդանի տիկնիկ» կոչմանը։ Տարիներ անց այս անունը դարձավ հարսանյաց տան անունը, "
+              "որ ծնվել է գեղեցիկ զգեստների, անհատականության և ձեռքի աշխատանքի հանդեպ սիրուց։",
     },
     "about_p2": {
-        "en": "We love vintage lace, honest materials and quiet details, and we believe a dress should live on "
-              "long after the wedding day.",
-        "ru": "Мы любим винтажное кружево, честные материалы и тихие детали и верим, что платье должно жить "
-              "и после свадьбы.",
-        "hy": "Մենք սիրում ենք վինտաժային ժանյակը, բնական նյութերը և նուրբ մանրուքները և հավատում ենք, "
-              "որ զգեստը պետք է ապրի նաև հարսանիքից հետո։",
+        "en": "Inspired by the elegance of past eras, Tiknik reinterprets historical references for the modern "
+              "bride. Each dress begins with its own story, shaped by thoughtful design, carefully selected fabrics "
+              "and original vintage lace. These rare details bring a sense of history and individuality to garments "
+              "made today.",
+        "ru": "Вдохновляясь изяществом прошлых эпох, Tiknik переосмысляет исторические мотивы для современной "
+              "невесты. Каждое платье начинается со своей истории: продуманный крой, тщательно подобранные ткани "
+              "и подлинное винтажное кружево. Эти редкие детали придают вещам, созданным сегодня, ощущение "
+              "истории и неповторимости.",
+        "hy": "Ոգեշնչվելով անցյալ դարաշրջանների նրբագեղությամբ՝ Tiknik-ը վերաիմաստավորում է պատմական "
+              "մոտիվները ժամանակակից հարսնացուի համար։ Յուրաքանչյուր զգեստ սկսվում է իր պատմությամբ՝ "
+              "մտածված ձևվածք, խնամքով ընտրված կտորներ և իսկական վինտաժային ժանյակ։ Այս հազվագյուտ "
+              "մանրուքները այսօր ստեղծված զգեստներին տալիս են պատմության և անկրկնելիության զգացում։",
     },
+    "about_p3": {
+        "en": "Tiknik believes a wedding dress should hold meaning beyond a single occasion. Created to make every "
+              "woman feel truly special, each piece carries the possibility of becoming a family heirloom.",
+        "ru": "Tiknik верит, что свадебное платье должно значить больше, чем один день. Каждая вещь создана, "
+              "чтобы женщина почувствовала себя по-настоящему особенной, и может стать семейной реликвией.",
+        "hy": "Tiknik-ը հավատում է, որ հարսանյաց զգեստը պետք է նշանակություն ունենա մեկ օրից ավելի։ "
+              "Յուրաքանչյուր զգեստ ստեղծված է, որպեսզի կինն իրեն իսկապես յուրահատուկ զգա, և կարող է "
+              "դառնալ ընտանեկան մասունք։",
+    },
+    "about_quote": {
+        "en": "Cherished, remembered and passed down through generations.",
+        "ru": "Бережно хранимой, памятной и передаваемой из поколения в поколение.",
+        "hy": "Խնամքով պահված, հիշվող և սերնդեսերունդ փոխանցվող։",
+    },
+    "about_alt1": {"en": "As a child, in a dress made for the competition", "ru": "В детстве, в платье, сшитом для конкурса", "hy": "Մանկության տարիներին՝ մրցույթի համար կարված զգեստով"},
+    "about_alt2": {"en": "Tiers of silk and vintage lace on an Armenian carpet", "ru": "Ярусы шёлка и винтажного кружева на армянском ковре", "hy": "Մետաքսի և վինտաժային ժանյակի շերտեր հայկական գորգի վրա"},
+    "about_alt3": {"en": "A couple embracing under an embroidered veil", "ru": "Пара в объятиях под вышитой фатой", "hy": "Զույգը գրկախառնված ասեղնագործ քողի տակ"},
 
     # Reviews
     "reviews_eyebrow": {"en": "Reviews", "ru": "Отзывы", "hy": "Կարծիքներ"},
