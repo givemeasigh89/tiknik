@@ -24,8 +24,11 @@ Tiknik is a bridal house in Yerevan that makes wedding dresses and couture by ha
 
 What Tiknik can say that a neighbouring atelier cannot truthfully copy (confirmed):
 
-- **One dress, one bride.** Every piece is made to one bride's measurements.
-- **Original vintage lace.** Rare lace from past eras worked into dresses made today.
+- **One dress, one bride.** Dresses are almost always made to order, to one bride's measurements. Of any
+  model only one piece exists at a time; another is sewn only for a new order.
+- **Always handmade**, in a home sewing studio in Yerevan (not a shop floor).
+- **Vintage lace when it fits.** Original vintage lace is used when it is available and the bride wants it;
+  other pieces use new lace. So "vintage lace" must not be claimed for every dress.
 
 Supporting story (from the atelier's own About text): the name comes from the founder's childhood title *Kendani Tiknik*, the Living Doll; a dress is meant to become a family heirloom.
 

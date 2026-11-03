@@ -30,7 +30,7 @@
     var cleanups = [];
 
     // ---------------------------------------------------------------- 3. Hero
-    var hero = document.querySelector(".hero-bg");
+    var hero = document.querySelector(".hero-move") || document.querySelector(".hero-bg");
     var intro = document.getElementById("intro");
     if (hero) {
       var heroTl = gsap.timeline({ defaults: { ease: "power3.out" } });

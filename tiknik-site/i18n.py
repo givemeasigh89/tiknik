@@ -5,7 +5,7 @@ the database and is translated from /admin.
 """
 
 LANGS = ("en", "ru", "hy")
-LANG_LABELS = {"en": "EN", "ru": "RU", "hy": "ARM"}
+LANG_LABELS = {"en": "EN", "ru": "RU", "hy": "ՀԱՅ"}
 
 UI = {
     # <head>
@@ -25,7 +25,11 @@ UI = {
     "nav_process": {"en": "Process", "ru": "Процесс", "hy": "Ընթացքը"},
     "nav_worldwide": {"en": "Worldwide", "ru": "По всему миру", "hy": "Ամբողջ աշխարհում"},
     "nav_contact": {"en": "Contact", "ru": "Контакты", "hy": "Կապ"},
-    "book_fitting": {"en": "Book a Fitting", "ru": "Записаться на примерку", "hy": "Գրանցվել փորձի"},
+    "book_fitting": {
+        "en": "Book a fitting",
+        "ru": "Записаться на примерку",
+        "hy": "Գրանցվել փորձի",
+    },
 
     # Hero
     "hero_tagline": {
@@ -34,9 +38,9 @@ UI = {
         "hy": "Հարսանյաց զգեստներ և couture՝ ձեռքով կարված Երևանում, յուրաքանչյուր հարսնացուի համար առանձին։",
     },
     "cta_book_quote": {
-        "en": "Book a Fitting or Request a Quote",
-        "ru": "Записаться на примерку или узнать цену",
-        "hy": "Գրանցվել փորձի կամ իմանալ գինը",
+        "en": "Book a fitting",
+        "ru": "Записаться на примерку",
+        "hy": "Գրանցվել փորձի",
     },
     "cta_view_catalog": {"en": "View the Catalog", "ru": "Смотреть каталог", "hy": "Դիտել կատալոգը"},
 
@@ -137,7 +141,11 @@ UI = {
         "ru": "Расскажите немного о том, что вы ищете",
         "hy": "Պատմեք մի փոքր, թե ինչ եք փնտրում",
     },
-    "form_send": {"en": "Request a fitting", "ru": "Записаться на примерку", "hy": "Գրանցվել փորձի"},
+    "form_send": {
+        "en": "Book a fitting",
+        "ru": "Записаться на примерку",
+        "hy": "Գրանցվել փորձի",
+    },
     "contact_lead": {
         "en": "Tell us about your day and the dress you imagine. We reply personally, usually within a day.",
         "ru": "Расскажите о своём дне и платье, которое вы представляете. Мы ответим лично, обычно в течение дня.",
@@ -147,7 +155,11 @@ UI = {
     "form_label_contact": {"en": "Phone, WhatsApp or Instagram", "ru": "Телефон, WhatsApp или Instagram", "hy": "Հեռախոս, WhatsApp կամ Instagram"},
     "form_label_interest": {"en": "Interested in", "ru": "Интересует", "hy": "Հետաքրքրում է"},
     "form_label_message": {"en": "Your wedding and wishes", "ru": "Ваша свадьба и пожелания", "hy": "Ձեր հարսանիքը և ցանկությունները"},
-    "dl_local_sum": {"en": "Free collection in Yerevan or local delivery", "ru": "Бесплатно: в ателье в Ереване или доставка по стране", "hy": "Անվճար՝ Երևանում կամ առաքում"},
+    "dl_local_sum": {
+        "en": "Free collection from our home studio in Yerevan, or local delivery",
+        "ru": "Бесплатно: забрать в нашей студии в Ереване или доставка по стране",
+        "hy": "Անվճար՝ վերցնել մեր արվեստանոցից Երևանում կամ առաքում",
+    },
     "dl_intl_sum": {"en": "Registered post with tracking, 10–30 days", "ru": "Заказной почтой с трек-номером, 10–30 дней", "hy": "Պատվիրված փոստով, հետևման համարով, 10–30 օր"},
     "dl_pack_sum": {"en": "A protective garment bag, ready to wear, with care notes", "ru": "Защитный чехол, готово к носке, инструкция по уходу", "hy": "Պաշտպանիչ պարկ, պատրաստ հագնելու, խնամքի հրահանգներ"},
     "dl_cond_sum": {"en": "Dispatch dates, tracking and customs", "ru": "Даты отправки, отслеживание и таможня", "hy": "Ուղարկման ամսաթվեր, հետևում և մաքսային հարցեր"},
@@ -247,12 +259,36 @@ UI = {
     },
 
     # Cart
-    "cart": {"en": "Cart", "ru": "Корзина", "hy": "Զամբյուղ"},
-    "add_to_cart": {"en": "Add to Cart", "ru": "В корзину", "hy": "Ավելացնել զամբյուղ"},
-    "add_buy": {"en": "Buy", "ru": "Купить", "hy": "Գնել"},
-    "add_rent": {"en": "Rent", "ru": "Арендовать", "hy": "Վարձել"},
-    "in_cart": {"en": "In your cart ✓", "ru": "В корзине ✓", "hy": "Զամբյուղում է ✓"},
-    "cart_empty": {"en": "Your cart is empty.", "ru": "Корзина пуста.", "hy": "Զամբյուղը դատարկ է։"},
+    "cart": {
+        "en": "Your request",
+        "ru": "Ваш запрос",
+        "hy": "Ձեր հարցումը",
+    },
+    "add_to_cart": {
+        "en": "Order this dress",
+        "ru": "Заказать это платье",
+        "hy": "Պատվիրել այս զգեստը",
+    },
+    "add_buy": {
+        "en": "Order this dress",
+        "ru": "Заказать это платье",
+        "hy": "Պատվիրել այս զգեստը",
+    },
+    "add_rent": {
+        "en": "Rent for a shoot",
+        "ru": "Арендовать для съёмки",
+        "hy": "Վարձել նկարահանման համար",
+    },
+    "in_cart": {
+        "en": "In your request ✓",
+        "ru": "В запросе ✓",
+        "hy": "Հարցման մեջ է ✓",
+    },
+    "cart_empty": {
+        "en": "Nothing here yet. Choose a dress in the collection.",
+        "ru": "Здесь пока пусто. Выберите платье в коллекции.",
+        "hy": "Այստեղ դեռ դատարկ է։ Ընտրեք զգեստ հավաքածուից։",
+    },
     "cart_buy_label": {"en": "Purchase", "ru": "Покупка", "hy": "Գնում"},
     "cart_rent_label": {"en": "Rental", "ru": "Аренда", "hy": "Վարձույթ"},
     "cart_day": {"en": "day", "ru": "дн.", "hy": "օր"},
@@ -263,11 +299,15 @@ UI = {
         "ru": "Даты, размеры, пожелания (необязательно)",
         "hy": "Ամսաթվեր, չափսեր, ցանկություններ (ըստ ցանկության)",
     },
-    "cart_send": {"en": "Send Order", "ru": "Отправить заказ", "hy": "Ուղարկել պատվերը"},
+    "cart_send": {
+        "en": "Send request",
+        "ru": "Отправить запрос",
+        "hy": "Ուղարկել հարցումը",
+    },
     "cart_no_signup": {
-        "en": "No sign-up and no prepayment. We'll contact you to confirm size, dates and payment.",
-        "ru": "Без регистрации и предоплаты. Мы свяжемся с вами, чтобы уточнить размер, даты и оплату.",
-        "hy": "Առանց գրանցման և կանխավճարի։ Մենք կկապվենք ձեզ հետ՝ չափսը, ամսաթվերը և վճարումը ճշտելու համար։",
+        "en": "Nothing is paid now. We reply personally within a day to agree size, dates and payment.",
+        "ru": "Сейчас ничего не оплачивается. Мы ответим лично в течение дня и согласуем размер, даты и оплату.",
+        "hy": "Հիմա ոչինչ չեք վճարում։ Մենք կպատասխանենք անձամբ մեկ օրվա ընթացքում՝ չափսը, ամսաթվերը և վճարումը համաձայնեցնելու համար։",
     },
     "cart_sent": {
         "en": "Thank you! Order №{n} is with us. We'll be in touch shortly.",
@@ -301,8 +341,16 @@ UI = {
     "dial_cur": {"en": "Currency", "ru": "Валюта", "hy": "Արժույթ"},
     "sound_on": {"en": "Sound on", "ru": "Звук вкл.", "hy": "Ձայնը միաց."},
     "sound_off": {"en": "Sound off", "ru": "Звук выкл.", "hy": "Ձայնն անջ."},
-    "toast_added": {"en": "Added to your cart", "ru": "Добавлено в корзину", "hy": "Ավելացվեց զամբյուղ"},
-    "toast_view": {"en": "View cart", "ru": "Открыть", "hy": "Բացել"},
+    "toast_added": {
+        "en": "Added to your request",
+        "ru": "Добавлено в запрос",
+        "hy": "Ավելացվեց հարցմանը",
+    },
+    "toast_view": {
+        "en": "View request",
+        "ru": "Открыть",
+        "hy": "Բացել",
+    },
     "pdp_piece": {"en": "The piece", "ru": "Об изделии", "hy": "Զգեստի մասին"},
     "pdp_details": {"en": "Details", "ru": "Детали", "hy": "Մանրամասներ"},
     "pdp_delivery": {"en": "Fittings & delivery", "ru": "Примерки и доставка", "hy": "Փորձեր և առաքում"},
@@ -313,9 +361,9 @@ UI = {
     "dl_title": {"en": "Delivery & Shipping", "ru": "Доставка", "hy": "Առաքում"},
     "dl_local_title": {"en": "Local", "ru": "По Армении", "hy": "Հայաստանում"},
     "dl_local": {
-        "en": "Brides in Armenia can collect their dresses directly from our Yerevan atelier or arrange local delivery. Both options are complimentary.\n\nA final fitting is available before collection. We recommend receiving your dress at least 1–2 weeks before the wedding.",
-        "ru": "Невесты в Армении могут забрать платье прямо в нашем ателье в Ереване или заказать доставку по стране. Оба варианта бесплатны.\n\nПеред тем как забрать платье, можно пройти финальную примерку. Мы советуем получить платье минимум за 1–2 недели до свадьбы.",
-        "hy": "Հայաստանում հարսնացուները կարող են զգեստը վերցնել անմիջապես մեր երևանյան արվեստանոցից կամ պատվիրել առաքում։ Երկու տարբերակն էլ անվճար են։\n\nՎերցնելուց առաջ հնարավոր է վերջին փորձը։ Խորհուրդ ենք տալիս զգեստը ստանալ հարսանիքից առնվազն 1–2 շաբաթ առաջ։",
+        "en": "Brides in Armenia can collect their dresses from our home studio in Yerevan, by appointment, or arrange local delivery. Both options are complimentary.\n\nA final fitting is available before collection. We recommend receiving your dress at least 1–2 weeks before the wedding.",
+        "ru": "Невесты в Армении могут забрать платье в нашей домашней студии в Ереване, по предварительной договорённости, или заказать доставку по стране. Оба варианта бесплатны.\n\nПеред тем как забрать платье, можно пройти финальную примерку. Мы советуем получить платье минимум за 1–2 недели до свадьбы.",
+        "hy": "Հայաստանում հարսնացուները կարող են զգեստը վերցնել մեր տնային արվեստանոցից Երևանում՝ նախնական պայմանավորվածությամբ, կամ պատվիրել առաքում։ Երկու տարբերակն էլ անվճար են։\n\nՎերցնելուց առաջ հնարավոր է վերջին փորձը։ Խորհուրդ ենք տալիս զգեստը ստանալ հարսանիքից առնվազն 1–2 շաբաթ առաջ։",
     },
     "dl_intl_title": {"en": "Worldwide", "ru": "По всему миру", "hy": "Ամբողջ աշխարհում"},
     "dl_intl": {
@@ -337,9 +385,9 @@ UI = {
     },
     "delivery_f1_title": {"en": "Armenia", "ru": "Армения", "hy": "Հայաստան"},
     "delivery_f1_text": {
-        "en": "Free collection from our Yerevan atelier or local delivery, with a final fitting before collection.",
-        "ru": "Бесплатно: забрать в ателье в Ереване или доставка по стране, с финальной примеркой.",
-        "hy": "Անվճար՝ վերցնել երևանյան արվեստանոցից կամ առաքում, վերջին փորձով։",
+        "en": "Free collection from our home studio in Yerevan, by appointment, or local delivery, with a final fitting before collection.",
+        "ru": "Бесплатно: забрать в нашей студии в Ереване по договорённости или доставка по стране, с финальной примеркой.",
+        "hy": "Անվճար՝ վերցնել մեր արվեստանոցից Երևանում՝ պայմանավորվածությամբ, կամ առաքում, վերջին փորձով։",
     },
     "delivery_f2_title": {"en": "Worldwide", "ru": "По всему миру", "hy": "Ամբողջ աշխարհում"},
     "delivery_f2_text": {
@@ -358,6 +406,46 @@ UI = {
     "handmade_in": {"en": "Handmade in Yerevan", "ru": "Сшито вручную в Ереване", "hy": "Ձեռքով կարված Երևանում"},
     "hours_label": {"en": "Open", "ru": "Часы работы", "hy": "Աշխատում ենք"},
 
+    "hero_line": {
+        "en": "One dress, one bride. Sewn by hand in Yerevan.",
+        "ru": "Одно платье, одна невеста. Сшито вручную в Ереване.",
+        "hy": "Մեկ զգեստ՝ մեկ հարսի համար։ Ձեռքով կարված Երևանում։",
+    },
+    "made_to_order": {
+        "en": "Made to order",
+        "ru": "Шьётся под заказ",
+        "hy": "Կարվում է պատվերով",
+    },
+    "vintage_lace": {
+        "en": "Vintage lace, {era}",
+        "ru": "Винтажное кружево, {era}",
+        "hy": "Վինտաժային ժանյակ, {era}",
+    },
+    "pdp_note": {
+        "en": "Made to order for you. Nothing is paid now; we reply personally within a day.",
+        "ru": "Шьётся под заказ для вас. Сейчас ничего не оплачивается, мы ответим лично в течение дня.",
+        "hy": "Կարվում է պատվերով՝ ձեզ համար։ Հիմա ոչինչ չեք վճարում, կպատասխանենք անձամբ մեկ օրվա ընթացքում։",
+    },
+    "about_lead": {
+        "en": "Every Tiknik dress is sewn by hand, to one bride's measurements, in our home studio in Yerevan.",
+        "ru": "Каждое платье Tiknik шьётся вручную, по меркам одной невесты, в нашей домашней студии в Ереване.",
+        "hy": "Tiknik-ի յուրաքանչյուր զգեստ կարվում է ձեռքով՝ մեկ հարսնացուի չափսերով, մեր տնային արվեստանոցում Երևանում։",
+    },
+    "prices_in": {
+        "en": "Prices in {cur}",
+        "ru": "Цены в {cur}",
+        "hy": "Գները՝ {cur}",
+    },
+    "prefs_change": {
+        "en": "change",
+        "ru": "изменить",
+        "hy": "փոխել",
+    },
+    "prefs_done": {
+        "en": "Done",
+        "ru": "Готово",
+        "hy": "Պատրաստ է",
+    },
     # Used by static/js/main.js (passed in as window.TIKNIK_I18N)
     "price_on_request": {"en": "Price on request", "ru": "Цена по запросу", "hy": "Գինը՝ ըստ հարցման"},
     "per_day": {"en": " / day", "ru": " / сутки", "hy": " / օր"},
@@ -377,9 +465,9 @@ UI = {
         "hy": "Շնորհակալություն։ Ձեր հայտը ստացել ենք և շուտով կկապվենք ձեզ հետ։",
     },
     "send_error": {
-        "en": "Something went wrong. Please try again.",
-        "ru": "Что-то пошло не так. Попробуйте ещё раз.",
-        "hy": "Ինչ-որ բան այն չէ։ Խնդրում ենք փորձել կրկին։",
+        "en": "Couldn't send. Check your connection and try again, or write to us on Instagram.",
+        "ru": "Не удалось отправить. Проверьте соединение и попробуйте ещё раз или напишите нам в Instagram.",
+        "hy": "Չհաջողվեց ուղարկել։ Ստուգեք կապը և փորձեք կրկին կամ գրեք մեզ Instagram-ում։",
     },
     "required_error": {
         "en": "Please share your name and a way to reach you.",
@@ -392,7 +480,7 @@ JS_KEYS = (
     "back_to_catalog", "prev_item", "next_item", "cta_book_quote", "dial_hint",
     "add_to_cart", "add_buy", "add_rent", "in_cart", "cart_buy_label", "cart_rent_label", "cart_day", "cart_days",
     "cart_sent", "cart_remove", "busy_error", "review_thanks",
-    "card_or_rent", "card_rental", "collection", "pdp_piece", "pdp_details", "pdp_delivery", "toast_added", "toast_view", "sound_on", "sound_off", "dial_lang", "dial_cur",
+    "card_or_rent", "card_rental", "collection", "pdp_piece", "pdp_details", "pdp_delivery", "toast_added", "toast_view", "made_to_order", "vintage_lace", "pdp_note", "prices_in", "prefs_change", "sound_on", "sound_off", "dial_lang", "dial_cur",
     "delivery_f1_title", "delivery_f1_text", "delivery_f2_title", "delivery_f2_text", "delivery_f3_title", "delivery_f3_text",
     "handmade_hours", "edition_one", "edition_n", "share", "link_copied",
     "price_on_request", "per_day", "mode_Rent", "mode_Sale", "mode_Both", "mode_Custom",

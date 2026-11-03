@@ -7,7 +7,12 @@
   var currencyBtns = document.querySelectorAll(".currency-btn");
   var items = [];
   var activeCategory = "all";
-  var activeCurrency = "USD";
+  // Currency: the visitor's choice if they made one, otherwise the one that goes with the language.
+  var activeCurrency = { en: "USD", ru: "RUB", hy: "AMD" }[window.TIKNIK_LANG || "en"] || "USD";
+  try {
+    var savedCurrency = localStorage.getItem("tiknik_cur");
+    if (savedCurrency === "USD" || savedCurrency === "RUB" || savedCurrency === "AMD") activeCurrency = savedCurrency;
+  } catch (e) {}
   var RATES = window.TIKNIK_RATES || { USD: 400, RUB: 4.2 };
   var LANG = window.TIKNIK_LANG || "en";
   var I18N = window.TIKNIK_I18N || {}; // { en: {...}, ru: {...}, hy: {...} }
@@ -83,6 +88,9 @@
 
   function setCurrency(code) {
     activeCurrency = code;
+    try {
+      localStorage.setItem("tiknik_cur", code);
+    } catch (e) {}
     currencyBtns.forEach(function (btn) {
       if (btn.getAttribute("data-currency") === code) {
         btn.setAttribute("data-active", "true");
@@ -223,12 +231,8 @@
 
   // The first two parameters (usually fabric and colour) as one quiet line; the rest are in the product view.
   function cardAttrs(item) {
-    return filledAttrs(item)
-      .slice(0, 2)
-      .map(function (p) {
-        return p[1];
-      })
-      .join(", ");
+    if (item.vintage) return t("vintage_lace", "Vintage lace, {era}").replace("{era}", item.vintage);
+    return t("made_to_order", "Made to order");
   }
 
   // The price beside the name, and the rental (or "made to order") on the line under it.
@@ -1061,36 +1065,53 @@
     dial.set("cur", activeCurrency, false);
   }
 
-  // Product view switches: language and currency, with a marker sliding under the choice.
-  function setSeg(id, value) {
-    var seg = document.getElementById(id);
-    if (!seg) return;
-    var on = null;
-    seg.querySelectorAll("button").forEach(function (b) {
-      var is = b.getAttribute("data-v") === value;
-      b.classList.toggle("on", is);
-      b.setAttribute("aria-pressed", is ? "true" : "false");
-      if (is) on = b;
-    });
-    var ink = seg.querySelector(".seg-ink");
-    if (on && on.offsetWidth) {
-      ink.style.width = on.offsetWidth + "px";
-      ink.style.transform = "translateX(" + on.offsetLeft + "px)";
-    }
-  }
+  // ---- Language + currency: one control in the header (a popover on computers, a bottom sheet on phones) ----
+  var prefsBox = document.querySelector(".prefs");
+  var CUR_SIGN = { USD: "$", RUB: "₽", AMD: "֏" };
   function updateDialLegend() {
-    setSeg("seg-lang", cardLang);
-    setSeg("seg-cur", activeCurrency);
+    var labels = window.TIKNIK_LANG_LABELS || {};
+    document.getElementById("prefs-chip-text").textContent = (labels[LANG] || LANG.toUpperCase()) + " · " + CUR_SIGN[activeCurrency];
+    document.querySelectorAll(".js-prefs-cur").forEach(function (b) {
+      b.classList.toggle("on", b.getAttribute("data-cur") === activeCurrency);
+    });
+    var line = document.getElementById("pdp-prices-in");
+    if (line) line.textContent = t("prices_in", "Prices in {cur}").replace("{cur}", activeCurrency);
   }
+  function setPrefsOpen(open) {
+    prefsBox.classList.toggle("open", open);
+    document.body.classList.toggle("prefs-open", open);
+    document.getElementById("prefs-open").setAttribute("aria-expanded", open ? "true" : "false");
+  }
+  document.querySelectorAll(".js-prefs-open").forEach(function (b) {
+    b.addEventListener("click", function (e) {
+      e.stopPropagation();
+      setPrefsOpen(!prefsBox.classList.contains("open"));
+    });
+  });
+  document.querySelectorAll(".js-prefs-close").forEach(function (b) {
+    b.addEventListener("click", function () {
+      setPrefsOpen(false);
+    });
+  });
+  document.addEventListener("click", function (e) {
+    if (prefsBox.classList.contains("open") && !e.target.closest(".prefs")) setPrefsOpen(false);
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && prefsBox.classList.contains("open")) setPrefsOpen(false);
+  });
+  document.querySelectorAll(".js-prefs-cur").forEach(function (b) {
+    b.addEventListener("click", function () {
+      setCurrency(b.getAttribute("data-cur"));
+      if (window.matchMedia("(min-width: 1024px)").matches) setPrefsOpen(false);
+    });
+  });
+  // A language keeps the piece that's open (#item-n); the cart is kept anyway (it's in this browser).
+  document.querySelectorAll(".js-prefs-lang").forEach(function (a) {
+    a.addEventListener("click", function () {
+      if (location.hash) a.setAttribute("href", a.getAttribute("href").split("#")[0] + location.hash);
+    });
+  });
   updateDialLegend();
-  document.getElementById("seg-lang").addEventListener("click", function (e) {
-    var b = e.target.closest("button");
-    if (b && b.getAttribute("data-v") !== cardLang) setCardLang(b.getAttribute("data-v"));
-  });
-  document.getElementById("seg-cur").addEventListener("click", function (e) {
-    var b = e.target.closest("button");
-    if (b) setCurrency(b.getAttribute("data-v"));
-  });
   prevBtn.addEventListener("click", function () {
     goTo(-1);
   });

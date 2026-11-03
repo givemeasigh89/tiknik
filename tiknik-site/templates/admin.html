@@ -417,6 +417,10 @@
                   {{ price_fields(item) }}
                 </div>
                 <!-- Handmade facts, shown in the product view when filled in -->
+                <label class="flex flex-col gap-1 min-w-0">
+                  <span class="text-[10px] uppercase tracking-wider text-ink/45">Vintage lace era (only if this piece has it)</span>
+                  <input name="vintage" value="{{ item.vintage or '' }}" maxlength="40" placeholder="e.g. 1980s — leave empty if not vintage" class="field">
+                </label>
                 <div class="grid grid-cols-2 gap-2.5">
                   <label class="flex flex-col gap-1 min-w-0">
                     <span class="text-[10px] uppercase tracking-wider text-ink/45">Hours of handwork</span>

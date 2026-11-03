@@ -170,6 +170,9 @@ def init_db():
     for col in ("hours", "edition"):
         if col not in _table_columns(db, "items"):
             db.execute(f"ALTER TABLE items ADD COLUMN {col} INTEGER")
+    # The era of the vintage lace, only for pieces that really have it (e.g. "1980s"); empty = no claim.
+    if "vintage" not in _table_columns(db, "items"):
+        db.execute("ALTER TABLE items ADD COLUMN vintage TEXT")
 
     for attr in ATTRS:
         if attr not in _table_columns(db, "items"):
@@ -585,6 +588,7 @@ def api_items():
             "price": it["price"],
             "rent_price": it["rent_price"],
             "hours": it["hours"],
+            "vintage": (it["vintage"] or "").strip(),
             "edition": it["edition"],
             "media": media_by_item.get(it["id"], []),
         })
@@ -1019,7 +1023,8 @@ def admin_update_item(item_id):
             ((request.form.get(f"name_{lang}") or "").strip(), request.form.get(f"description_{lang}") or "",
              request.form.get(f"delivery_{lang}") or "", item_id),
         )
-    db.execute("UPDATE items SET delivery = ? WHERE id = ?", (request.form.get("delivery") or "", item_id))
+    db.execute("UPDATE items SET delivery = ?, vintage = ? WHERE id = ?",
+               (request.form.get("delivery") or "", (request.form.get("vintage") or "").strip()[:40], item_id))
     db.execute("UPDATE items SET hours = ?, edition = ? WHERE id = ?",
                (hours if hours and hours > 0 else None, edition if edition and edition > 0 else None, item_id))
     save_item_attrs(db, item_id)
