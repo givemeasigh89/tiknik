@@ -129,9 +129,9 @@ UI = {
     # Contact
     "get_in_touch": {"en": "Get in Touch", "ru": "Связаться с нами", "hy": "Կապվեք մեզ հետ"},
     "contact_title": {
-        "en": "Book a Fitting or Request a Quote",
-        "ru": "Запись на примерку или расчёт стоимости",
-        "hy": "Գրանցում փորձի կամ գնի հարցում",
+        "en": "Book a fitting",
+        "ru": "Записаться на примерку",
+        "hy": "Գրանցվել փորձի",
     },
     "form_name": {"en": "Your name", "ru": "Ваше имя", "hy": "Ձեր անունը"},
     "form_contact": {"en": "Phone, WhatsApp or Instagram", "ru": "Телефон, WhatsApp или Instagram", "hy": "Հեռախոս, WhatsApp կամ Instagram"},

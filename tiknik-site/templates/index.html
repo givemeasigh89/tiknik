@@ -262,7 +262,7 @@
   .dl-item summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 1.5rem;
                      align-items: baseline; padding: 1.35rem 0; }
   .dl-item summary::-webkit-details-marker { display: none; }
-  .dl-item summary::after { content: ""; grid-row: 1 / span 2; grid-column: 2; align-self: center; width: 14px; height: 14px;
+  .dl-item summary::after { content: ""; grid-row: 1; grid-column: 2; align-self: center; width: 14px; height: 14px;
                             background: linear-gradient(#EFEEEA, #EFEEEA) center / 14px 1px no-repeat,
                                         linear-gradient(#EFEEEA, #EFEEEA) center / 1px 14px no-repeat;
                             transition: transform .45s cubic-bezier(.16,1,.3,1); }
@@ -292,32 +292,6 @@
   /* Headings break into even lines; paragraphs avoid one-word last lines */
   h2, h3 { text-wrap: balance; }
   p { text-wrap: pretty; }
-
-  /* Hero: line and action on the photo; wind and light layers run only with Animations on */
-  .hero-wind, .hero-light { display: none; }
-  html.motion .hero-wind { display: block; position: absolute; inset: 0; filter: url(#tk-wind); pointer-events: none;
-    -webkit-mask-image: radial-gradient(ellipse 30% 42% at 16% 80%, #000 35%, transparent 72%), radial-gradient(ellipse 30% 42% at 86% 76%, #000 35%, transparent 72%), radial-gradient(ellipse 18% 30% at 70% 22%, #000 30%, transparent 72%);
-            mask-image: radial-gradient(ellipse 30% 42% at 16% 80%, #000 35%, transparent 72%), radial-gradient(ellipse 30% 42% at 86% 76%, #000 35%, transparent 72%), radial-gradient(ellipse 18% 30% at 70% 22%, #000 30%, transparent 72%); }
-  html.motion .hero-light { display: block; position: absolute; inset: -20% -40%; pointer-events: none; mix-blend-mode: soft-light; opacity: .55;
-    background: linear-gradient(105deg, transparent 35%, rgba(255,226,180,.55) 46%, rgba(214,226,255,.35) 52%, transparent 62%);
-    animation: heroLight 18s ease-in-out infinite alternate; }
-  @keyframes heroLight { from { transform: translateX(-22%); } to { transform: translateX(22%); } }
-  .hero-copy { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; padding: 4rem 1.25rem 1.5rem;
-               background: linear-gradient(to top, rgba(28,26,24,.55), transparent); display: flex; flex-wrap: wrap;
-               align-items: flex-end; justify-content: space-between; gap: .75rem 2rem; }
-  @media (min-width: 640px) { .hero-copy { padding: 6rem 2rem 2rem; } }
-  @media (min-width: 1024px) { .hero-copy { padding: 8rem max(2rem, calc((100vw - 1180px) / 2 + 2rem)) 2.25rem; } }
-  .hero-line { font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-size: clamp(1.35rem, 2.6vw, 2.1rem); line-height: 1.2;
-               color: #F4F2EC; max-width: 30rem; text-shadow: 0 1px 12px rgba(0,0,0,.25); }
-  .hero-cta { font-size: 14px; letter-spacing: .03em; color: #F4F2EC; border-bottom: 1px solid rgba(244,242,236,.6); padding-bottom: 3px;
-              white-space: nowrap; transition: border-color .2s ease; }
-  .hero-cta:hover { border-color: #F4F2EC; }
-  @media (max-width: 639px) {
-    /* phones: the photo's own wordmark fills its lower half, so the line sits under the photo */
-    .hero-copy { position: static; background: none; padding: 1.25rem 1.25rem .25rem; }
-    .hero-line { color: #2E2C29; text-shadow: none; font-size: 1.45rem; }
-    .hero-cta { color: #2E2C29; border-color: rgba(46,44,41,.4); }
-  }
 
   /* Language + currency control */
   .prefs-chip { display: inline-flex; align-items: center; gap: .35rem; min-height: 44px; padding: 0 .35rem; font-size: 13px;
@@ -353,6 +327,7 @@
                       transition: opacity .25s ease; }
     body.prefs-open .prefs-backdrop { opacity: 1; pointer-events: auto; }
   }
+  body.prefs-open > header { z-index: 95; }
   .pdp-note { margin-top: .9rem; font-size: 13px; line-height: 1.6; color: rgba(58,58,58,.8); }
 
   /* Cart */
@@ -605,26 +580,9 @@
 
 <!-- ============================== HERO ============================== -->
 <div class="hero-stack relative overflow-hidden">
-  <!-- The photo never changes. With Animations on, a copy of its skirt and veil moves as if in a light
-       breeze (an SVG turbulence filter, masked away from the logo), and a soft warm light drifts across. -->
   <div class="hero-move relative">
     <section class="hero-bg aspect-[4/5] sm:aspect-[16/10] lg:aspect-[16/9] w-full pt-24"></section>
-    <div class="hero-bg hero-wind" aria-hidden="true"></div>
-    <div class="hero-light" aria-hidden="true"></div>
   </div>
-  <div class="hero-copy">
-    <p class="hero-line">{{ t('hero_line') }}</p>
-    <a href="#catalog" class="hero-cta">{{ t('cta_view_catalog') }}</a>
-  </div>
-  <svg width="0" height="0" class="absolute" aria-hidden="true" focusable="false">
-    <filter id="tk-wind" x="-5%" y="-5%" width="110%" height="110%">
-      <feTurbulence type="fractalNoise" baseFrequency="0.005 0.011" numOctaves="2" seed="7">
-        <animate attributeName="baseFrequency" dur="16s" repeatCount="indefinite"
-                 values="0.005 0.011; 0.0062 0.0128; 0.0054 0.0104; 0.005 0.011"/>
-      </feTurbulence>
-      <feDisplacementMap in="SourceGraphic" scale="9" xChannelSelector="R" yChannelSelector="G"/>
-    </filter>
-  </svg>
 </div>
 
 <!-- ============================== HERO CTA STRIP ============================== -->
@@ -798,7 +756,6 @@
         <details class="dl-item" id="dl-{{ k }}">
           <summary>
             <span class="dl-t">{{ t('dl_%s_title' % k) }}</span>
-            <span class="dl-sum">{{ t('dl_%s_sum' % k) }}</span>
           </summary>
           <div class="dl-body">
             {% if k == 'cond' %}
