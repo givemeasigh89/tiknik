@@ -13,6 +13,7 @@ module.exports = {
         ink: "#3A3A3A",
         line: "#C9C3B4",
         gold: "#A48F66",
+        "gold-ink": "#7A6744", // gold for text: 4.7:1 on cream
       },
       fontFamily: {
         serif: ['"Cormorant Garamond"', '"Noto Serif Armenian"', "serif"],

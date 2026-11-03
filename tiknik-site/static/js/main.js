@@ -1798,7 +1798,7 @@
                 return '<button type="button" class="js-kind' + (line.kind === k ? " on" : "") + '" data-i="' + i + '" data-k="' + k + '">' +
                   esc(t(k === "buy" ? "cart_buy_label" : "cart_rent_label", k)) + "</button>";
               }).join("") + "</div>"
-            : '<p class="text-xs text-gold">' + esc(t(line.kind === "buy" ? "cart_buy_label" : "cart_rent_label", "")) + "</p>") +
+            : '<p class="text-xs text-gold-ink">' + esc(t(line.kind === "buy" ? "cart_buy_label" : "cart_rent_label", "")) + "</p>") +
           '<p class="font-serif text-lg text-charcoal leading-snug truncate">' + esc(item.name) + "</p>" +
           days +
           '<button type="button" class="js-remove text-[11px] text-ink/45 hover:text-charcoal underline underline-offset-2 mt-2" data-i="' + i + '">' + esc(t("cart_remove", "Remove")) + "</button>" +

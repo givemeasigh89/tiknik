@@ -233,8 +233,8 @@
   .page-thread-knot { fill: #A48F66; opacity: 0; transition: opacity .4s ease; }
   .about-word { font-family: 'Noto Serif Armenian', 'Cormorant Garamond', serif; font-weight: 400; color: #2E2C29;
                 font-size: clamp(3rem, 7vw, 5.5rem); line-height: 1; letter-spacing: -.01em; }
-  .about-gloss { margin-top: .6rem; font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.2rem; color: #A48F66; }
-  .about-p { margin-top: 1.4rem; font-size: 1rem; line-height: 1.85; color: rgba(58,58,58,.88); max-width: 34rem; }
+  .about-gloss { margin-top: .6rem; font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.2rem; color: #7A6744; }
+  .about-p { text-wrap: pretty; margin-top: 1.4rem; font-size: 1rem; line-height: 1.85; color: rgba(58,58,58,.88); max-width: 34rem; }
   .about-quote { margin-top: 1.6rem; font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-style: italic;
                  font-size: clamp(1.5rem, 2.4vw, 2rem); line-height: 1.3; color: #2E2C29; max-width: 26rem; }
   @media (min-width: 900px) {
@@ -285,6 +285,10 @@
                      padding: .55rem 0; font-size: 15px; color: #2E2C29; border-radius: 0; transition: border-color .2s ease; }
   .ct-field input:focus, .ct-field select:focus, .ct-field textarea:focus { outline: none; border-color: #2E2C29; }
   .ct-field textarea { resize: vertical; min-height: 5.5rem; }
+
+  /* Headings break into even lines; paragraphs avoid one-word last lines */
+  h2, h3 { text-wrap: balance; }
+  p { text-wrap: pretty; }
 
   /* Cart */
   .card-cart { position: absolute; right: .6rem; bottom: .6rem; z-index: 3; width: 40px; height: 40px; border-radius: 9999px;
@@ -437,7 +441,7 @@
     <a href="#top" class="flex items-center gap-2 shrink-0">
       <img src="{{ url_for('static', filename='img/logo-nav.png') }}" alt="Tiknik" class="h-9 w-auto">
     </a>
-    <nav class="hidden lg:flex items-center gap-6 text-sm tracking-wide text-ink/70">
+    <nav class="hidden lg:flex items-center gap-6 text-sm tracking-wide text-ink/80">
       <!-- Catalog: hovering (or focusing) it opens the list of sections -->
       <div class="nav-drop relative">
         <a href="#catalog" class="hover:text-charcoal transition inline-flex items-center gap-1 py-2">
@@ -517,15 +521,9 @@
 <div id="top"></div>
 
 <!-- ============================== HERO ============================== -->
-<section class="hero-bg aspect-[4/5] sm:aspect-[16/10] lg:aspect-[16/9] w-full pt-24"></section>
+<div class="overflow-hidden"><section class="hero-bg aspect-[4/5] sm:aspect-[16/10] lg:aspect-[16/9] w-full pt-24"></section></div>
 
 <!-- ============================== HERO CTA STRIP ============================== -->
-<section id="intro" class="relative z-10 bg-cream text-charcoal px-5 sm:px-8 py-14 sm:py-20 border-b border-line/60">
-  <div class="max-w-[1180px] mx-auto flex flex-col sm:flex-row sm:items-end justify-between gap-6 sm:gap-12">
-    <p class="font-serif text-[1.65rem] sm:text-[2.3rem] leading-[1.2] max-w-2xl text-charcoal">{{ t('hero_tagline') }}</p>
-    <a href="#catalog" class="pdp-link shrink-0 text-[15px]">{{ t('cta_view_catalog') }}</a>
-  </div>
-</section>
 
 <!-- ============================== CATALOG ============================== -->
 <section id="catalog" class="max-w-[1320px] mx-auto px-5 sm:px-8 py-16 sm:py-20">
@@ -608,7 +606,7 @@
     <div class="process-stages relative max-w-xl mx-auto lg:mx-0 text-center lg:text-left" aria-live="polite">
       {% for i in range(1, 7) %}
         <div class="process-stage{{ ' is-active' if i == 1 }}" data-stage="{{ i - 1 }}">
-          <p class="font-serif text-xl sm:text-2xl text-gold leading-none mb-1 sm:mb-2">{{ ['I', 'II', 'III', 'IV', 'V', 'VI'][i - 1] }}</p>
+          <p class="font-serif text-xl sm:text-2xl text-gold-ink leading-none mb-1 sm:mb-2">{{ ['I', 'II', 'III', 'IV', 'V', 'VI'][i - 1] }}</p>
           <h3 class="font-serif text-[1.45rem] sm:text-3xl leading-tight text-charcoal mb-1.5 sm:mb-3">{{ t('stage%d_title' % i) }}</h3>
           <p class="text-[15px] text-ink/80 leading-relaxed">{{ t('stage%d_text' % i) }}</p>
         </div>
