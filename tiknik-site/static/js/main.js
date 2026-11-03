@@ -231,8 +231,11 @@
 
   // The first two parameters (usually fabric and colour) as one quiet line; the rest are in the product view.
   function cardAttrs(item) {
-    if (item.vintage) return t("vintage_lace", "Vintage lace, {era}").replace("{era}", item.vintage);
-    return t("made_to_order", "Made to order");
+    var parts = filledAttrs(item).slice(0, 2).map(function (p) {
+      return p[1];
+    });
+    if (item.vintage) parts.push(t("vintage_lace", "Vintage lace, {era}").replace("{era}", item.vintage));
+    return parts.join(", ");
   }
 
   // The price beside the name, and the rental (or "made to order") on the line under it.
@@ -1801,8 +1804,15 @@
         var amount = lineAmount(item, line);
         total += amount || 0;
         var thumb = mainPhoto(item);
+        var sizes = line.kind === "rent" && item.rent_sizes && item.rent_sizes.length
+          ? '<div class="cart-sizes" role="group" aria-label="' + esc(t("cart_size", "Size")) + '">' +
+            '<span>' + esc(t("cart_size", "Size")) + "</span>" +
+            item.rent_sizes.map(function (z) {
+              return '<button type="button" class="js-size' + (line.size === z ? " on" : "") + '" data-i="' + i + '" data-z="' + z + '">' + z + "</button>";
+            }).join("") + "</div>"
+          : "";
         var days = line.kind === "rent"
-          ? '<div class="flex items-center gap-2 mt-2 text-xs text-ink/60">' +
+          ? sizes + '<div class="flex items-center gap-2 mt-2 text-xs text-ink/60">' +
             '<button type="button" class="qty-btn js-days" data-i="' + i + '" data-d="-1">−</button>' +
             '<span class="min-w-[3.5rem] text-center">' + line.days + " " + esc(t(line.days === 1 ? "cart_day" : "cart_days", "days")) + "</span>" +
             '<button type="button" class="qty-btn js-days" data-i="' + i + '" data-d="1">+</button></div>'
@@ -1841,10 +1851,12 @@
   }
 
   cartLinesEl.addEventListener("click", function (e) {
-    var btn = e.target.closest(".js-days, .js-remove, .js-kind");
+    var btn = e.target.closest(".js-days, .js-remove, .js-kind, .js-size");
     if (!btn) return;
     var i = parseInt(btn.getAttribute("data-i"), 10);
-    if (btn.classList.contains("js-kind")) {
+    if (btn.classList.contains("js-size")) {
+      cart[i].size = btn.getAttribute("data-z");
+    } else if (btn.classList.contains("js-kind")) {
       var kind = btn.getAttribute("data-k");
       if (cart[i].kind === kind) return;
       var other = cartIndex(cart[i].id, kind);
@@ -1897,6 +1909,16 @@
     e.preventDefault();
     var data = Object.fromEntries(new FormData(cartForm).entries());
     data.items = cart;
+    var list = itemsByLang[cardLang] || items;
+    var missing = cart.some(function (l) {
+      var it = findItem(list, l.id);
+      return l.kind === "rent" && it && it.rent_sizes && it.rent_sizes.length && !l.size;
+    });
+    if (missing) {
+      cartStatus.textContent = t("size_error", "Choose a size for each rental.");
+      cartStatus.className = "text-sm text-center text-red-700";
+      return;
+    }
     var btn = cartForm.querySelector("button[type=submit]");
     btn.disabled = true;
     cartStatus.classList.add("hidden");
@@ -1916,7 +1938,7 @@
         if (currentOpenItem) renderProductCart(currentOpenItem);
       })
       .catch(function (err) {
-        var key = { name_contact: "required_error", busy: "busy_error" }[err.message] || "send_error";
+        var key = { name_contact: "required_error", busy: "busy_error", size: "size_error" }[err.message] || "send_error";
         cartStatus.textContent = t(key, "Something went wrong. Please try again.");
         cartStatus.className = "text-sm text-center text-red-700";
       })

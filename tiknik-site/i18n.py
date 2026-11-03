@@ -446,6 +446,12 @@ UI = {
         "ru": "Готово",
         "hy": "Պատրաստ է",
     },
+    "cart_size": {"en": "Size", "ru": "Размер", "hy": "Չափս"},
+    "size_error": {
+        "en": "Choose a size for each rental.",
+        "ru": "Выберите размер для каждой аренды.",
+        "hy": "Ընտրեք չափսը յուրաքանչյուր վարձույթի համար։",
+    },
     # Used by static/js/main.js (passed in as window.TIKNIK_I18N)
     "price_on_request": {"en": "Price on request", "ru": "Цена по запросу", "hy": "Գինը՝ ըստ հարցման"},
     "per_day": {"en": " / day", "ru": " / сутки", "hy": " / օր"},
@@ -480,7 +486,7 @@ JS_KEYS = (
     "back_to_catalog", "prev_item", "next_item", "cta_book_quote", "dial_hint",
     "add_to_cart", "add_buy", "add_rent", "in_cart", "cart_buy_label", "cart_rent_label", "cart_day", "cart_days",
     "cart_sent", "cart_remove", "busy_error", "review_thanks",
-    "card_or_rent", "card_rental", "collection", "pdp_piece", "pdp_details", "pdp_delivery", "toast_added", "toast_view", "made_to_order", "vintage_lace", "pdp_note", "prices_in", "prefs_change", "sound_on", "sound_off", "dial_lang", "dial_cur",
+    "card_or_rent", "card_rental", "collection", "pdp_piece", "pdp_details", "pdp_delivery", "toast_added", "toast_view", "cart_size", "size_error", "made_to_order", "vintage_lace", "pdp_note", "prices_in", "prefs_change", "sound_on", "sound_off", "dial_lang", "dial_cur",
     "delivery_f1_title", "delivery_f1_text", "delivery_f2_title", "delivery_f2_text", "delivery_f3_title", "delivery_f3_text",
     "handmade_hours", "edition_one", "edition_n", "share", "link_copied",
     "price_on_request", "per_day", "mode_Rent", "mode_Sale", "mode_Both", "mode_Custom",

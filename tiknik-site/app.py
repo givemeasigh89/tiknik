@@ -39,6 +39,11 @@ LEGACY_ATTR_LABELS = {
 }
 
 ALLOWED_EXT = {"jpg", "jpeg", "png", "webp"}
+RENT_SIZES = ("XS", "S", "M", "L")
+
+
+def item_rent_sizes(row):
+    return [z for z in (row["rent_sizes"] or "").split(",") if z in RENT_SIZES]
 VIDEO_EXT = {"mp4", "webm", "mov"}
 MAX_PHOTOS = 20
 MAX_VIDEOS = 3
@@ -173,6 +178,9 @@ def init_db():
     # The era of the vintage lace, only for pieces that really have it (e.g. "1980s"); empty = no claim.
     if "vintage" not in _table_columns(db, "items"):
         db.execute("ALTER TABLE items ADD COLUMN vintage TEXT")
+    # Sizes a rental piece is available in, e.g. "XS,S,M" (chosen per item in /admin).
+    if "rent_sizes" not in _table_columns(db, "items"):
+        db.execute("ALTER TABLE items ADD COLUMN rent_sizes TEXT")
 
     for attr in ATTRS:
         if attr not in _table_columns(db, "items"):
@@ -589,6 +597,7 @@ def api_items():
             "rent_price": it["rent_price"],
             "hours": it["hours"],
             "vintage": (it["vintage"] or "").strip(),
+            "rent_sizes": item_rent_sizes(it),
             "edition": it["edition"],
             "media": media_by_item.get(it["id"], []),
         })
@@ -669,7 +678,7 @@ def api_order():
         except (TypeError, ValueError):
             continue
         kind = line.get("kind")
-        it = db.execute("SELECT id, name, mode, price, rent_price FROM items WHERE id = ?", (item_id,)).fetchone()
+        it = db.execute("SELECT id, name, mode, price, rent_price, rent_sizes FROM items WHERE id = ?", (item_id,)).fetchone()
         if not it:
             continue
         if kind == "buy" and it["mode"] in ("Sale", "Both"):
@@ -680,7 +689,12 @@ def api_order():
             amount = price * days if price is not None else None
         else:
             continue
-        lines.append({"id": it["id"], "name": it["name"], "kind": kind,
+        size = None
+        if kind == "rent" and item_rent_sizes(it):
+            size = line.get("size")
+            if size not in item_rent_sizes(it):
+                return jsonify({"ok": False, "error": "size"}), 400
+        lines.append({"id": it["id"], "name": it["name"], "kind": kind, "size": size,
                       "days": days if kind == "rent" else None, "price": price, "amount": amount})
         total += amount or 0
     if not lines:
@@ -852,6 +866,7 @@ def admin():
         max_video_mb=MAX_VIDEO_MB,
         uploads_mb=uploads_size_mb(),
         modes=MODES,
+        rent_sizes=RENT_SIZES,
         known_labels=known_labels,
         default_params=[LEGACY_ATTR_LABELS["en"][a] for a in ATTRS],
         usd_rate=usd_rate,
@@ -1023,8 +1038,9 @@ def admin_update_item(item_id):
             ((request.form.get(f"name_{lang}") or "").strip(), request.form.get(f"description_{lang}") or "",
              request.form.get(f"delivery_{lang}") or "", item_id),
         )
-    db.execute("UPDATE items SET delivery = ?, vintage = ? WHERE id = ?",
-               (request.form.get("delivery") or "", (request.form.get("vintage") or "").strip()[:40], item_id))
+    db.execute("UPDATE items SET delivery = ?, vintage = ?, rent_sizes = ? WHERE id = ?",
+               (request.form.get("delivery") or "", (request.form.get("vintage") or "").strip()[:40],
+                ",".join(z for z in RENT_SIZES if z in request.form.getlist("rent_sizes")), item_id))
     db.execute("UPDATE items SET hours = ?, edition = ? WHERE id = ?",
                (hours if hours and hours > 0 else None, edition if edition and edition > 0 else None, item_id))
     save_item_attrs(db, item_id)
