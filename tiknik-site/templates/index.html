@@ -216,8 +216,6 @@
 
   /* About: three chapters, photo and text side by side, alternating; the first photo is a cameo
      in the logo's oval with the Armenian word set large beside it */
-  .about-lead { font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-size: clamp(1.5rem, 2.8vw, 2.3rem); line-height: 1.25;
-                color: #2E2C29; max-width: 46rem; margin-bottom: 4rem; }
   .about-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.75rem; align-items: center; }
   .about-row + .about-row { margin-top: 4.5rem; }
   .about-photo, .about-print { margin: 0; }
@@ -702,8 +700,6 @@
      (about_*). The childhood photo is an old print stitched onto the page. -->
 <section id="about" class="about py-16 sm:py-24">
   <div class="max-w-[1180px] mx-auto px-5 sm:px-8">
-
-    <p class="about-lead">{{ t('about_lead') }}</p>
 
     <!-- I. The name -->
     <div class="about-row">
