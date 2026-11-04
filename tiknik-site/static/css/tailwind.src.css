@@ -6,8 +6,8 @@
    Left alone they are the operating system's grey — the parts of a page nobody designed. */
 @layer base {
   :root {
-    --tk-cream: #EFEEEA;
-    --tk-ink: #2E2C29;
+    --tk-cream: #F6F5F1;
+    --tk-ink: #1C1B19;
     --tk-gold: #A48F66;
   }
 
@@ -15,7 +15,7 @@
   ::-webkit-scrollbar { width: 9px; height: 9px; }
   ::-webkit-scrollbar-track { background: var(--tk-cream); }
   ::-webkit-scrollbar-thumb {
-    background: rgba(46, 44, 41, .26);
+    background: rgba(28, 27, 25, .26);
     border: 2.5px solid var(--tk-cream);
     border-radius: 9999px;
   }
@@ -25,7 +25,7 @@
 
   /* Firefox only (in Chrome these standard properties would switch the bar above off). */
   @supports (-moz-appearance: none) {
-    html { scrollbar-width: thin; scrollbar-color: rgba(46, 44, 41, .32) var(--tk-cream); }
+    html { scrollbar-width: thin; scrollbar-color: rgba(28, 27, 25, .32) var(--tk-cream); }
   }
 
   ::selection { background: rgba(164, 143, 102, .3); color: var(--tk-ink); }

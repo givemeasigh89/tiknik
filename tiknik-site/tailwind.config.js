@@ -6,10 +6,10 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        cream: "#EFEEEA",
+        cream: "#F6F5F1",
         "cream-dark": "#E4E1D8",
         panel: "#E9E6DF",
-        charcoal: "#2E2C29",
+        charcoal: "#1C1B19",
         ink: "#3A3A3A",
         line: "#C9C3B4",
         gold: "#A48F66",

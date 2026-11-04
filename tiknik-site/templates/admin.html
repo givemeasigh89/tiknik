@@ -775,12 +775,12 @@
       return /^video\//.test(file.type) || /\.(mp4|webm|mov)$/i.test(file.name);
     }
 
-    // ~700 px JPEG for catalog cards; an empty file keeps the order if a photo can't be read.
+    // ~1000 px JPEG for catalog cards; an empty file keeps the order if a photo can't be read.
     function makeThumb(file) {
       var empty = new File([], "empty.jpg", { type: "image/jpeg" });
       if (!window.createImageBitmap) return Promise.resolve(empty);
       return createImageBitmap(file).then(function (bmp) {
-        var scale = Math.min(1, 700 / Math.max(bmp.width, bmp.height));
+        var scale = Math.min(1, 1000 / Math.max(bmp.width, bmp.height));
         var canvas = document.createElement("canvas");
         canvas.width = Math.round(bmp.width * scale);
         canvas.height = Math.round(bmp.height * scale);

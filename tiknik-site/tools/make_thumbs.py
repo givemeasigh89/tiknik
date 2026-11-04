@@ -15,7 +15,7 @@ from PIL import Image, ImageOps
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PRODUCTS = os.path.join(BASE, "static", "img", "products")
 THUMBS = os.path.join(PRODUCTS, "thumbs")
-MAX_SIDE = 700
+MAX_SIDE = 1000
 QUALITY = 80
 IMAGE_EXT = {".jpg", ".jpeg", ".png", ".webp"}
 
@@ -30,7 +30,12 @@ def main():
             continue
         out = os.path.join(THUMBS, base + ".jpg")
         if os.path.exists(out):
-            continue
+            with Image.open(out) as have:
+                if max(have.size) >= MAX_SIDE:
+                    continue
+            with Image.open(path) as full:
+                if max(have.size) >= max(full.size):
+                    continue  # the original is no bigger than its thumbnail
         try:
             with Image.open(path) as im:
                 im.draft("RGB", (MAX_SIDE, MAX_SIDE))  # decode big JPEGs at reduced size

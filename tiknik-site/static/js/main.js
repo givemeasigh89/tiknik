@@ -144,6 +144,17 @@
     return m.thumb ? "/static/img/products/thumbs/" + m.thumb : photoUrl(m.file);
   }
 
+  // Card photos: the browser takes the small copy or the full photo, whichever is sharp on this screen.
+  var CARD_SIZES = "(min-width:1100px) 25vw, (min-width:768px) 33vw, 50vw";
+  function cardSrcset(m) {
+    return m.thumb ? "/static/img/products/thumbs/" + m.thumb + " 640w, " + photoUrl(m.file) + " 1280w" : "";
+  }
+  function cardImgAttrs(m, eager) {
+    var set = cardSrcset(m);
+    var p = eager ? "" : "data-";
+    return p + 'src="' + smallUrl(m) + '"' + (set ? " " + p + 'srcset="' + set + '" sizes="' + CARD_SIZES + '"' : "");
+  }
+
   // Photos (not videos) of an item.
   function cardPhotos(item) {
     return (item.media || []).filter(function (m) {
@@ -166,7 +177,7 @@
     var photos = cardPhotos(item);
     if (!photos.length) return iconSvg(item.category);
     if (photos.length === 1) {
-      return '<img src="' + smallUrl(photos[0]) + '" alt="' + esc(item.name) + '" loading="lazy" class="pcard-img w-full h-full object-cover">';
+      return "<img " + cardImgAttrs(photos[0], true) + ' alt="' + esc(item.name) + '" loading="lazy" class="pcard-img w-full h-full object-cover">';
     }
     var index = Math.min(cardPhotoIndex[item.id] || 0, photos.length - 1);
     var n = photos.length;
@@ -176,7 +187,7 @@
         .map(function (m, i) {
           // Only the shown photo and its neighbours load; the rest load as the card is flipped.
           var near = i === index || i === (index + 1) % n || i === (index + n - 1) % n;
-          return '<img class="pcard-img" ' + (near ? 'src="' : 'data-src="') + smallUrl(m) + '" alt="' + (i === index ? esc(item.name) : "") +
+          return '<img class="pcard-img" ' + cardImgAttrs(m, near) + ' alt="' + (i === index ? esc(item.name) : "") +
             '"' + (i === index ? "" : ' loading="lazy"') + ' draggable="false">';
         })
         .join("") +
@@ -187,46 +198,8 @@
     );
   }
 
-  // Phones: a small bag on the photo's corner. Computers: "Buy" / "Rent" appear over the photo on hover.
-  var BAG_ICON =
-    '<svg viewBox="0 0 24 24" class="card-cart-bag" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round">' +
-    '<path d="M5 8h14l-1.2 12H6.2L5 8z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></svg>' +
-    '<svg viewBox="0 0 24 24" class="card-cart-check" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">' +
-    '<path d="M5 8h14l-1.2 12H6.2L5 8z" stroke-width="1.4"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8" stroke-width="1.4"/><path d="M9.3 14l2 2 3.6-4"/></svg>';
-
-  function canCart(item) {
-    return item.mode === "Sale" || item.mode === "Rent" || item.mode === "Both";
-  }
-
   function cartKinds(item) {
     return { Sale: ["buy"], Rent: ["rent"], Both: ["buy", "rent"] }[item.mode] || [];
-  }
-
-  function cardCartButton(item) {
-    if (!canCart(item)) return "";
-    var inCart = itemInCart(item.id);
-    var label = inCart ? t("in_cart", "In your cart") : t("add_to_cart", "Add to Cart");
-    return (
-      '<button type="button" class="card-cart' + (inCart ? " in-cart" : "") + '" data-cart-id="' + item.id +
-      '" aria-label="' + esc(label) + '" title="' + esc(label) + '">' + BAG_ICON + "</button>"
-    );
-  }
-
-  function quickAddHtml(item) {
-    var kinds = cartKinds(item);
-    if (!kinds.length) return "";
-    return (
-      '<div class="quick-add" data-quick-id="' + item.id + '">' +
-      kinds
-        .map(function (kind) {
-          var inCart = cartIndex(item.id, kind) !== -1;
-          var label = kinds.length === 1 && kind === "buy" ? t("add_to_cart", "Add to Cart") : t("add_" + kind, kind);
-          return '<button type="button" class="js-quick' + (inCart ? " in" : "") + '" data-kind="' + kind + '">' +
-            esc(inCart ? t("in_cart", "In your cart ✓") : label) + "</button>";
-        })
-        .join("") +
-      "</div>"
-    );
   }
 
   // The first two parameters (usually fabric and colour) as one quiet line; the rest are in the product view.
@@ -255,20 +228,11 @@
       '<article class="pcard group" data-cat="' + item.category + '" data-id="' + item.id + '">' +
       '<div class="card-media pcard-media text-charcoal/25">' +
       cardMediaHtml(item) +
-      cardCartButton(item) +
-      quickAddHtml(item) +
       "</div>" +
       '<div class="pcard-info">' +
-      '<div class="pcard-row">' +
       '<h3 class="pcard-name">' + esc(item.name) + "</h3>" +
-      (p.main ? '<span class="pcard-price">' + esc(p.main) + "</span>" : "") +
-      "</div>" +
-      (attrs || p.sub
-        ? '<div class="pcard-row pcard-sub">' +
-          '<span class="pcard-attrs">' + esc(attrs) + "</span>" +
-          (p.sub ? '<span class="pcard-note">' + esc(p.sub) + "</span>" : "") +
-          "</div>"
-        : "") +
+      '<p class="pcard-price-line"><span>' + esc(p.main || p.sub) + "</span>" + (p.main && p.sub ? "<span>" + esc(p.sub) + "</span>" : "") + "</p>" +
+      (attrs ? '<p class="pcard-attrs">' + esc(attrs) + "</p>" : "") +
       "</div>" +
       "</article>"
     );
@@ -317,6 +281,10 @@
     [index - 1, index, index + 1].forEach(function (i) {
       var img = imgs[(i + n) % n];
       if (img && img.hasAttribute("data-src")) {
+        if (img.hasAttribute("data-srcset")) {
+          img.srcset = img.getAttribute("data-srcset");
+          img.removeAttribute("data-srcset");
+        }
         img.src = img.getAttribute("data-src");
         img.removeAttribute("data-src");
       }
@@ -330,26 +298,6 @@
   grid.addEventListener("click", function (e) {
     var card = e.target.closest("[data-id]");
     if (!card) return;
-    var quick = e.target.closest(".js-quick");
-    if (quick) {
-      var quickId = parseInt(card.getAttribute("data-id"), 10);
-      var kind = quick.getAttribute("data-kind");
-      if (cartIndex(quickId, kind) !== -1) openCart();
-      else addToCart(quickId, kind);
-      return;
-    }
-    if (e.target.closest(".quick-add")) return; // the gap between the two buttons
-    var bag = e.target.closest(".card-cart");
-    if (bag) {
-      var bagId = parseInt(bag.getAttribute("data-cart-id"), 10);
-      if (itemInCart(bagId)) {
-        openCart();
-      } else {
-        var bagItem = findItem(items, bagId);
-        addToCart(bagId, bagItem.mode === "Rent" ? "rent" : "buy");
-      }
-      return;
-    }
     var nav = e.target.closest(".card-nav");
     if (nav) {
       var id = parseInt(card.getAttribute("data-id"), 10);
@@ -1461,6 +1409,9 @@
     menuToggle.addEventListener("click", function () {
       setMenu(mobileMenu.classList.contains("hidden"));
     });
+    document.addEventListener("click", function (e) {
+      if (!mobileMenu.classList.contains("hidden") && !e.target.closest("#mobile-menu, #menu-toggle")) setMenu(false);
+    });
     mobileMenu.addEventListener("click", function (e) {
       if (e.target.closest("a")) setMenu(false);
     });
@@ -1514,7 +1465,6 @@
       /* private mode etc. — the cart still works for this visit */
     }
     updateCartCount();
-    refreshCardCartButtons();
   }
 
   function itemInCart(id) {
@@ -1523,24 +1473,6 @@
     });
   }
 
-  function refreshCardCartButtons() {
-    grid.querySelectorAll(".quick-add").forEach(function (bar) {
-      var item = findItem(items, parseInt(bar.getAttribute("data-quick-id"), 10));
-      if (item) bar.outerHTML = quickAddHtml(item);
-    });
-    grid.querySelectorAll(".card-cart").forEach(function (btn) {
-      var inCart = itemInCart(parseInt(btn.getAttribute("data-cart-id"), 10));
-      var label = inCart ? t("in_cart", "In your cart") : t("add_to_cart", "Add to Cart");
-      if (inCart && !btn.classList.contains("in-cart")) {
-        btn.classList.remove("pop");
-        void btn.offsetWidth;
-        btn.classList.add("pop");
-      }
-      btn.classList.toggle("in-cart", inCart);
-      btn.setAttribute("aria-label", label);
-      btn.setAttribute("title", label);
-    });
-  }
 
   function updateCartCount(bump) {
     cartCount.textContent = cart.length;

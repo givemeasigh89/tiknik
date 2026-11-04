@@ -190,9 +190,9 @@ UI = {
 
     # About us: the atelier's story in three chapters (static/img/about/1–3.jpg go with them)
     "about_gloss": {
-        "en": "tiknik: “doll”, in Armenian",
-        "ru": "тикник: «кукла» по-армянски",
-        "hy": "տիկնիկ",
+        "en": "Armenian for “doll”",
+        "ru": "по-армянски «кукла»",
+        "hy": "",
     },
     "about_p1": {
         "en": "Tiknik, meaning doll in Armenian, has its roots in a childhood memory. When her grandmother took her "
@@ -445,6 +445,8 @@ UI = {
         "ru": "Выберите размер для каждой аренды.",
         "hy": "Ընտրեք չափսը յուրաքանչյուր վարձույթի համար։",
     },
+    "request_short": {"en": "Request", "ru": "Запрос", "hy": "Հարցում"},
+    "about_word": {"en": "Tiknik", "ru": "Тикник", "hy": "Տիկնիկ"},
     # Used by static/js/main.js (passed in as window.TIKNIK_I18N)
     "price_on_request": {"en": "Price on request", "ru": "Цена по запросу", "hy": "Գինը՝ ըստ հարցման"},
     "per_day": {"en": " / day", "ru": " / сутки", "hy": " / օր"},

@@ -17,7 +17,7 @@
 <link rel="icon" type="image/png" sizes="48x48" href="{{ url_for('static', filename='img/icon-48.png') }}">
 <link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('static', filename='img/icon-192.png') }}">
 <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/apple-touch-icon.png') }}">
-<meta name="theme-color" content="#EFEEEA">
+<meta name="theme-color" content="#F6F5F1">
 <link rel="preload" as="image" href="{{ url_for('static', filename='img/hero-900.jpg') }}" media="(max-width: 767px)" fetchpriority="high">
 <link rel="preload" as="image" href="{{ url_for('static', filename='img/hero-1600.jpg') }}" media="(min-width: 768px) and (max-width: 1699px)" fetchpriority="high">
 <link rel="preload" as="image" href="{{ url_for('static', filename='img/hero-bride.jpg') }}" media="(min-width: 1700px)" fetchpriority="high">
@@ -43,17 +43,17 @@
   body { font-family: 'Jost', 'Noto Sans Armenian', sans-serif; }
   .font-serif { font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; }
   .lang-btn { transition: color .2s ease; }
-  .lang-btn[data-active] { color: #2E2C29; font-weight: 500; }
+  .lang-btn[data-active] { color: #1C1B19; font-weight: 500; }
 
   /* Catalog sections and currency: text with an underline under the chosen one */
   .tab-btn, .currency-btn { position: relative; padding: .6rem 0; font-size: .9rem; color: rgba(58,58,58,.75);
                             white-space: nowrap; transition: color .25s ease; }
   .currency-btn { padding: .35rem 0; font-size: .8rem; letter-spacing: .02em; }
   .tab-btn::after, .currency-btn::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px;
-                                          background: #2E2C29; transform: scaleX(0); transform-origin: left;
+                                          background: #1C1B19; transform: scaleX(0); transform-origin: left;
                                           transition: transform .45s cubic-bezier(.16,1,.3,1); }
-  .tab-btn:hover, .currency-btn:hover { color: #2E2C29; }
-  .tab-btn[data-active], .currency-btn[data-active] { color: #2E2C29; }
+  .tab-btn:hover, .currency-btn:hover { color: #1C1B19; }
+  .tab-btn[data-active], .currency-btn[data-active] { color: #1C1B19; }
   .tab-btn[data-active]::after, .currency-btn[data-active]::after { transform: scaleX(1); }
 
   /* Motion layer (static/js/motion.js, only while Animations are on in /admin) */
@@ -62,13 +62,11 @@
   .motion-fly { position: fixed; z-index: 95; object-fit: cover; pointer-events: none; will-change: transform; }
 
   /* Header: catalog drop-down */
-  .nav-drop-menu { opacity: 0; visibility: hidden; transform: translate(-50%, 6px); transition: opacity .2s ease, transform .2s ease, visibility 0s .2s; }
-  .nav-drop:hover .nav-drop-menu, .nav-drop:focus-within .nav-drop-menu { opacity: 1; visibility: visible; transform: translate(-50%, 0); transition: opacity .2s ease, transform .2s ease; }
   html { scroll-padding-top: 72px; }
 
-  .contact-link { display: inline-flex; align-items: center; gap: .5rem; font-size: .875rem; letter-spacing: .02em; color: #2E2C29;
-                  border: 1px solid rgba(46,44,41,.25); padding: .55rem 1.1rem; transition: background .2s, color .2s, border-color .2s; }
-  .contact-link:hover { background: #2E2C29; color: #EFEEEA; border-color: #2E2C29; }
+  .contact-link { display: inline-flex; align-items: center; gap: .5rem; font-size: .875rem; letter-spacing: .02em; color: #1C1B19;
+                  border: 1px solid rgba(28,27,25,.25); padding: .55rem 1.1rem; transition: background .2s, color .2s, border-color .2s; }
+  .contact-link:hover { background: #1C1B19; color: #F6F5F1; border-color: #1C1B19; }
 
   /* Catalog: borderless lookbook tiles — the photo leads, name and price sit under it */
   .catalog-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: .85rem; row-gap: 2.25rem; }
@@ -77,14 +75,13 @@
   .pcard-media { position: relative; aspect-ratio: 3 / 4; overflow: hidden; background: #E4E1D8;
                  display: flex; align-items: center; justify-content: center; }
   .pcard-img { transition: transform 1.4s cubic-bezier(.16,1,.3,1); }
-  @media (hover: hover) { .pcard:hover .pcard-img { transform: scale(1.03); } }
   .pcard-info { padding-top: .9rem; }
   .pcard-row { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; min-width: 0; }
   .pcard-name { font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-size: 1.6rem; line-height: 1.1;
-                font-weight: 500; color: #2E2C29; min-width: 0; }
+                font-weight: 500; color: #1C1B19; min-width: 0; }
   .pcard-price { font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-size: 1.35rem; font-weight: 600;
-                 color: #2E2C29; white-space: nowrap; font-variant-numeric: lining-nums tabular-nums; }
-  .pcard-sub { margin-top: .3rem; font-size: 13px; line-height: 1.4; color: rgba(46,44,41,.85); }
+                 color: #1C1B19; white-space: nowrap; font-variant-numeric: lining-nums tabular-nums; }
+  .pcard-sub { margin-top: .3rem; font-size: 13px; line-height: 1.4; color: rgba(28,27,25,.85); }
   .pcard-attrs { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .pcard-note { white-space: nowrap; flex-shrink: 0; }
   @media (max-width: 639px) {
@@ -101,11 +98,11 @@
   .quick-add { position: absolute; left: .75rem; right: .75rem; bottom: .9rem; z-index: 3; display: flex; gap: .5rem;
                opacity: 0; transform: translateY(10px); transition: opacity .3s ease, transform .45s cubic-bezier(.16,1,.3,1); }
   .pcard:hover .quick-add, .pcard:focus-within .quick-add { opacity: 1; transform: none; }
-  .quick-add button { flex: 1; padding: .7rem .5rem; font-size: 13px; letter-spacing: .02em; color: #2E2C29;
-                      background: rgba(239,238,234,.93); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  .quick-add button { flex: 1; padding: .7rem .5rem; font-size: 13px; letter-spacing: .02em; color: #1C1B19;
+                      background: rgba(246,245,241,.93); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
                       transition: background .2s ease, color .2s ease; }
-  .quick-add button:hover { background: #2E2C29; color: #EFEEEA; }
-  .quick-add button.in { background: #A48F66; color: #EFEEEA; }
+  .quick-add button:hover { background: #1C1B19; color: #F6F5F1; }
+  .quick-add button.in { background: #A48F66; color: #F6F5F1; }
   @media (hover: none) { .quick-add { display: none; } }
   @media (hover: hover) { .pcard .card-cart { display: none; } }
 
@@ -118,7 +115,7 @@
 
   /* Product view price */
   .price-main { display: block; font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-size: 2rem;
-                line-height: 1.1; font-weight: 600; color: #2E2C29; font-variant-numeric: lining-nums tabular-nums; }
+                line-height: 1.1; font-weight: 600; color: #1C1B19; font-variant-numeric: lining-nums tabular-nums; }
   .price-sub { display: block; margin-top: .2rem; font-size: .9rem; color: rgba(58,58,58,.75); }
   .price-request { font-size: 1.05rem; color: rgba(58,58,58,.85); }
 
@@ -132,11 +129,11 @@
     .pdp-info { max-width: 500px; padding-top: .25rem; }
   }
   .pdp-arrow { position: absolute; top: 50%; transform: translateY(-50%); width: 42px; height: 42px; border-radius: 9999px;
-               align-items: center; justify-content: center; font-size: 1.25rem; color: #2E2C29; z-index: 2;
-               background: rgba(239,238,234,.86); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+               align-items: center; justify-content: center; font-size: 1.25rem; color: #1C1B19; z-index: 2;
+               background: rgba(246,245,241,.86); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
                transition: background .2s ease; }
   .pdp-arrow:not(.hidden) { display: flex; }
-  .pdp-arrow:hover { background: #EFEEEA; }
+  .pdp-arrow:hover { background: #F6F5F1; }
   .pdp-thumbs { gap: .5rem; overflow-x: auto; padding-bottom: .25rem; }
   @media (min-width: 900px) {
     .pdp-thumbs { flex-direction: column; flex: 0 0 76px; overflow-x: hidden; overflow-y: auto; padding: 2px 2px 0 0;
@@ -147,42 +144,42 @@
   .pdp-thumbs .thumb-btn { position: relative; flex: 0 0 auto; width: 56px; height: 70px; overflow: hidden; background: #E4E1D8;
                            opacity: .55; outline: 1px solid transparent; outline-offset: 2px; transition: opacity .25s ease, outline-color .25s ease; }
   .pdp-thumbs .thumb-btn:hover { opacity: .85; }
-  .pdp-thumbs .thumb-btn.on { opacity: 1; outline-color: #2E2C29; }
+  .pdp-thumbs .thumb-btn.on { opacity: 1; outline-color: #1C1B19; }
 
   .pdp-btn { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; width: 100%;
              padding: .95rem 1.25rem; font-size: .95rem; letter-spacing: .01em; transition: background .2s ease, color .2s ease, border-color .2s ease; }
   .pdp-btn + .pdp-btn { margin-top: .6rem; }
   .pdp-btn .amt { font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-size: 1.25rem; font-weight: 600;
                   font-variant-numeric: lining-nums tabular-nums; white-space: nowrap; }
-  .pdp-btn.primary { background: #2E2C29; color: #EFEEEA; }
+  .pdp-btn.primary { background: #1C1B19; color: #F6F5F1; }
   .pdp-btn.primary:hover { background: #45423d; }
-  .pdp-btn.secondary { border: 1px solid rgba(46,44,41,.35); color: #2E2C29; }
-  .pdp-btn.secondary:hover { border-color: #2E2C29; }
-  .pdp-btn.in { background: #A48F66; border-color: #A48F66; color: #EFEEEA; }
+  .pdp-btn.secondary { border: 1px solid rgba(28,27,25,.35); color: #1C1B19; }
+  .pdp-btn.secondary:hover { border-color: #1C1B19; }
+  .pdp-btn.in { background: #A48F66; border-color: #A48F66; color: #F6F5F1; }
   .pdp-link { color: rgba(58,58,58,.85); text-decoration: underline; text-underline-offset: 5px;
-              text-decoration-color: rgba(46,44,41,.3); transition: color .2s ease, text-decoration-color .2s ease; }
-  .pdp-link:hover { color: #2E2C29; text-decoration-color: #2E2C29; }
+              text-decoration-color: rgba(28,27,25,.3); transition: color .2s ease, text-decoration-color .2s ease; }
+  .pdp-link:hover { color: #1C1B19; text-decoration-color: #1C1B19; }
 
-  .pdp-section { border-top: 1px solid rgba(46,44,41,.14); }
-  .pdp-section:last-of-type { border-bottom: 1px solid rgba(46,44,41,.14); }
-  .pdp-heading { padding: 1.05rem 0 .6rem; font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-size: 1.3rem; color: #2E2C29; }
+  .pdp-section { border-top: 1px solid rgba(28,27,25,.14); }
+  .pdp-section:last-of-type { border-bottom: 1px solid rgba(28,27,25,.14); }
+  .pdp-heading { padding: 1.05rem 0 .6rem; font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-size: 1.3rem; color: #1C1B19; }
   .pdp-section summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
-                         padding: 1.05rem 0; font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-size: 1.3rem; color: #2E2C29; }
+                         padding: 1.05rem 0; font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-size: 1.3rem; color: #1C1B19; }
   .pdp-section summary::-webkit-details-marker { display: none; }
   .pdp-section summary::after { content: ""; width: 12px; height: 12px; flex-shrink: 0;
-                                background: linear-gradient(#2E2C29, #2E2C29) center / 12px 1px no-repeat,
-                                            linear-gradient(#2E2C29, #2E2C29) center / 1px 12px no-repeat; }
-  .pdp-section[open] summary::after { background: linear-gradient(#2E2C29, #2E2C29) center / 12px 1px no-repeat; }
+                                background: linear-gradient(#1C1B19, #1C1B19) center / 12px 1px no-repeat,
+                                            linear-gradient(#1C1B19, #1C1B19) center / 1px 12px no-repeat; }
+  .pdp-section[open] summary::after { background: linear-gradient(#1C1B19, #1C1B19) center / 12px 1px no-repeat; }
   .pdp-body { padding-bottom: 1.4rem; font-size: .92rem; line-height: 1.75; color: rgba(58,58,58,.85); }
   /* Dial at the top right of the details, with a legend under it */
   .pdp-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1.25rem; }
   .pdp-prefs { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.5rem; }
-  .seg { position: relative; display: inline-flex; padding: 3px; border: 1px solid rgba(46,44,41,.18); border-radius: 9999px; }
+  .seg { position: relative; display: inline-flex; padding: 3px; border: 1px solid rgba(28,27,25,.18); border-radius: 9999px; }
   .seg button { position: relative; z-index: 1; padding: .5rem .95rem; font-size: 13px; letter-spacing: .02em; border-radius: 9999px;
                 color: rgba(58,58,58,.8); transition: color .35s ease; }
-  .seg button.on { color: #EFEEEA; }
-  .seg button:not(.on):hover { color: #2E2C29; }
-  .seg-ink { position: absolute; top: 3px; bottom: 3px; left: 0; width: 0; border-radius: 9999px; background: #2E2C29;
+  .seg button.on { color: #F6F5F1; }
+  .seg button:not(.on):hover { color: #1C1B19; }
+  .seg-ink { position: absolute; top: 3px; bottom: 3px; left: 0; width: 0; border-radius: 9999px; background: #1C1B19;
              transition: transform .5s cubic-bezier(.16,1,.3,1), width .5s cubic-bezier(.16,1,.3,1); }
 
 
@@ -197,15 +194,15 @@
 
   /* Added to the request: a bar at the bottom */
   .cart-toast { position: fixed; left: 50%; bottom: 1.25rem; z-index: 80; display: flex; align-items: center; gap: .85rem;
-                padding: .7rem .8rem .7rem .9rem; background: #2E2C29; color: #EFEEEA; font-size: .9rem; white-space: nowrap;
-                box-shadow: 0 18px 40px -18px rgba(46,44,41,.6); opacity: 0; pointer-events: none;
+                padding: .7rem .8rem .7rem .9rem; background: #1C1B19; color: #F6F5F1; font-size: .9rem; white-space: nowrap;
+                box-shadow: 0 18px 40px -18px rgba(28,27,25,.6); opacity: 0; pointer-events: none;
                 transform: translate(-50%, 14px); transition: opacity .3s ease, transform .5s cubic-bezier(.16,1,.3,1); }
   .cart-toast.show { opacity: 1; pointer-events: auto; transform: translate(-50%, 0); }
   .cart-toast-icon { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; color: #A48F66; }
   .cart-toast-icon svg { width: 20px; height: 20px; }
   .cart-toast-icon.pulse { animation: cartBump .5s ease; }
-  .cart-toast-open { padding: .45rem .8rem; border: 1px solid rgba(239,238,234,.35); font-size: .85rem; transition: background .2s, color .2s; }
-  .cart-toast-open:hover { background: #EFEEEA; color: #2E2C29; }
+  .cart-toast-open { padding: .45rem .8rem; border: 1px solid rgba(246,245,241,.35); font-size: .85rem; transition: background .2s, color .2s; }
+  .cart-toast-open:hover { background: #F6F5F1; color: #1C1B19; }
 
   /* About: three chapters, photo and text side by side, alternating; the first photo is a cameo
      in the logo's oval with the Armenian word set large beside it */
@@ -215,23 +212,18 @@
   .about-photo img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; background: #E4E1D8; }
   /* The childhood photo as an old print sewn onto the page: a pale mount, a slight tilt, a gold stitch round it */
   .about-print { position: relative; justify-self: center; width: min(82%, 380px); padding: 14px 14px 46px; background: #F8F7F3;
-                 transform: rotate(-1.6deg); box-shadow: 0 1px 2px rgba(46,44,41,.08), 0 22px 40px -24px rgba(46,44,41,.45); }
+                 transform: rotate(-1.6deg); box-shadow: 0 1px 2px rgba(28,27,25,.08), 0 22px 40px -24px rgba(28,27,25,.45); }
   .about-print::after { content: ""; position: absolute; inset: 6px; border: 1px dashed rgba(164,143,102,.75); pointer-events: none; }
   .about-print img { display: block; width: 100%; aspect-ratio: 1 / 1; object-fit: cover; }
   .about-print figcaption { position: absolute; left: 0; right: 0; bottom: 14px; text-align: center;
                             font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1rem; color: rgba(58,58,58,.8); }
 
-  /* The page thread (static/js/motion.js) */
-  .page-thread { position: absolute; left: 0; width: 100%; z-index: 5; pointer-events: none; overflow: visible; }
-  .page-thread-line { fill: none; stroke: #A48F66; stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; }
-  .page-thread-needle { stroke: #6f6450; stroke-width: 1.4; stroke-linecap: round; transition: opacity .3s ease; }
-  .page-thread-knot { fill: #A48F66; opacity: 0; transition: opacity .4s ease; }
-  .about-word { font-family: 'Noto Serif Armenian', 'Cormorant Garamond', serif; font-weight: 400; color: #2E2C29;
+  .about-word { font-family: 'Noto Serif Armenian', 'Cormorant Garamond', serif; font-weight: 400; color: #1C1B19;
                 font-size: clamp(3rem, 7vw, 5.5rem); line-height: 1; letter-spacing: -.01em; }
   .about-gloss { margin-top: .6rem; font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.2rem; color: #7A6744; }
   .about-p { text-wrap: pretty; margin-top: 1.4rem; font-size: 1rem; line-height: 1.85; color: rgba(58,58,58,.88); max-width: 34rem; }
   .about-quote { margin-top: 1.6rem; font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-style: italic;
-                 font-size: clamp(1.5rem, 2.4vw, 2rem); line-height: 1.3; color: #2E2C29; max-width: 26rem; }
+                 font-size: clamp(1.5rem, 2.4vw, 2rem); line-height: 1.3; color: #1C1B19; max-width: 26rem; }
   @media (min-width: 900px) {
     .about-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 5rem; }
     .about-row + .about-row { margin-top: 7rem; }
@@ -241,30 +233,30 @@
   }
 
   /* Process: the remote-ordering note under the stages */
-  .process-remote { margin-top: 1.4rem; padding-top: 1rem; border-top: 1px solid rgba(46,44,41,.14); font-size: 13px;
+  .process-remote { margin-top: 1.4rem; padding-top: 1rem; border-top: 1px solid rgba(28,27,25,.14); font-size: 13px;
                     line-height: 1.6; color: rgba(58,58,58,.82); max-width: 34rem; }
-  .process-remote-title { font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-size: 1.15rem; color: #2E2C29; margin-bottom: .2rem; }
+  .process-remote-title { font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-size: 1.15rem; color: #1C1B19; margin-bottom: .2rem; }
   @media (max-width: 1023px) { .process-remote { margin-left: auto; margin-right: auto; text-align: center; } }
 
   /* Delivery: heading on the left, four folding rows on the right */
   .dl { display: grid; gap: 2rem; }
   @media (min-width: 900px) { .dl { grid-template-columns: minmax(0, .8fr) minmax(0, 2fr); gap: 4rem; } .dl h2 { position: sticky; top: 6rem; align-self: start; } }
-  .dl-item { border-top: 1px solid rgba(239,238,234,.18); }
-  .dl-item:last-child { border-bottom: 1px solid rgba(239,238,234,.18); }
+  .dl-item { border-top: 1px solid rgba(246,245,241,.18); }
+  .dl-item:last-child { border-bottom: 1px solid rgba(246,245,241,.18); }
   .dl-item summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 1.5rem;
                      align-items: baseline; padding: 1.35rem 0; }
   .dl-item summary::-webkit-details-marker { display: none; }
   .dl-item summary::after { content: ""; grid-row: 1; grid-column: 2; align-self: center; width: 14px; height: 14px;
-                            background: linear-gradient(#EFEEEA, #EFEEEA) center / 14px 1px no-repeat,
-                                        linear-gradient(#EFEEEA, #EFEEEA) center / 1px 14px no-repeat;
+                            background: linear-gradient(#F6F5F1, #F6F5F1) center / 14px 1px no-repeat,
+                                        linear-gradient(#F6F5F1, #F6F5F1) center / 1px 14px no-repeat;
                             transition: transform .45s cubic-bezier(.16,1,.3,1); }
   .dl-item[open] summary::after { transform: rotate(45deg); }
-  .dl-t { font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-size: 1.75rem; line-height: 1.15; color: #EFEEEA; }
-  .dl-sum { grid-column: 1; margin-top: .3rem; font-size: 15px; color: rgba(239,238,234,.72); }
+  .dl-t { font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-size: 1.75rem; line-height: 1.15; color: #F6F5F1; }
+  .dl-sum { grid-column: 1; margin-top: .3rem; font-size: 15px; color: rgba(246,245,241,.72); }
   .dl-item:hover .dl-t { color: #fff; }
   .dl-body { padding: 0 0 1.6rem; max-width: 40rem; animation: dlIn .5s cubic-bezier(.16,1,.3,1); }
   @keyframes dlIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
-  .dl-body p, .dl-body li { font-size: 15px; line-height: 1.75; color: rgba(239,238,234,.8); }
+  .dl-body p, .dl-body li { font-size: 15px; line-height: 1.75; color: rgba(246,245,241,.8); }
   .dl-body p + p { margin-top: .8rem; }
   .dl-body li { position: relative; padding-left: 1.1rem; }
   .dl-body li + li { margin-top: .6rem; }
@@ -276,9 +268,9 @@
   @media (min-width: 900px) { .ct { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 5rem; } }
   .ct-field { display: flex; flex-direction: column; gap: .4rem; }
   .ct-field span { font-size: 13px; color: rgba(58,58,58,.8); }
-  .ct-field input, .ct-field select, .ct-field textarea { border: 0; border-bottom: 1px solid rgba(46,44,41,.35); background: transparent;
-                     padding: .55rem 0; font-size: 15px; color: #2E2C29; border-radius: 0; transition: border-color .2s ease; }
-  .ct-field input:focus, .ct-field select:focus, .ct-field textarea:focus { outline: none; border-color: #2E2C29; }
+  .ct-field input, .ct-field select, .ct-field textarea { border: 0; border-bottom: 1px solid rgba(28,27,25,.35); background: transparent;
+                     padding: .55rem 0; font-size: 15px; color: #1C1B19; border-radius: 0; transition: border-color .2s ease; }
+  .ct-field input:focus, .ct-field select:focus, .ct-field textarea:focus { outline: none; border-color: #1C1B19; }
   .ct-field textarea { resize: vertical; min-height: 5.5rem; }
 
   /* Headings break into even lines; paragraphs avoid one-word last lines */
@@ -288,9 +280,9 @@
   /* Language + currency control */
   .prefs-chip { display: inline-flex; align-items: center; gap: .35rem; min-height: 44px; padding: 0 .35rem; font-size: 13px;
                 letter-spacing: .03em; color: rgba(58,58,58,.85); }
-  .prefs-chip:hover { color: #2E2C29; }
+  .prefs-chip:hover { color: #1C1B19; }
   .prefs-panel { position: absolute; right: 0; top: calc(100% + .4rem); z-index: 60; width: 17rem; padding: 1rem 1.1rem 1.1rem;
-                 background: #EFEEEA; border: 1px solid #C9C3B4; box-shadow: 0 8px 24px -10px rgba(46,44,41,.35);
+                 background: #F6F5F1; border: 1px solid #C9C3B4; box-shadow: 0 8px 24px -10px rgba(28,27,25,.35);
                  opacity: 0; visibility: hidden; transform: translateY(-4px);
                  transition: opacity .2s ease, transform .3s cubic-bezier(.16,1,.3,1), visibility 0s .3s; }
   .prefs.open .prefs-panel { opacity: 1; visibility: visible; transform: none; transition: opacity .2s ease, transform .3s cubic-bezier(.16,1,.3,1); }
@@ -300,22 +292,22 @@
   .prefs-opt { position: relative; padding: .35rem 0; font-size: 14px; color: rgba(58,58,58,.8); white-space: nowrap; }
   .prefs-opt::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: #A48F66;
                       transform: scaleX(0); transform-origin: left; transition: transform .4s cubic-bezier(.16,1,.3,1); }
-  .prefs-opt:hover { color: #2E2C29; }
-  .prefs-opt.on { color: #2E2C29; }
+  .prefs-opt:hover { color: #1C1B19; }
+  .prefs-opt.on { color: #1C1B19; }
   .prefs-opt.on::after { transform: scaleX(1); }
   .prefs-handle, .prefs-done, .prefs-backdrop { display: none; }
   @media (max-width: 1023px) {
     .prefs-panel { position: fixed; left: 0; right: 0; top: auto; bottom: 0; width: auto; z-index: 90; border: 0; border-top: 1px solid #C9C3B4;
                    padding: .75rem 1.25rem calc(1.25rem + env(safe-area-inset-bottom)); transform: translateY(100%); }
     .prefs.open .prefs-panel { transform: none; }
-    .prefs-handle { display: block; width: 36px; height: 3px; border-radius: 9999px; background: rgba(46,44,41,.25); margin: 0 auto 1rem; }
+    .prefs-handle { display: block; width: 36px; height: 3px; border-radius: 9999px; background: rgba(28,27,25,.25); margin: 0 auto 1rem; }
     .prefs-row { gap: .5rem; }
     .prefs-opt { flex: 1; text-align: center; min-height: 48px; display: flex; align-items: center; justify-content: center;
-                 border: 1px solid rgba(46,44,41,.2); font-size: 15px; }
+                 border: 1px solid rgba(28,27,25,.2); font-size: 15px; }
     .prefs-opt::after { display: none; }
-    .prefs-opt.on { background: #2E2C29; color: #EFEEEA; border-color: #2E2C29; }
-    .prefs-done { display: block; width: 100%; min-height: 48px; margin-top: .4rem; background: #2E2C29; color: #EFEEEA; font-size: 15px; }
-    .prefs-backdrop { display: block; position: fixed; inset: 0; z-index: 89; background: rgba(46,44,41,.3); opacity: 0; pointer-events: none;
+    .prefs-opt.on { background: #1C1B19; color: #F6F5F1; border-color: #1C1B19; }
+    .prefs-done { display: block; width: 100%; min-height: 48px; margin-top: .4rem; background: #1C1B19; color: #F6F5F1; font-size: 15px; }
+    .prefs-backdrop { display: block; position: fixed; inset: 0; z-index: 89; background: rgba(28,27,25,.3); opacity: 0; pointer-events: none;
                       transition: opacity .25s ease; }
     body.prefs-open .prefs-backdrop { opacity: 1; pointer-events: auto; }
   }
@@ -324,54 +316,147 @@
 
   .cart-sizes { display: flex; align-items: center; flex-wrap: wrap; gap: .35rem; margin-top: .6rem; font-size: 12px; color: rgba(58,58,58,.8); }
   .cart-sizes span { margin-right: .2rem; }
-  .cart-sizes button { min-width: 34px; height: 30px; padding: 0 .5rem; border: 1px solid rgba(46,44,41,.22); color: #2E2C29;
+  .cart-sizes button { min-width: 34px; height: 30px; padding: 0 .5rem; border: 1px solid rgba(28,27,25,.22); color: #1C1B19;
                        transition: background .2s, color .2s, border-color .2s; }
-  .cart-sizes button:hover { border-color: #2E2C29; }
-  .cart-sizes button.on { background: #2E2C29; color: #EFEEEA; border-color: #2E2C29; }
+  .cart-sizes button:hover { border-color: #1C1B19; }
+  .cart-sizes button.on { background: #1C1B19; color: #F6F5F1; border-color: #1C1B19; }
+
+  /* ======== Quiet layer: small type, one ground, black actions ======== */
+  body { font-size: 14px; }
+  .sec-label { font-family: 'Jost', 'Noto Sans Armenian', sans-serif; font-size: 13px; font-weight: 400; letter-spacing: .09em;
+               text-transform: uppercase; color: #1C1B19; }
+  .sec-label--block { margin-bottom: 1rem; }
+
+  .site-header { border-bottom: 1px solid transparent; }
+  .hd { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; height: 64px; padding: 0 1rem; }
+  @media (min-width: 640px) { .hd { padding: 0 1.75rem; height: 76px; } }
+  .hd-logo img { height: 40px; width: auto; }
+  @media (min-width: 640px) { .hd-logo img { height: 52px; } }
+  .hd-right { display: flex; align-items: center; justify-content: flex-end; gap: .9rem; }
+  @media (min-width: 640px) { .hd-right { gap: 1.75rem; } }
+  .hd-link, .prefs-chip { display: inline-flex; align-items: center; min-height: 44px; padding: 0; font-size: 12px; letter-spacing: .09em;
+                          text-transform: uppercase; color: #1C1B19; white-space: nowrap; }
+  .hd-link:hover, .prefs-chip:hover { opacity: .6; }
+  html { scroll-padding-top: 84px; }
+
+  .hd-fitting { display: none; }
+  @media (min-width: 768px) { .hd-fitting { display: inline-flex; } }
+  .hd-left, .hd-right { min-width: 0; }
+  @media (max-width: 639px) {
+    .hd-logo img { height: 36px; }
+    .hd-link, .prefs-chip { font-size: 11px; letter-spacing: .06em; }
+    .pcard-price-line span { display: block; }
+    .pcard-price-line span + span { margin-left: 0 !important; }
+  }
+
+  /* The menu: a panel from the left under the header */
+  .site-menu { position: absolute; top: 100%; left: 0; width: min(100vw, 22rem); max-height: calc(100vh - 64px); overflow-y: auto;
+               background: #F6F5F1; border-right: 1px solid rgba(28,27,25,.1); border-bottom: 1px solid rgba(28,27,25,.1); }
+  .site-menu nav { max-width: none; padding: 1rem 1.75rem 1.75rem; font-size: 14px; }
+  @media (max-width: 639px) { .site-menu nav { padding: 1rem; } }
+
+  /* Catalog */
+  .cat-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .5rem 2rem; margin-bottom: 1.25rem; }
+  .cat-tabs { display: flex; gap: 1.5rem; overflow-x: auto; scrollbar-width: none; max-width: 100%; }
+  .cat-tabs::-webkit-scrollbar { display: none; }
+  .tab-btn { padding: .35rem 0; font-size: 12px; letter-spacing: .09em; text-transform: uppercase; color: rgba(28,27,25,.62); }
+  .tab-btn[data-active], .tab-btn:hover { color: #1C1B19; }
+  .catalog-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2rem .5rem; }
+  @media (min-width: 768px) { .catalog-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2.5rem .75rem; } }
+  @media (min-width: 1100px) { .catalog-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  .pcard-info { padding-top: .6rem; font-size: 13px; line-height: 1.45; color: #1C1B19; }
+  .pcard-name { font-family: 'Jost', 'Noto Sans Armenian', sans-serif; font-size: 13px; line-height: 1.45; font-weight: 400; color: #1C1B19; }
+  .pcard-attrs { color: rgba(28,27,25,.68); }
+  .pcard-price-line span + span { margin-left: .5rem; color: rgba(28,27,25,.68); }
+
+  /* Product view */
+  .pdp-name { font-family: 'Jost', 'Noto Sans Armenian', sans-serif; font-size: 20px; line-height: 1.3; font-weight: 400; color: #1C1B19; }
+  .pdp-btn { padding: .95rem 1.1rem; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; }
+  .pdp-btn .amt { font-family: 'Jost', 'Noto Sans Armenian', sans-serif; font-size: 13px; font-weight: 400; letter-spacing: .02em; }
+  .pdp-heading, .pdp-section summary { font-family: 'Jost', 'Noto Sans Armenian', sans-serif; font-size: 12px; letter-spacing: .09em;
+                                       text-transform: uppercase; color: #1C1B19; }
+  .pdp-body { font-size: 13px; line-height: 1.7; color: rgba(28,27,25,.82); }
+  .pdp-body dt { color: rgba(28,27,25,.6) !important; font-size: 13px !important; }
+  .price-main { font-family: 'Jost', 'Noto Sans Armenian', sans-serif; font-size: 15px; font-weight: 400; }
+
+  /* Process */
+  .process-remote-title { font-family: 'Jost', 'Noto Sans Armenian', sans-serif; font-size: 12px; letter-spacing: .09em; text-transform: uppercase; color: #1C1B19; margin-bottom: .35rem; }
+  .process-stage h3 { font-family: 'Jost', 'Noto Sans Armenian', sans-serif !important; font-size: 18px !important; font-weight: 400; line-height: 1.3 !important; }
+  .process-chip { font-size: 12px !important; letter-spacing: .06em; text-transform: uppercase; }
+
+  /* About */
+  .about-p { font-size: 14px; line-height: 1.8; max-width: 30rem; }
+  .about-chapter2 { margin: 4.5rem -1.25rem 0; }
+  @media (min-width: 640px) { .about-chapter2 { margin-left: -2rem; margin-right: -2rem; } }
+  .about-band { margin: 0 calc(50% - 50vw); }
+  .about-band img { display: block; width: 100vw; height: min(78vh, 62vw); min-height: 320px; object-fit: cover; object-position: 50% 62%; }
+  .about-p--offset { margin: 2.5rem 1.25rem 0; }
+  @media (min-width: 900px) { .about-chapter2 { margin-top: 7rem; } .about-p--offset { margin: 3.5rem 0 0 50%; } }
+  .about-row--last { margin-top: 5rem !important; }
+
+  /* Delivery on the light ground */
+  .dl-item { border-color: rgba(28,27,25,.14); }
+  .dl-item:last-child { border-color: rgba(28,27,25,.14); }
+  .dl-t { font-family: 'Jost', 'Noto Sans Armenian', sans-serif; font-size: 13px; letter-spacing: .09em; text-transform: uppercase; color: #1C1B19; }
+  .dl-item:hover .dl-t { color: #1C1B19; opacity: .7; }
+  .dl-item summary { padding: 1.1rem 0; }
+  .dl-item summary::after { background: linear-gradient(#1C1B19, #1C1B19) center / 12px 1px no-repeat, linear-gradient(#1C1B19, #1C1B19) center / 1px 12px no-repeat; width: 12px; height: 12px; }
+  .dl-body p, .dl-body li { font-size: 14px; color: rgba(28,27,25,.82); }
+
+  /* Footer */
+  .site-footer { border-top: 1px solid rgba(28,27,25,.1); padding: 3.5rem 1rem 2rem; }
+  @media (min-width: 640px) { .site-footer { padding: 5rem 1.75rem 2.25rem; } }
+  .ft { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 2.5rem; }
+  .ft-mark { height: 120px; width: auto; }
+  .ft-cols { display: flex; gap: 3.5rem; font-size: 13px; line-height: 1.9; color: #1C1B19; }
+  .ft-cols a, .ft-cols button, .ft-cols p { display: block; text-align: left; }
+  .ft-cols a:hover, .ft-cols button:hover { opacity: .6; }
+  .ft-h { font-size: 12px; letter-spacing: .09em; text-transform: uppercase; margin-bottom: .6rem; }
+  .ft-copy { margin-top: .75rem; color: rgba(28,27,25,.62); font-size: 12px; }
 
   /* Cart */
   .card-cart { position: absolute; right: .6rem; bottom: .6rem; z-index: 3; width: 40px; height: 40px; border-radius: 9999px;
-               display: inline-flex; align-items: center; justify-content: center; color: #2E2C29;
-               background: rgba(239,238,234,.92); border: 1px solid transparent; box-shadow: 0 6px 18px -8px rgba(46,44,41,.45);
+               display: inline-flex; align-items: center; justify-content: center; color: #1C1B19;
+               background: rgba(246,245,241,.92); border: 1px solid transparent; box-shadow: 0 6px 18px -8px rgba(28,27,25,.45);
                transition: background .2s ease, color .2s ease, border-color .2s ease, transform .2s ease; }
   .card-cart::after { content: ""; position: absolute; inset: -4px; }
   .card-cart svg { position: absolute; width: 17px; height: 17px; transition: opacity .25s ease, transform .25s ease; }
   .card-cart .card-cart-check { opacity: 0; transform: scale(.6); }
-  .card-cart:hover { background: #2E2C29; color: #EFEEEA; border-color: #2E2C29; }
+  .card-cart:hover { background: #1C1B19; color: #F6F5F1; border-color: #1C1B19; }
   .card-cart:active { transform: scale(.92); }
-  .card-cart.in-cart { background: #A48F66; border-color: #A48F66; color: #EFEEEA; }
+  .card-cart.in-cart { background: #A48F66; border-color: #A48F66; color: #F6F5F1; }
   .card-cart.in-cart .card-cart-bag { opacity: 0; transform: scale(.6); }
   .card-cart.in-cart .card-cart-check { opacity: 1; transform: none; }
   @keyframes cardCartPop { 0% { transform: scale(1); } 40% { transform: scale(1.18); } 100% { transform: scale(1); } }
   .card-cart.pop { animation: cardCartPop .4s ease; }
-  .kind-switch { display: inline-flex; border: 1px solid rgba(46,44,41,.2); margin-bottom: 2px; }
+  .kind-switch { display: inline-flex; border: 1px solid rgba(28,27,25,.2); margin-bottom: 2px; }
   .kind-switch button { font-size: 12px; padding: 3px 10px; color: rgba(58,58,58,.75);
                         transition: background .2s, color .2s; }
-  .kind-switch button.on { background: #2E2C29; color: #EFEEEA; }
-  .kind-switch button:not(.on):hover { color: #2E2C29; }
-  body.cart-open #cart-panel { transform: none; box-shadow: -20px 0 50px -25px rgba(46,44,41,.5); }
+  .kind-switch button.on { background: #1C1B19; color: #F6F5F1; }
+  .kind-switch button:not(.on):hover { color: #1C1B19; }
+  body.cart-open #cart-panel { transform: none; box-shadow: -20px 0 50px -25px rgba(28,27,25,.5); }
   body.cart-open #cart-backdrop { opacity: 1; pointer-events: auto; }
   @keyframes cartBump { 0%, 100% { transform: scale(1); } 40% { transform: scale(1.35); } }
   #cart-count.bump { animation: cartBump .45s ease; }
-  .qty-btn { width: 26px; height: 26px; border: 1px solid rgba(46,44,41,.2); display: inline-flex; align-items: center; justify-content: center; font-size: 14px; color: #2E2C29; }
-  .qty-btn:hover { border-color: #2E2C29; }
+  .qty-btn { width: 26px; height: 26px; border: 1px solid rgba(28,27,25,.2); display: inline-flex; align-items: center; justify-content: center; font-size: 14px; color: #1C1B19; }
+  .qty-btn:hover { border-color: #1C1B19; }
 
   /* Reviews */
   .reviews-track { display: flex; gap: 1rem; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none;
                    padding: 0 max(1.25rem, calc((100vw - 72rem) / 2 + 1.25rem)) .5rem; }
   .reviews-track::-webkit-scrollbar { display: none; }
   .reviews-track.centered { justify-content: center; }
-  .review-card { scroll-snap-align: center; flex: 0 0 auto; width: min(78vw, 300px); background: #EFEEEA; border: 1px solid rgba(46,44,41,.1);
+  .review-card { scroll-snap-align: center; flex: 0 0 auto; width: min(78vw, 300px); background: #F6F5F1; border: 1px solid rgba(28,27,25,.1);
                  display: flex; flex-direction: column; }
   .review-card.text-only > div { justify-content: center; }
   .review-card.text-only .review-quote { font-size: 21px; line-height: 1.5; flex: 0 1 auto; }
   .review-photo { position: relative; aspect-ratio: 4 / 5; overflow: hidden; background: #E4E1D8; cursor: pointer; }
   .review-photo img { width: 100%; height: 100%; object-fit: cover; transition: opacity .35s ease; }
   .review-photo .count { position: absolute; right: 8px; bottom: 8px; font-size: 10px; letter-spacing: .08em; color: #fff;
-                         background: rgba(46,44,41,.4); padding: 1px 7px; border-radius: 9999px; }
-  .review-dialog { border: none; padding: 0; width: min(92vw, 440px); background: #EFEEEA; color: #3A3A3A;
-                   box-shadow: 0 30px 70px -25px rgba(46,44,41,.55); }
-  .review-dialog::backdrop { background: rgba(46,44,41,.35); backdrop-filter: blur(2px); }
+                         background: rgba(28,27,25,.4); padding: 1px 7px; border-radius: 9999px; }
+  .review-dialog { border: none; padding: 0; width: min(92vw, 440px); background: #F6F5F1; color: #3A3A3A;
+                   box-shadow: 0 30px 70px -25px rgba(28,27,25,.55); }
+  .review-dialog::backdrop { background: rgba(28,27,25,.35); backdrop-filter: blur(2px); }
 
   /* Process ring ("How it works") */
   /* --w is the oval's width. It comes from the screen height, so that the heading, the ring
@@ -403,11 +488,11 @@
   .card-track { position: absolute; inset: 0; display: flex; transition: transform .45s cubic-bezier(.25,.8,.3,1); }
   .card-track img { width: 100%; height: 100%; flex-shrink: 0; object-fit: cover; -webkit-user-drag: none; }
   .card-nav { position: absolute; top: 50%; transform: translateY(-50%); z-index: 2; width: 30px; height: 30px;
-              border-radius: 9999px; display: flex; align-items: center; justify-content: center; color: #2E2C29;
-              background: rgba(239,238,234,.72); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+              border-radius: 9999px; display: flex; align-items: center; justify-content: center; color: #1C1B19;
+              background: rgba(246,245,241,.72); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
               opacity: 0; transition: opacity .25s ease, background .2s ease; }
   .group:hover .card-nav { opacity: .8; }
-  .card-nav:hover { opacity: 1 !important; background: rgba(239,238,234,.95); }
+  .card-nav:hover { opacity: 1 !important; background: rgba(246,245,241,.95); }
   @media (hover: none) { .card-nav { display: none; } }
   .process-ring:focus-visible .process-svg { filter: drop-shadow(0 0 4px rgba(164,143,102,.8)); }
   .process-frame { position: absolute; inset: 0; clip-path: ellipse(41% 42.5% at 50% 50%); background: #E4E1D8; overflow: hidden; }
@@ -419,14 +504,14 @@
   .process-grain { position: absolute; inset: -50%; opacity: .07; mix-blend-mode: overlay; pointer-events: none;
                    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
   .process-vignette { position: absolute; inset: 0; pointer-events: none;
-                      background: radial-gradient(ellipse at 50% 50%, transparent 58%, rgba(46,44,41,.38) 100%); }
+                      background: radial-gradient(ellipse at 50% 50%, transparent 58%, rgba(28,27,25,.38) 100%); }
   .process-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
-  .process-svg .pr-line { fill: none; stroke: #2E2C29; stroke-linecap: round; }
+  .process-svg .pr-line { fill: none; stroke: #1C1B19; stroke-linecap: round; }
   .process-svg .pr-fill { fill: #EAE7E0; }
   .process-svg .pr-progress { fill: none; stroke: #A48F66; stroke-width: 2.2; stroke-linecap: round; }
-  .process-svg .pr-dot { fill: rgba(46,44,41,.4); }
+  .process-svg .pr-dot { fill: rgba(28,27,25,.4); }
   .process-svg .pr-dot.on { fill: #A48F66; }
-  .process-svg .pr-num { font-family: 'Cormorant Garamond', serif; font-size: 9px; font-weight: 600; fill: rgba(46,44,41,.55);
+  .process-svg .pr-num { font-family: 'Cormorant Garamond', serif; font-size: 9px; font-weight: 600; fill: rgba(28,27,25,.55);
                          text-anchor: middle; dominant-baseline: central; paint-order: stroke; stroke: #EAE7E0;
                          stroke-width: 3.5px; stroke-linejoin: round; transition: fill .4s ease; }
   .process-svg .pr-num.on { fill: #A48F66; }
@@ -436,8 +521,8 @@
                    transition: opacity .5s ease, transform .5s ease, visibility 0s .5s; }
   .process-stage.is-active { opacity: 1; transform: none; visibility: visible; transition: opacity .6s ease .1s, transform .6s ease .1s; }
   .process-chip { color: rgba(58,58,58,.78); border-bottom: 1px solid transparent; transition: color .3s, border-color .3s; }
-  .process-chip:hover { color: #2E2C29; }
-  .process-chip.is-active { color: #2E2C29; border-color: #A48F66; }
+  .process-chip:hover { color: #1C1B19; }
+  .process-chip.is-active { color: #1C1B19; border-color: #A48F66; }
 
   /* Product view dial */
   #product-dial { width: 112px; height: 134px; overflow: visible; touch-action: none; cursor: grab;
@@ -445,13 +530,13 @@
   @media (min-width: 640px) { #product-dial { width: 132px; height: 158px; } }
   #product-dial.dragging { cursor: grabbing; }
   #product-dial:focus-visible { filter: drop-shadow(0 0 3px rgba(164,143,102,.7)); }
-  #product-dial .dial-line { fill: none; stroke: #2E2C29; }
-  #product-dial .dial-faint { stroke: rgba(46,44,41,.35); }
-  #product-dial .dial-dot { fill: rgba(46,44,41,.35); }
+  #product-dial .dial-line { fill: none; stroke: #1C1B19; }
+  #product-dial .dial-faint { stroke: rgba(28,27,25,.35); }
+  #product-dial .dial-dot { fill: rgba(28,27,25,.35); }
   #product-dial .dial-label { font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-size: 19px;
-                              letter-spacing: .08em; fill: rgba(46,44,41,.5); text-anchor: middle;
+                              letter-spacing: .08em; fill: rgba(28,27,25,.5); text-anchor: middle;
                               dominant-baseline: central; cursor: pointer; transition: fill .35s ease;
-                              paint-order: stroke; stroke: #EFEEEA; stroke-width: 6px; stroke-linejoin: round; }
+                              paint-order: stroke; stroke: #F6F5F1; stroke-width: 6px; stroke-linejoin: round; }
   #product-dial .dial-label.cur { font-size: 21px; letter-spacing: 0; }
   #product-dial .dial-label.active { fill: #A48F66; font-weight: 600; }
   #product-dial .dial-key { transform-box: fill-box; transform-origin: 50% 0; animation: keySway 5.5s ease-in-out infinite; }
@@ -475,46 +560,13 @@
 <body class="bg-cream text-ink antialiased">
 
 <!-- ============================== HEADER ============================== -->
-<header class="fixed top-0 inset-x-0 z-50 bg-cream border-b border-line/60">
-  <div class="max-w-6xl mx-auto px-5 py-3 flex items-center justify-between gap-3">
-    <a href="#top" class="flex items-center gap-2 shrink-0">
-      <img src="{{ url_for('static', filename='img/logo-nav.png') }}" alt="Tiknik" class="h-9 w-auto">
-    </a>
-    <nav class="hidden lg:flex items-center gap-6 text-sm tracking-wide text-ink/80">
-      <!-- Catalog: hovering (or focusing) it opens the list of sections -->
-      <div class="nav-drop relative">
-        <a href="#catalog" class="hover:text-charcoal transition inline-flex items-center gap-1 py-2">
-          {{ t('nav_catalog') }}
-          <svg class="w-3 h-3 opacity-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-        </a>
-        <div class="nav-drop-menu absolute left-1/2 top-full -translate-x-1/2 pt-2">
-          <div class="bg-cream border border-line/70 shadow-[0_18px_40px_-20px_rgba(46,44,41,.45)] py-2 min-w-[200px]">
-            <a href="#catalog" data-cat="all" class="js-cat-link block px-5 py-2 hover:bg-cream-dark/70 hover:text-charcoal transition">{{ t('tab_all') }}</a>
-            {% for cat in categories %}
-              <a href="#catalog" data-cat="{{ cat.slug }}" class="js-cat-link block px-5 py-2 hover:bg-cream-dark/70 hover:text-charcoal transition whitespace-nowrap">{{ cat.name }}</a>
-            {% endfor %}
-          </div>
-        </div>
-      </div>
-      <a href="#process" class="hover:text-charcoal transition">{{ t('nav_process') }}</a>
-      <a href="#about" class="hover:text-charcoal transition">{{ t('nav_about') }}</a>
-      {% if has_reviews %}<a href="#reviews" class="hover:text-charcoal transition">{{ t('nav_reviews') }}</a>{% endif %}
-      <div class="nav-drop relative">
-        <a href="#delivery" class="hover:text-charcoal transition inline-flex items-center gap-1 py-2">
-          {{ t('nav_delivery') }}
-          <svg class="w-3 h-3 opacity-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-        </a>
-        <div class="nav-drop-menu absolute left-1/2 top-full -translate-x-1/2 pt-2">
-          <div class="bg-cream border border-line/70 shadow-[0_18px_40px_-20px_rgba(46,44,41,.45)] py-2 min-w-[200px]">
-            {% for k in ['local', 'intl', 'pack', 'cond'] %}
-              <a href="#dl-{{ k }}" data-dl="{{ k }}" class="js-dl-link block px-5 py-2 hover:bg-cream-dark/70 hover:text-charcoal transition whitespace-nowrap">{{ t('dl_%s_title' % k) }}</a>
-            {% endfor %}
-          </div>
-        </div>
-      </div>
-      <a href="#contact" class="hover:text-charcoal transition">{{ t('nav_contact') }}</a>
-    </nav>
-    <div class="flex items-center gap-2 sm:gap-4">
+<header class="site-header fixed top-0 inset-x-0 z-50 bg-cream">
+  <div class="hd">
+    <div class="hd-left">
+      <button type="button" id="menu-toggle" class="hd-link" aria-expanded="false" aria-controls="mobile-menu">{{ t('nav_menu') }}</button>
+    </div>
+    <a href="#top" class="hd-logo"><img src="{{ url_for('static', filename='img/logo-nav.png') }}" alt="Tiknik"></a>
+    <div class="hd-right">
       <!-- Language and currency for the whole site: a popover on computers, a sheet from the bottom on phones -->
       <div class="prefs relative">
         <button type="button" id="prefs-open" class="prefs-chip js-prefs-open" aria-haspopup="dialog" aria-expanded="false" aria-controls="prefs-panel">
@@ -539,20 +591,12 @@
           <button type="button" class="prefs-done js-prefs-close">{{ t('prefs_done') }}</button>
         </div>
       </div>
-      <button type="button" id="cart-open" class="relative w-9 h-9 flex items-center justify-center text-charcoal/80 hover:text-charcoal" aria-label="{{ t('cart') }}">
-        <svg class="w-[21px] h-[21px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"><path d="M5 8h14l-1.2 12H6.2L5 8z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></svg>
-        <span id="cart-count" class="hidden absolute -top-0.5 -right-0.5 min-w-[17px] h-[17px] px-1 rounded-full bg-gold text-cream text-[10px] leading-[17px] text-center"></span>
-      </button>
-      <a href="#contact" class="hidden sm:inline-block text-xs sm:text-sm tracking-wide bg-charcoal text-cream px-4 py-2 hover:bg-charcoal/90 transition whitespace-nowrap">
-        {{ t('book_fitting') }}
-      </a>
-      <button type="button" id="menu-toggle" class="lg:hidden w-9 h-9 flex items-center justify-center text-charcoal" aria-label="{{ t('nav_menu') }}" aria-expanded="false">
-        <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M4 8h16M4 16h16"/></svg>
-      </button>
+      <a href="#contact" class="hd-link hd-fitting">{{ t('book_fitting') }}</a>
+      <button type="button" id="cart-open" class="hd-link" aria-label="{{ t('cart') }}">{{ t('request_short') }} <span id="cart-count" class="hidden ml-1"></span></button>
     </div>
   </div>
-  <!-- Phone / tablet menu -->
-  <div id="mobile-menu" class="lg:hidden hidden border-t border-line/60 bg-cream max-h-[calc(100svh-61px)] overflow-y-auto">
+  <!-- The menu: everything lives here, on computers and phones -->
+  <div id="mobile-menu" class="site-menu hidden">
     <nav class="max-w-6xl mx-auto px-5 py-4 flex flex-col text-[15px] text-charcoal">
       <a href="#catalog" data-cat="all" class="js-cat-link py-2.5">{{ t('nav_catalog') }}</a>
       <div class="flex flex-wrap gap-x-4 gap-y-1 pl-3 pb-2 text-sm text-ink/60">
@@ -587,18 +631,15 @@
 <!-- ============================== HERO CTA STRIP ============================== -->
 
 <!-- ============================== CATALOG ============================== -->
-<section id="catalog" class="max-w-[1320px] mx-auto px-5 sm:px-8 py-16 sm:py-20">
-  <div class="flex items-end justify-between flex-wrap gap-4 mb-6 sm:mb-8">
-    <div>
-      <h2 class="font-serif text-3xl sm:text-4xl text-charcoal">{{ t('collection') }}</h2>
+<section id="catalog" class="px-4 sm:px-7 pt-10 sm:pt-14 pb-16 sm:pb-24">
+  <div class="cat-head">
+    <h2 class="sec-label">{{ t('collection') }}</h2>
+    <div class="cat-tabs">
+      <button class="tab-btn shrink-0" data-category="all" data-active="true">{{ t('tab_all') }}</button>
+      {% for cat in categories %}
+        <button class="tab-btn shrink-0" data-category="{{ cat.slug }}">{{ cat.name }}</button>
+      {% endfor %}
     </div>
-  </div>
-
-  <div class="flex gap-6 sm:gap-8 overflow-x-auto pb-1 mb-8 sm:mb-10 -mx-5 px-5 sm:mx-0 sm:px-0 sm:flex-wrap border-b border-charcoal/10">
-    <button class="tab-btn shrink-0" data-category="all" data-active="true">{{ t('tab_all') }}</button>
-    {% for cat in categories %}
-      <button class="tab-btn shrink-0" data-category="{{ cat.slug }}">{{ cat.name }}</button>
-    {% endfor %}
   </div>
 
   <div id="catalog-grid" class="catalog-grid"></div>
@@ -608,7 +649,7 @@
 <!-- ============================== PROCESS ============================== -->
 <section id="process" class="py-8 sm:py-14 lg:py-16 overflow-hidden border-t border-line/60">
   <div class="max-w-6xl mx-auto px-5">
-    <h2 class="font-serif text-[1.7rem] leading-tight sm:text-4xl text-charcoal text-center sm:mb-2">{{ t('process_title') }}</h2>
+    <h2 class="sec-label sec-label--block">{{ t('process_title') }}</h2>
 
     <!-- The process ring: the logo's double oval with the making of a piece inside it.
          The key travels around the oval like a clock hand; drag it (or the photo) either way
@@ -701,20 +742,18 @@
         <figcaption>Kendani Tiknik</figcaption>
       </figure>
       <div class="about-text">
-        <h2 class="about-word" lang="hy">Տիկնիկ</h2>
-        <p class="about-gloss">{{ t('about_gloss') }}</p>
+        <h2 class="about-word">{{ t('about_word') }}</h2>
+        {% if lang != 'hy' %}<p class="about-gloss">{{ t('about_gloss') }}</p>{% endif %}
         <p class="about-p">{{ t('about_p1') }}</p>
       </div>
     </div>
 
-    <!-- II. The craft -->
-    <div class="about-row about-row--flip">
-      <figure class="about-photo about-photo--tall">
+    <!-- II. The craft (the lace runs the full width of the page) -->
+    <div class="about-chapter2">
+      <figure class="about-band">
         <img src="{{ url_for('static', filename='img/about/2.jpg') }}" alt="{{ t('about_alt2') }}" loading="lazy">
       </figure>
-      <div class="about-text">
-        <p class="about-p">{{ t('about_p2') }}</p>
-      </div>
+      <p class="about-p about-p--offset">{{ t('about_p2') }}</p>
     </div>
 
     <!-- III. The heirloom -->
@@ -736,7 +775,7 @@
 {% if has_reviews %}
 <section id="reviews" class="py-16 sm:py-24 overflow-hidden border-t border-line/60">
   <div class="max-w-[1180px] mx-auto px-5 sm:px-8 mb-8 sm:mb-10 flex items-end justify-between gap-6 flex-wrap">
-    <h2 class="font-serif text-3xl sm:text-5xl text-charcoal leading-tight">{{ t('reviews_title') }}</h2>
+    <h2 class="sec-label">{{ t('reviews_title') }}</h2>
     <button type="button" class="js-review-open pdp-link text-[15px]">{{ t('review_add') }}</button>
   </div>
   <p id="reviews-empty" class="hidden"></p>
@@ -745,9 +784,9 @@
 {% endif %}
 
 <!-- ============================== DELIVERY ============================== -->
-<section id="delivery" class="bg-charcoal text-cream py-16 sm:py-24">
+<section id="delivery" class="py-16 sm:py-24 border-t border-line/60">
   <div class="max-w-[1180px] mx-auto px-5 sm:px-8 dl">
-    <h2 class="font-serif text-3xl sm:text-5xl leading-tight">{{ t('dl_title') }}</h2>
+    <h2 class="sec-label">{{ t('dl_title') }}</h2>
     <div class="dl-list">
       {% for k in ['local', 'intl', 'pack', 'cond'] %}
         <details class="dl-item" id="dl-{{ k }}">
@@ -771,7 +810,7 @@
 <section id="contact" class="py-16 sm:py-24 border-t border-line/60">
   <div class="max-w-[1180px] mx-auto px-5 sm:px-8 ct">
     <div>
-      <h2 class="font-serif text-3xl sm:text-5xl text-charcoal leading-tight">{{ t('contact_title') }}</h2>
+      <h2 class="sec-label">{{ t('contact_title') }}</h2>
       <p class="mt-5 text-[15px] leading-relaxed text-ink/80 max-w-md">{{ t('contact_lead') }}</p>
       <div class="flex items-center flex-wrap gap-3 mt-7">
         <a href="{{ instagram }}" target="_blank" rel="noopener" class="contact-link">
@@ -807,25 +846,26 @@
 </section>
 
 <!-- ============================== FOOTER ============================== -->
-<footer class="border-t border-line/60 py-12">
-  <div class="max-w-[1180px] mx-auto px-5 sm:px-8 grid gap-10 sm:grid-cols-3 text-sm">
-    <div class="flex flex-col gap-3">
-      <img src="{{ url_for('static', filename='img/logo-nav.png') }}" alt="Tiknik" class="h-10 w-auto self-start">
-      <p class="font-serif text-xl text-charcoal">{{ t('handmade_in') }}</p>
-    </div>
-    <nav class="flex flex-col gap-2 text-ink/80">
-      <a href="#catalog" class="hover:text-charcoal">{{ t('nav_catalog') }}</a>
-      <a href="#process" class="hover:text-charcoal">{{ t('nav_process') }}</a>
-      <a href="#about" class="hover:text-charcoal">{{ t('nav_about') }}</a>
-      <a href="#delivery" class="hover:text-charcoal">{{ t('nav_delivery') }}</a>
-      <a href="#contact" class="hover:text-charcoal">{{ t('nav_contact') }}</a>
-    </nav>
-    <div class="flex flex-col gap-2 text-ink/80">
-      <a href="{{ instagram }}" target="_blank" rel="noopener" class="hover:text-charcoal">Instagram</a>
-      {% if whatsapp %}<a href="https://wa.me/{{ whatsapp }}" target="_blank" rel="noopener" class="hover:text-charcoal">WhatsApp</a>{% endif %}
-      {% if hours %}<p>{{ t('hours_label') }}: {{ hours }}</p>{% endif %}
-      <button type="button" class="js-review-open text-left hover:text-charcoal">{{ t('review_add') }}</button>
-      <p class="text-xs text-ink/75 mt-2">&copy; Tiknik</p>
+<footer class="site-footer">
+  <div class="ft">
+    <img src="{{ url_for('static', filename='img/logo-full.png') }}" alt="Tiknik" class="ft-mark">
+    <div class="ft-cols">
+      <nav>
+        <p class="ft-h">{{ t('handmade_in') }}</p>
+        <a href="#catalog">{{ t('nav_catalog') }}</a>
+        <a href="#process">{{ t('nav_process') }}</a>
+        <a href="#about">{{ t('nav_about') }}</a>
+        <a href="#delivery">{{ t('nav_delivery') }}</a>
+        <a href="#contact">{{ t('nav_contact') }}</a>
+      </nav>
+      <div>
+        <p class="ft-h">Tiknik</p>
+        <a href="{{ instagram }}" target="_blank" rel="noopener">Instagram</a>
+        {% if whatsapp %}<a href="https://wa.me/{{ whatsapp }}" target="_blank" rel="noopener">WhatsApp</a>{% endif %}
+        {% if hours %}<p>{{ t('hours_label') }}: {{ hours }}</p>{% endif %}
+        <button type="button" class="js-review-open">{{ t('review_add') }}</button>
+        <p class="ft-copy">&copy; Tiknik</p>
+      </div>
     </div>
   </div>
 </footer>
@@ -930,7 +970,7 @@
       <div class="pdp-info">
         <div class="pdp-head">
           <div class="min-w-0 flex-1">
-            <h2 id="product-name" class="font-serif text-[2.3rem] sm:text-[3rem] leading-[1.05] text-charcoal"></h2>
+            <h2 id="product-name" class="pdp-name"></h2>
             <div id="product-price" class="product-price mt-3"></div>
             <p id="product-craft" class="hidden mt-4 font-serif text-[17px] text-charcoal/80 leading-snug"></p>
           </div>
