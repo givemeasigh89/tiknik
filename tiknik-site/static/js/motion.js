@@ -66,7 +66,7 @@
           return "top " + headerHeight() + "px";
         },
         end: function () {
-          return "+=" + Math.round(window.innerHeight * 1.8);
+          return "+=" + Math.round(window.innerHeight * (window.innerWidth < 640 ? 0.9 : 1.3));
         },
         pin: true,
         anticipatePin: 1,

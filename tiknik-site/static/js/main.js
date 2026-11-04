@@ -335,7 +335,7 @@
       var quickId = parseInt(card.getAttribute("data-id"), 10);
       var kind = quick.getAttribute("data-kind");
       if (cartIndex(quickId, kind) !== -1) openCart();
-      else addToCart(quickId, kind, quick);
+      else addToCart(quickId, kind);
       return;
     }
     if (e.target.closest(".quick-add")) return; // the gap between the two buttons
@@ -346,7 +346,7 @@
         openCart();
       } else {
         var bagItem = findItem(items, bagId);
-        addToCart(bagId, bagItem.mode === "Rent" ? "rent" : "buy", bag);
+        addToCart(bagId, bagItem.mode === "Rent" ? "rent" : "buy");
       }
       return;
     }
@@ -1558,16 +1558,12 @@
     });
   }
 
-  function addToCart(id, kind, fromEl) {
+  function addToCart(id, kind) {
     if (cartIndex(id, kind) === -1) cart.push({ id: id, kind: kind, days: 1 });
     saveCart();
     updateCartCount(true);
     if (currentOpenItem) renderProductCart(currentOpenItem);
-    addSound();
-    var target = cartTarget();
-    // catalog: threads fly to the header bag, then the bar appears; product view: just the bar
-    if (target.rising) showCartToast();
-    else setTimeout(showCartToast, threadsToCart(fromEl, target));
+    showCartToast();
   }
 
   // ---- "Added to your cart": a bar at the bottom (also over the product view) with View cart ----
@@ -1585,167 +1581,6 @@
     openCart();
   });
 
-  // Adding to the cart: two threads twisted round each other travel along a soft arc from the
-  // button into the cart — the header bag in the catalog, the bag on the bottom bar in the product
-  // view — drawn as they go and pulled through after, like thread through a needle's eye.
-  // Normal pace (about 1.4 s), not a flash. Skipped for reduced motion.
-  function cartTarget() {
-    var header = document.getElementById("cart-open");
-    var r = header.getBoundingClientRect();
-    var overlayOpen = !overlay.classList.contains("translate-x-full");
-    if (!overlayOpen && r.width && r.bottom > 0) return { el: header, rect: r };
-    var icon = document.getElementById("cart-toast-icon");
-    return { el: icon, rect: icon.getBoundingClientRect(), rising: true };
-  }
-
-  function threadsToCart(fromEl, target) {
-    if (!fromEl || reduceGalleryMotion || !document.body.animate) return 0;
-    var a = fromEl.getBoundingClientRect();
-    var b = target.rect;
-    var p0 = [a.left + a.width / 2, a.top + a.height / 2];
-    var p3 = [b.left + b.width / 2, b.top + b.height / 2 - (target.rising ? 14 : 0)];
-    // a soft S-curve that stays on screen: out to the side from the button, then up into the bag
-    // from below (the cart is near the top in the catalog, near the bottom in the product view)
-    var dy = p3[1] - p0[1];
-    var side = (p3[0] >= p0[0] ? 1 : -1) * Math.min(160, Math.abs(p3[0] - p0[0]) * 0.35 + 60);
-    var p1 = [p0[0] + side, p0[1] + dy * 0.15];
-    var p2 = [p3[0] - side * 0.4, p3[1] - dy * 0.45];
-    p1[1] = Math.max(16, Math.min(window.innerHeight - 16, p1[1]));
-    p2[1] = Math.max(16, Math.min(window.innerHeight - 16, p2[1]));
-    function bez(t, i) {
-      var u = 1 - t;
-      return u * u * u * p0[i] + 3 * u * u * t * p1[i] + 3 * u * t * t * p2[i] + t * t * t * p3[i];
-    }
-    // two strands twisted round the arc (offset along its normal), the twist fading at both ends
-    function strand(phase, turns, amp) {
-      var d = "", n = 90;
-      for (var k = 0; k <= n; k++) {
-        var t = k / n, e = 0.001;
-        var x = bez(t, 0), y = bez(t, 1);
-        var dx = bez(Math.min(1, t + e), 0) - bez(Math.max(0, t - e), 0);
-        var dy = bez(Math.min(1, t + e), 1) - bez(Math.max(0, t - e), 1);
-        var len = Math.sqrt(dx * dx + dy * dy) || 1;
-        var off = amp * Math.sin(Math.PI * t) * Math.sin(phase + t * Math.PI * 2 * turns);
-        d += (k ? "L" : "M") + (x - (dy / len) * off).toFixed(1) + " " + (y + (dx / len) * off).toFixed(1);
-      }
-      return d;
-    }
-    var NS = "http://www.w3.org/2000/svg";
-    var svg = document.createElementNS(NS, "svg");
-    svg.setAttribute("class", "thread-layer");
-    document.body.appendChild(svg);
-    var duration = 1400;
-    [[0, "#A48F66", 1.1], [Math.PI, "#C9B48A", 0.9], [Math.PI / 2, "#2E2C29", 0.5]].forEach(function (s, i) {
-      var path = document.createElementNS(NS, "path");
-      path.setAttribute("d", strand(s[0], 4.5, i === 2 ? 3 : 7));
-      path.setAttribute("fill", "none");
-      path.setAttribute("stroke", s[1]);
-      path.setAttribute("stroke-width", String(s[2]));
-      path.setAttribute("stroke-linecap", "round");
-      path.setAttribute("opacity", i === 2 ? "0.45" : "0.95");
-      svg.appendChild(path);
-      var len = path.getTotalLength();
-      var seg = len * 0.42; // a length of thread travelling along the arc
-      path.style.strokeDasharray = seg + " " + (len + seg);
-      path.animate([{ strokeDashoffset: seg }, { strokeDashoffset: -len }], {
-        duration: duration, delay: i * 40, easing: "cubic-bezier(.55, 0, .25, 1)", fill: "forwards",
-      });
-    });
-    setTimeout(function () {
-      target.el.classList.remove("cart-catch");
-      void target.el.offsetWidth;
-      target.el.classList.add("cart-catch");
-    }, duration - 120);
-    setTimeout(function () {
-      svg.remove();
-    }, duration + 200);
-    return duration;
-  }
-
-  // Sound from the atelier's material, never a beep: adding is a soft rustle of silk, removing a
-  // gentle tear of fabric. Filtered noise with smooth envelopes, quiet; can be switched off in the cart.
-  var audioCtx = null;
-  var soundOn = true;
-  try {
-    soundOn = localStorage.getItem("tiknik_sound") !== "off";
-  } catch (e) {}
-  function fabric(build) {
-    if (!soundOn) return;
-    try {
-      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-      var ctx = audioCtx;
-      var buf = ctx.createBuffer(1, ctx.sampleRate * 1.2, ctx.sampleRate);
-      var d = buf.getChannelData(0), last = 0;
-      for (var i = 0; i < d.length; i++) {
-        last = last * 0.6 + (Math.random() * 2 - 1) * 0.4; // softened noise
-        d[i] = last;
-      }
-      build(ctx, buf, ctx.currentTime + 0.01);
-    } catch (e) {
-      /* no Web Audio: silent */
-    }
-  }
-  function grain(ctx, buf, t, dur, freq, q, peak, out) {
-    var src = ctx.createBufferSource();
-    src.buffer = buf;
-    var f = ctx.createBiquadFilter();
-    f.type = "bandpass";
-    f.frequency.value = freq;
-    f.Q.value = q;
-    var g = ctx.createGain();
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.linearRampToValueAtTime(peak, t + dur * 0.35);
-    g.gain.linearRampToValueAtTime(0.0001, t + dur);
-    src.connect(f);
-    f.connect(g);
-    g.connect(out);
-    src.start(t, Math.random() * 0.5, dur + 0.05);
-    return f;
-  }
-  function addSound() {
-    fabric(function (ctx, buf, t) {
-      var out = ctx.createGain();
-      out.gain.value = 0.9;
-      out.connect(ctx.destination);
-      // two overlapping swishes, the second a touch brighter: silk drawn across silk
-      var a = grain(ctx, buf, t, 0.34, 1400, 0.6, 0.11, out);
-      a.frequency.linearRampToValueAtTime(2600, t + 0.34);
-      var b = grain(ctx, buf, t + 0.12, 0.32, 2200, 0.7, 0.07, out);
-      b.frequency.linearRampToValueAtTime(3400, t + 0.44);
-    });
-  }
-  function tearSound() {
-    fabric(function (ctx, buf, t) {
-      var lp = ctx.createBiquadFilter();
-      lp.type = "lowpass";
-      lp.frequency.value = 3800;
-      var out = ctx.createGain();
-      out.gain.value = 0.8;
-      lp.connect(out);
-      out.connect(ctx.destination);
-      // a run of small fibre snaps, close together, rising a little: muffled, never sharp
-      var at = t;
-      for (var k = 0; k < 14; k++) {
-        grain(ctx, buf, at, 0.035 + Math.random() * 0.02, 900 + k * 70 + Math.random() * 300, 1.2, 0.05 + Math.random() * 0.04, lp);
-        at += 0.018 + Math.random() * 0.014;
-      }
-      grain(ctx, buf, t, at - t + 0.08, 700, 0.5, 0.025, lp); // the body of the cloth under it
-    });
-  }
-  var soundBtn = document.getElementById("sound-toggle");
-  function renderSoundToggle() {
-    soundBtn.textContent = t(soundOn ? "sound_on" : "sound_off", soundOn ? "Sound on" : "Sound off");
-    soundBtn.setAttribute("aria-pressed", soundOn ? "true" : "false");
-  }
-  soundBtn.addEventListener("click", function () {
-    soundOn = !soundOn;
-    try {
-      localStorage.setItem("tiknik_sound", soundOn ? "on" : "off");
-    } catch (e) {}
-    renderSoundToggle();
-    if (soundOn) addSound();
-  });
-  renderSoundToggle();
 
   function lineAmount(item, line) {
     if (line.kind === "buy") return item.price || null;
@@ -1780,7 +1615,7 @@
 
   document.getElementById("product-cart").addEventListener("click", function (e) {
     var add = e.target.closest(".js-add-cart");
-    if (add && currentOpenItem) addToCart(currentOpenItem.id, add.getAttribute("data-kind"), add);
+    if (add && currentOpenItem) addToCart(currentOpenItem.id, add.getAttribute("data-kind"));
     if (e.target.closest(".js-view-cart")) openCart();
     if (e.target.closest(".js-pdp-cta")) {
       e.preventDefault();
@@ -1867,7 +1702,6 @@
         cart[i].days = cart[i].days || 1;
       }
     } else if (btn.classList.contains("js-remove")) {
-      tearSound();
       cart.splice(i, 1);
     } else {
       cart[i].days = Math.max(1, Math.min(60, cart[i].days + parseInt(btn.getAttribute("data-d"), 10)));

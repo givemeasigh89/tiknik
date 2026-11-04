@@ -339,8 +339,6 @@ UI = {
     "share": {"en": "Share", "ru": "Поделиться", "hy": "Կիսվել"},
     "dial_lang": {"en": "Language", "ru": "Язык", "hy": "Լեզու"},
     "dial_cur": {"en": "Currency", "ru": "Валюта", "hy": "Արժույթ"},
-    "sound_on": {"en": "Sound on", "ru": "Звук вкл.", "hy": "Ձայնը միաց."},
-    "sound_off": {"en": "Sound off", "ru": "Звук выкл.", "hy": "Ձայնն անջ."},
     "toast_added": {
         "en": "Added to your request",
         "ru": "Добавлено в запрос",
@@ -481,7 +479,7 @@ JS_KEYS = (
     "back_to_catalog", "prev_item", "next_item", "cta_book_quote", "dial_hint",
     "add_to_cart", "add_buy", "add_rent", "in_cart", "cart_buy_label", "cart_rent_label", "cart_day", "cart_days",
     "cart_sent", "cart_remove", "busy_error", "review_thanks",
-    "card_or_rent", "card_rental", "collection", "pdp_piece", "pdp_details", "pdp_delivery", "toast_added", "toast_view", "cart_size", "size_error", "made_to_order", "vintage_lace", "pdp_note", "prices_in", "prefs_change", "sound_on", "sound_off", "dial_lang", "dial_cur",
+    "card_or_rent", "card_rental", "collection", "pdp_piece", "pdp_details", "pdp_delivery", "toast_added", "toast_view", "cart_size", "size_error", "made_to_order", "vintage_lace", "pdp_note", "prices_in", "prefs_change", "dial_lang", "dial_cur",
     "delivery_f1_title", "delivery_f1_text", "delivery_f2_title", "delivery_f2_text", "delivery_f3_title", "delivery_f3_text",
     "handmade_hours", "edition_one", "edition_n", "share", "link_copied",
     "price_on_request", "per_day", "mode_Rent", "mode_Sale", "mode_Both", "mode_Custom",
