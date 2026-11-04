@@ -18,7 +18,7 @@ Their job on the site: find a piece or the idea of one, trust that it is made by
 
 ## Product Purpose
 
-Tiknik is a bridal house in Yerevan that makes wedding dresses and couture by hand, to the bride's measurements, and rents some pieces. The site shows the collection, explains how a dress is made, and turns interest into a request the atelier answers personally.
+Tiknik makes beautiful handmade dresses in Yerevan, not only for weddings: to buy (sewn to the client's measurements) or to rent for events, photoshoots and celebrations. Bridal is a core part, not the whole. The site shows the collection, explains how a dress is made, and turns interest into a request the atelier answers personally.
 
 ## Positioning
 
@@ -42,3 +42,7 @@ Supporting story (from the atelier's own About text): the name comes from the fo
 - No online payment: the cart sends a request, and size, dates and payment are agreed personally.
 - Delivery: free collection or local delivery in Armenia; worldwide by registered post, 10–30 days.
 - The site runs on Flask on PythonAnywhere; content is edited in `/admin`.
+
+## Design reference
+
+The atelier likes https://www.lelarose.com/ as overall inspiration (November 2026). Inspiration only: nothing is copied.
