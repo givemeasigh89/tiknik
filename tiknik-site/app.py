@@ -178,6 +178,9 @@ def init_db():
     # The era of the vintage lace, only for pieces that really have it (e.g. "1980s"); empty = no claim.
     if "vintage" not in _table_columns(db, "items"):
         db.execute("ALTER TABLE items ADD COLUMN vintage TEXT")
+    # Sold out: the piece stays in the catalog with a "Sold out" mark and can't be ordered.
+    if "sold" not in _table_columns(db, "items"):
+        db.execute("ALTER TABLE items ADD COLUMN sold INTEGER NOT NULL DEFAULT 0")
     # Sizes a rental piece is available in, e.g. "XS,S,M" (chosen per item in /admin).
     if "rent_sizes" not in _table_columns(db, "items"):
         db.execute("ALTER TABLE items ADD COLUMN rent_sizes TEXT")
@@ -599,6 +602,7 @@ def api_items():
             "vintage": (it["vintage"] or "").strip(),
             "rent_sizes": item_rent_sizes(it),
             "edition": it["edition"],
+            "sold": bool(it["sold"]),
             "media": media_by_item.get(it["id"], []),
         })
     return jsonify(result)
@@ -678,8 +682,8 @@ def api_order():
         except (TypeError, ValueError):
             continue
         kind = line.get("kind")
-        it = db.execute("SELECT id, name, mode, price, rent_price, rent_sizes FROM items WHERE id = ?", (item_id,)).fetchone()
-        if not it:
+        it = db.execute("SELECT id, name, mode, price, rent_price, rent_sizes, sold FROM items WHERE id = ?", (item_id,)).fetchone()
+        if not it or it["sold"]:
             continue
         if kind == "buy" and it["mode"] in ("Sale", "Both"):
             price = it["price"]
@@ -1041,8 +1045,9 @@ def admin_update_item(item_id):
     db.execute("UPDATE items SET delivery = ?, vintage = ?, rent_sizes = ? WHERE id = ?",
                (request.form.get("delivery") or "", (request.form.get("vintage") or "").strip()[:40],
                 ",".join(z for z in RENT_SIZES if z in request.form.getlist("rent_sizes")), item_id))
-    db.execute("UPDATE items SET hours = ?, edition = ? WHERE id = ?",
-               (hours if hours and hours > 0 else None, edition if edition and edition > 0 else None, item_id))
+    db.execute("UPDATE items SET hours = ?, edition = ?, sold = ? WHERE id = ?",
+               (hours if hours and hours > 0 else None, edition if edition and edition > 0 else None,
+                1 if request.form.get("sold") else 0, item_id))
     save_item_attrs(db, item_id)
     db.commit()
     flash("Saved.", "ok")

@@ -199,7 +199,32 @@
   }
 
   function cartKinds(item) {
+    if (item.sold) return [];
     return { Sale: ["buy"], Rent: ["rent"], Both: ["buy", "rent"] }[item.mode] || [];
+  }
+
+  // "Buy" / "Rent" for a card: over the photo on hover (computers), under the text on phones.
+  function quickAddHtml(item) {
+    var kinds = cartKinds(item);
+    if (!kinds.length) return "";
+    return (
+      '<div class="quick-add" data-quick-id="' + item.id + '">' +
+      kinds
+        .map(function (kind) {
+          var inCart = cartIndex(item.id, kind) !== -1;
+          return '<button type="button" class="js-quick' + (inCart ? " in" : "") + '" data-kind="' + kind + '">' +
+            esc(inCart ? t("in_cart", "In cart ✓") : t("add_" + kind, kind)) + "</button>";
+        })
+        .join("") +
+      "</div>"
+    );
+  }
+
+  function refreshCardCartButtons() {
+    grid.querySelectorAll(".quick-add").forEach(function (bar) {
+      var item = findItem(items, parseInt(bar.getAttribute("data-quick-id"), 10));
+      if (item) bar.outerHTML = quickAddHtml(item);
+    });
   }
 
   // The first two parameters (usually fabric and colour) as one quiet line; the rest are in the product view.
@@ -228,12 +253,14 @@
       '<article class="pcard group" data-cat="' + item.category + '" data-id="' + item.id + '">' +
       '<div class="card-media pcard-media text-charcoal/25">' +
       cardMediaHtml(item) +
+      (item.sold ? '<span class="sold-badge">' + esc(t("sold_out", "Sold out")) + "</span>" : "") +
       "</div>" +
       '<div class="pcard-info">' +
       '<h3 class="pcard-name">' + esc(item.name) + "</h3>" +
       '<p class="pcard-price-line"><span>' + esc(p.main || p.sub) + "</span>" + (p.main && p.sub ? "<span>" + esc(p.sub) + "</span>" : "") + "</p>" +
       (attrs ? '<p class="pcard-attrs">' + esc(attrs) + "</p>" : "") +
       "</div>" +
+      quickAddHtml(item) +
       "</article>"
     );
   }
@@ -298,6 +325,15 @@
   grid.addEventListener("click", function (e) {
     var card = e.target.closest("[data-id]");
     if (!card) return;
+    var quick = e.target.closest(".js-quick");
+    if (quick) {
+      var quickId = parseInt(card.getAttribute("data-id"), 10);
+      var kind = quick.getAttribute("data-kind");
+      if (cartIndex(quickId, kind) !== -1) openCart();
+      else addToCart(quickId, kind);
+      return;
+    }
+    if (e.target.closest(".quick-add")) return; // the gap between the two buttons
     var nav = e.target.closest(".card-nav");
     if (nav) {
       var id = parseInt(card.getAttribute("data-id"), 10);
@@ -553,7 +589,8 @@
     document.getElementById("product-name").textContent = item.name;
     var priceEl = document.getElementById("product-price");
     priceEl.innerHTML = priceHtml(item);
-    priceEl.classList.toggle("hidden", cartKinds(item).length > 0);
+    priceEl.classList.toggle("hidden", cartKinds(item).length > 0 || !!item.sold);
+    document.querySelector(".pdp-note").classList.toggle("hidden", !!item.sold);
     // "Fittings & delivery": the piece's own text when set in /admin, else the standard facts
     var delivery = document.getElementById("product-delivery");
     delivery.textContent = item.delivery || "";
@@ -677,6 +714,20 @@
   }
 
   closeBtn.addEventListener("click", closeProduct);
+
+  // The header stays visible over the product view: its logo and links close the view first.
+  document.querySelector("header").addEventListener("click", function (e) {
+    var link = e.target.closest('a[href^="#"]');
+    if (!link || overlay.classList.contains("translate-x-full")) return;
+    e.preventDefault();
+    var id = link.getAttribute("href").slice(1);
+    closeProduct();
+    setTimeout(function () {
+      var target = id === "top" ? null : document.getElementById(id);
+      if (target) target.scrollIntoView();
+      else window.scrollTo(0, 0);
+    }, 450);
+  });
   document.getElementById("product-cta").addEventListener("click", function (e) {
     if (cardLang !== LANG) {
       e.preventDefault();
@@ -1465,6 +1516,7 @@
       /* private mode etc. — the cart still works for this visit */
     }
     updateCartCount();
+    refreshCardCartButtons();
   }
 
   function itemInCart(id) {
@@ -1524,6 +1576,13 @@
     var box = document.getElementById("product-cart");
     var kinds = cartKinds(item);
     var cta = document.getElementById("product-cta");
+    if (item.sold) {
+      cta.classList.remove("hidden");
+      var soldAmount = item.price ? formatAmount(item.price) : "";
+      box.innerHTML = '<button type="button" class="pdp-btn sold" disabled><span>' + esc(t("sold_out", "Sold out")) + "</span>" +
+        (soldAmount ? '<span class="amt">' + esc(soldAmount) + "</span>" : "") + "</button>";
+      return;
+    }
     cta.classList.toggle("hidden", !kinds.length); // made to order: the big button below is the fitting
     if (!kinds.length) {
       box.innerHTML = '<a href="#contact" class="pdp-btn primary js-pdp-cta"><span>' + esc(t("cta_book_quote", "Book a Fitting or Request a Quote")) + "</span></a>";
@@ -1531,7 +1590,7 @@
     }
     box.innerHTML = kinds
       .map(function (kind, i) {
-        var label = kinds.length === 1 && kind === "buy" ? t("add_to_cart", "Add to Cart") : t("add_" + kind, kind);
+        var label = t("add_" + kind, kind);
         var amount = kind === "buy"
           ? (item.price ? formatAmount(item.price) : "")
           : (item.rent_price ? formatAmount(item.rent_price) + t("per_day", " / day") : "");

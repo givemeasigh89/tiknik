@@ -424,6 +424,10 @@
                     <label class="inline-flex items-center gap-1.5 text-sm"><input type="checkbox" name="rent_sizes" value="{{ z }}" {{ 'checked' if z in have }}> {{ z }}</label>
                   {% endfor %}
                 </div>
+                <label class="inline-flex items-center gap-2 text-sm">
+                  <input type="checkbox" name="sold" value="1" {{ 'checked' if item.sold }}>
+                  <span><b>Sold out</b>: stays in the catalog with a “Sold out” mark; can’t be ordered</span>
+                </label>
                 <!-- Handmade facts, shown in the product view when filled in -->
                 <label class="flex flex-col gap-1 min-w-0">
                   <span class="text-[10px] uppercase tracking-wider text-ink/45">Vintage lace era (only if this piece has it)</span>

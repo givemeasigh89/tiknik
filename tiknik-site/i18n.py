@@ -260,30 +260,15 @@ UI = {
 
     # Cart
     "cart": {
-        "en": "Your request",
-        "ru": "Ваш запрос",
-        "hy": "Ձեր հարցումը",
+        "en": "Cart",
+        "ru": "Корзина",
+        "hy": "Զամբյուղ",
     },
-    "add_to_cart": {
-        "en": "Order this dress",
-        "ru": "Заказать это платье",
-        "hy": "Պատվիրել այս զգեստը",
-    },
-    "add_buy": {
-        "en": "Order this dress",
-        "ru": "Заказать это платье",
-        "hy": "Պատվիրել այս զգեստը",
-    },
-    "add_rent": {
-        "en": "Rent for a shoot",
-        "ru": "Арендовать для съёмки",
-        "hy": "Վարձել նկարահանման համար",
-    },
-    "in_cart": {
-        "en": "In your request ✓",
-        "ru": "В запросе ✓",
-        "hy": "Հարցման մեջ է ✓",
-    },
+    "add_to_cart": {"en": "Buy", "ru": "Купить", "hy": "Գնել"},
+    "add_buy": {"en": "Buy", "ru": "Купить", "hy": "Գնել"},
+    "add_rent": {"en": "Rent", "ru": "Арендовать", "hy": "Վարձել"},
+    "in_cart": {"en": "In cart ✓", "ru": "В корзине ✓", "hy": "Զամբյուղում է ✓"},
+    "sold_out": {"en": "Sold out", "ru": "Продано", "hy": "Վաճառված է"},
     "cart_empty": {
         "en": "Nothing here yet. Choose a dress in the collection.",
         "ru": "Здесь пока пусто. Выберите платье в коллекции.",
@@ -340,12 +325,12 @@ UI = {
     "dial_lang": {"en": "Language", "ru": "Язык", "hy": "Լեզու"},
     "dial_cur": {"en": "Currency", "ru": "Валюта", "hy": "Արժույթ"},
     "toast_added": {
-        "en": "Added to your request",
-        "ru": "Добавлено в запрос",
-        "hy": "Ավելացվեց հարցմանը",
+        "en": "Added to cart",
+        "ru": "Добавлено в корзину",
+        "hy": "Ավելացվել է զամբյուղ",
     },
     "toast_view": {
-        "en": "View request",
+        "en": "View cart",
         "ru": "Открыть",
         "hy": "Բացել",
     },
@@ -445,7 +430,7 @@ UI = {
         "ru": "Выберите размер для каждой аренды.",
         "hy": "Ընտրեք չափսը յուրաքանչյուր վարձույթի համար։",
     },
-    "request_short": {"en": "Request", "ru": "Запрос", "hy": "Հարցում"},
+    "request_short": {"en": "Cart", "ru": "Корзина", "hy": "Զամբյուղ"},
     "about_word": {"en": "Tiknik", "ru": "Тикник", "hy": "Տիկնիկ"},
     # Used by static/js/main.js (passed in as window.TIKNIK_I18N)
     "price_on_request": {"en": "Price on request", "ru": "Цена по запросу", "hy": "Գինը՝ ըստ հարցման"},
@@ -479,7 +464,7 @@ UI = {
 
 JS_KEYS = (
     "back_to_catalog", "prev_item", "next_item", "cta_book_quote", "dial_hint",
-    "add_to_cart", "add_buy", "add_rent", "in_cart", "cart_buy_label", "cart_rent_label", "cart_day", "cart_days",
+    "add_to_cart", "add_buy", "add_rent", "in_cart", "sold_out", "cart_buy_label", "cart_rent_label", "cart_day", "cart_days",
     "cart_sent", "cart_remove", "busy_error", "review_thanks",
     "card_or_rent", "card_rental", "collection", "pdp_piece", "pdp_details", "pdp_delivery", "toast_added", "toast_view", "cart_size", "size_error", "made_to_order", "vintage_lace", "pdp_note", "prices_in", "prefs_change", "dial_lang", "dial_cur",
     "delivery_f1_title", "delivery_f1_text", "delivery_f2_title", "delivery_f2_text", "delivery_f3_title", "delivery_f3_text",
