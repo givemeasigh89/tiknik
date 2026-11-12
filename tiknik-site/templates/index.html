@@ -431,6 +431,22 @@
   .ft-h { font-size: 12px; letter-spacing: .09em; text-transform: uppercase; margin-bottom: .6rem; }
   .ft-copy { margin-top: .75rem; color: rgba(28,27,25,.62); font-size: 12px; }
 
+  /* Process: six steps and a small studio collage */
+  .proc { display: grid; gap: 3rem; }
+  @media (min-width: 1000px) { .proc { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 5rem; align-items: start; } }
+  .proc-steps { margin-top: 1.75rem; display: grid; gap: 1.75rem 2.5rem; counter-reset: none; }
+  @media (min-width: 640px) { .proc-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .proc-steps li { border-top: 1px solid rgba(28,27,25,.14); padding-top: .9rem; }
+  .proc-n { display: block; font-size: 11px; letter-spacing: .1em; color: rgba(28,27,25,.55); margin-bottom: .35rem; }
+  .proc-t { font-family: 'Jost', 'Noto Sans Armenian', sans-serif; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: #1C1B19; margin-bottom: .4rem; }
+  .proc-p { font-size: 14px; line-height: 1.7; color: rgba(28,27,25,.78); }
+  .proc-remote { margin-top: 2.25rem; padding-top: .9rem; border-top: 1px solid rgba(28,27,25,.14); max-width: 34rem; }
+  .proc-collage { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5rem; align-items: start; }
+  .proc-collage img { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; display: block; }
+  .proc-collage img:nth-child(3n+2) { margin-top: 2.5rem; }
+  @media (min-width: 1700px) { .proc { max-width: 1640px; margin: 0 auto; } }
+  @media (min-width: 1000px) { .proc-collage { position: sticky; top: 100px; max-width: 560px; justify-self: end; width: 100%; } }
+
   /* Cart */
   .card-cart { position: absolute; right: .6rem; bottom: .6rem; z-index: 3; width: 40px; height: 40px; border-radius: 9999px;
                display: inline-flex; align-items: center; justify-content: center; color: #1C1B19;
@@ -664,84 +680,29 @@
 </section>
 
 <!-- ============================== PROCESS ============================== -->
-<section id="process" class="py-8 sm:py-14 lg:py-16 overflow-hidden border-t border-line/60">
-  <div class="max-w-6xl mx-auto px-5">
-    <h2 class="sec-label sec-label--block">{{ t('process_title') }}</h2>
-
-    <!-- The process ring: the logo's double oval with the making of a piece inside it.
-         The key travels around the oval like a clock hand; drag it (or the photo) either way
-         and the photos follow, clockwise forward, anticlockwise back. Driven by static/js/process.js.
-         Sized from the screen height (see .process-ring) so ring, text and buttons fit on one screen;
-         on wide screens the text sits beside the ring. -->
-    <div class="flex flex-col lg:flex-row items-center justify-center lg:gap-12">
-    <div class="flex items-center justify-center gap-6 lg:gap-8">
-      <div id="process-ring" class="process-ring" tabindex="0" role="group" aria-label="{{ t('process_hint') }}">
-        <div class="process-frame">
-          {# photos in the order of the six stages: measuring, pattern, toile, fabric, sewing, the finished piece #}
-          {% for f in ['04', '07', '03', '08', '09', '01', '02', '05', '06', '10', '11', '12'] %}{% set n = f|int %}
-            <img src="{{ url_for('static', filename='img/process/%02d.jpg' % n) }}" alt="" class="process-photo" draggable="false"{% if n > 2 %} loading="lazy"{% endif %}>
-          {% endfor %}
-          <div class="process-leak"></div>
-          <div class="process-grain"></div>
-          <div class="process-vignette"></div>
-        </div>
-        <svg class="process-svg" viewBox="0 0 200 240" aria-hidden="true">
-          <ellipse cx="100" cy="120" rx="97" ry="117" class="pr-line" stroke-width="1.1"/>
-          <ellipse cx="100" cy="120" rx="93" ry="113" class="pr-line" stroke-width=".55"/>
-          <ellipse cx="100" cy="120" rx="82" ry="102" class="pr-line" stroke-width=".7"/>
-          <path class="pr-progress" d=""/>
-          <g class="pr-marks"></g>
-          <g class="pr-key">
-            <!-- a soft gold pulse round the key's bow until someone first turns it -->
-            <circle class="pr-key-pulse" cx="0" cy="-36" r="11"/>
-            <g class="pr-key-flip">
-            <!-- the logo's key, drawn pointing down with its tip at (0, 0) -->
-            <g transform="scale(.32) translate(-100 -194)">
-              <circle cx="100" cy="60" r="3" class="pr-line" stroke-width="2.2"/>
-              <circle cx="100" cy="71" r="8" class="pr-line pr-fill" stroke-width="2.2"/>
-              <circle cx="89" cy="82" r="8" class="pr-line pr-fill" stroke-width="2.2"/>
-              <circle cx="111" cy="82" r="8" class="pr-line pr-fill" stroke-width="2.2"/>
-              <circle cx="100" cy="93" r="8" class="pr-line pr-fill" stroke-width="2.2"/>
-              <path d="M100 74 L108 82 L100 90 L92 82 Z" class="pr-line" stroke-width="2"/>
-              <path d="M100 101 V194 M96 106 H104 M96 109 H104" class="pr-line" stroke-width="2.2"/>
-              <path d="M100 166 L104.5 170.5 L100 175 L95.5 170.5 Z" class="pr-line pr-fill" stroke-width="2"/>
-              <path d="M87 179 V192 M90.5 179 V192 M90.5 185.5 H100 M95 181 V190" class="pr-line" stroke-width="2.2"/>
-            </g>
-            </g>
-            <!-- a generous invisible handle, so the key is easy to grab with a finger -->
-            <rect class="pr-key-hit" x="-16" y="-54" width="32" height="62" rx="10"/>
-          </g>
-        </svg>
-      </div>
-    </div>
-
-    <div class="w-full lg:w-[470px] shrink-0">
-    <!-- Stage text: the JS shows the one for the photo the key points at. -->
-    <div class="process-stages relative max-w-xl mx-auto lg:mx-0 text-center lg:text-left" aria-live="polite">
-      {% for i in range(1, 7) %}
-        <div class="process-stage{{ ' is-active' if i == 1 }}" data-stage="{{ i - 1 }}">
-          <p class="font-serif text-xl sm:text-2xl text-gold-ink leading-none mb-1 sm:mb-2">{{ ['I', 'II', 'III', 'IV', 'V', 'VI'][i - 1] }}</p>
-          <h3 class="font-serif text-[1.45rem] sm:text-3xl leading-tight text-charcoal mb-1.5 sm:mb-3">{{ t('stage%d_title' % i) }}</h3>
-          <p class="text-[15px] text-ink/80 leading-relaxed">{{ t('stage%d_text' % i) }}</p>
-        </div>
-      {% endfor %}
-    </div>
-
-    <div class="flex items-center justify-center lg:justify-start gap-1 sm:gap-2 mt-3 sm:mt-6">
-      <button type="button" class="process-step w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-charcoal/20 hover:border-charcoal text-charcoal hidden min-[400px]:flex items-center justify-center shrink-0" data-dir="-1" aria-label="{{ t('process_prev') }}">&#8249;</button>
-      <div class="flex flex-wrap justify-center lg:justify-start">
+<section id="process" class="px-4 sm:px-7 py-16 sm:py-24 border-t border-line/60">
+  <!-- How a piece is made: six steps as text, beside a small collage from the studio. -->
+  <div class="proc">
+    <div class="proc-text">
+      <h2 class="sec-label">{{ t('process_title') }}</h2>
+      <ol class="proc-steps">
         {% for i in range(1, 7) %}
-          <button type="button" class="process-chip px-1.5 sm:px-2.5 py-2 text-[13px] sm:text-sm" data-stage="{{ i - 1 }}">{{ t('stage%d_short' % i) }}</button>
+          <li>
+            <span class="proc-n">0{{ i }}</span>
+            <h3 class="proc-t">{{ t('stage%d_title' % i) }}</h3>
+            <p class="proc-p">{{ t('stage%d_text' % i) }}</p>
+          </li>
         {% endfor %}
+      </ol>
+      <div class="proc-remote">
+        <p class="proc-t">{{ t('process_remote_title') }}</p>
+        <p class="proc-p">{{ t('process_remote_text') }}</p>
       </div>
-      <button type="button" class="process-step w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-charcoal/20 hover:border-charcoal text-charcoal hidden min-[400px]:flex items-center justify-center shrink-0" data-dir="1" aria-label="{{ t('process_next') }}">&#8250;</button>
     </div>
-    <p class="text-xs text-ink/75 text-center lg:text-left mt-2 sm:mt-3">{{ t('process_hint') }}</p>
-    <div class="process-remote">
-      <p class="process-remote-title">{{ t('process_remote_title') }}</p>
-      <p>{{ t('process_remote_text') }}</p>
-    </div>
-    </div>
+    <div class="proc-collage" aria-hidden="true">
+      {% for n in [3, 2, 1, 6, 8, 10] %}
+        <img src="{{ url_for('static', filename='img/process/%02d.jpg' % n) }}" alt="" loading="lazy">
+      {% endfor %}
     </div>
   </div>
 </section>
@@ -1048,7 +1009,6 @@
   window.TIKNIK_RATES = { USD: {{ usd_rate|float }}, RUB: {{ rub_rate|float }} };
 </script>
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-<script src="{{ url_for('static', filename='js/process.js') }}"></script>
 <script src="{{ url_for('static', filename='js/reviews.js') }}"></script>
 {% if motion %}
 <!-- Animations (GSAP) — switched on/off in /admin; the site works the same without them. -->
