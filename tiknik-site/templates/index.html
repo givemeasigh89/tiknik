@@ -399,12 +399,16 @@
 
   /* About */
   .about-p { font-size: 14px; line-height: 1.8; max-width: 30rem; }
-  .about-chapter2 { margin: 4.5rem -1.25rem 0; }
-  @media (min-width: 640px) { .about-chapter2 { margin-left: -2rem; margin-right: -2rem; } }
-  .about-band { margin: 0 calc(50% - 50vw); }
-  .about-band img { display: block; width: 100vw; height: min(78vh, 62vw); min-height: 320px; object-fit: cover; object-position: 50% 62%; }
-  .about-p--offset { margin: 2.5rem 1.25rem 0; }
-  @media (min-width: 900px) { .about-chapter2 { margin-top: 7rem; } .about-p--offset { margin: 3.5rem 0 0 50%; } }
+  /* II: the lace photo large on the right (never wider than the photo itself), the text beside it */
+  .about-chapter2 { margin-top: 4.5rem; display: flex; flex-direction: column; gap: 2rem; }
+  .about-band { margin: 0; }
+  .about-band img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; object-position: 50% 62%; }
+  .about-p--offset { margin: 0; }
+  @media (min-width: 900px) {
+    .about-chapter2 { margin-top: 7rem; flex-direction: row-reverse; align-items: flex-end; gap: 4rem; }
+    .about-band { flex: 0 0 min(58%, 760px); }
+    .about-p--offset { flex: 1; max-width: 26rem; margin-left: auto; }
+  }
   .about-row--last { margin-top: 5rem !important; }
 
   /* Delivery on the light ground */
