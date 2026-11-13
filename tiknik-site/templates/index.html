@@ -430,30 +430,32 @@
   .ft-copy { margin-top: .75rem; color: rgba(28,27,25,.62); font-size: 12px; }
 
   /* Process: six titles; hovering one opens its text and brings its photo forward */
-  .proc { display: grid; gap: 3rem; }
-  @media (min-width: 1000px) { .proc { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 5rem; align-items: center; } }
-  @media (min-width: 1700px) { .proc { max-width: 1640px; margin: 0 auto; } }
+  /* Shared two-column layout (as on the reference): text on the left, the form or photos from the middle;
+     same width and left edge as the delivery section */
+  .split { display: grid; gap: 3rem; max-width: 1180px; margin: 0 auto; padding: 0 1.25rem; }
+  @media (min-width: 640px) { .split { padding: 0 2rem; } }
+  @media (min-width: 1000px) { .split { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 6rem; align-items: start; } }
   .proc-steps { margin-top: 1.5rem; border-bottom: 1px solid rgba(28,27,25,.14); }
   .proc-step { border-top: 1px solid rgba(28,27,25,.14); }
-  .proc-head { display: flex; align-items: baseline; gap: 1.25rem; width: 100%; padding: 1.15rem 0; text-align: left; cursor: pointer; }
-  .proc-n { font-size: 11px; letter-spacing: .1em; color: rgba(28,27,25,.5); min-width: 1.5rem; transition: color .4s ease; }
-  .proc-t { font-family: 'Jost', 'Noto Sans Armenian', sans-serif; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: #1C1B19;
-            transition: transform .55s cubic-bezier(.22,1,.36,1); }
-  .proc-step.is-open .proc-t { transform: translateX(.35rem); }
-  .proc-step.is-open .proc-n { color: #1C1B19; }
+  .proc-head { display: grid; grid-template-columns: minmax(0, 1fr) 12px; align-items: center; column-gap: 1.5rem; width: 100%;
+               padding: 1.1rem 0; text-align: left; cursor: pointer; }
+  .proc-head::after { content: ""; width: 12px; height: 12px; transition: transform .45s cubic-bezier(.22,1,.36,1);
+                      background: linear-gradient(#1C1B19, #1C1B19) center / 12px 1px no-repeat, linear-gradient(#1C1B19, #1C1B19) center / 1px 12px no-repeat; }
+  .proc-step.is-open .proc-head::after { transform: rotate(45deg); }
+  .proc-t { font-family: 'Jost', 'Noto Sans Armenian', sans-serif; font-size: 13px; letter-spacing: .09em; text-transform: uppercase; color: #1C1B19; }
+  .proc-head:hover .proc-t { opacity: .7; }
   .proc-body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .6s cubic-bezier(.22,1,.36,1); }
   .proc-body > div { overflow: hidden; }
   .proc-step.is-open .proc-body { grid-template-rows: 1fr; }
-  .proc-p { font-size: 14px; line-height: 1.7; color: rgba(28,27,25,.78); padding: 0 0 1.2rem 2.75rem; max-width: 36rem;
+  .proc-p { font-size: 14px; line-height: 1.75; color: rgba(28,27,25,.82); padding: 0 2.5rem 1.4rem 0; max-width: 34rem;
             opacity: 0; transform: translateY(-6px); transition: opacity .45s ease .05s, transform .6s cubic-bezier(.22,1,.36,1); }
   .proc-step.is-open .proc-p { opacity: 1; transform: none; }
-  .proc-remote { margin-top: 2.25rem; max-width: 36rem; }
-  .proc-remote .proc-t { display: block; margin-bottom: .4rem; }
+  .proc-remote { margin-top: 3rem; max-width: 34rem; }
+  .proc-remote .proc-t { display: block; margin-bottom: .9rem; }
   .proc-remote .proc-p { opacity: 1; transform: none; padding: 0; }
   .proc-collage { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5rem; align-items: start; position: relative; }
   .proc-collage img { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; display: block; position: relative; z-index: 1; cursor: pointer;
                       transform-origin: center; transition: transform .7s cubic-bezier(.22,1,.36,1), filter .5s ease, box-shadow .7s ease; }
-  .proc-collage img:nth-child(3n+2) { margin-top: 2.5rem; }
   .proc-collage img:nth-child(3n+1) { transform-origin: left center; }
   .proc-collage img:nth-child(3n) { transform-origin: right center; }
   .proc-collage img:nth-child(1) { transform-origin: left top; }
@@ -465,21 +467,21 @@
   .proc-collage.has-focus img { filter: saturate(.7) brightness(.92); }
   .proc-collage img.is-focus { z-index: 5; transform: scale(1.75); filter: none; box-shadow: 0 30px 60px -25px rgba(28,27,25,.45); }
   @media (max-width: 999px) { .proc-collage img.is-focus { transform: scale(1.35); } }
-  @media (min-width: 1000px) { .proc-collage { max-width: 560px; justify-self: end; width: 100%; } }
+  @media (min-width: 1000px) { .proc-collage { margin-top: 2.6rem; } }
   @media (prefers-reduced-motion: reduce) {
-    .proc-body, .proc-p, .proc-t, .proc-collage img { transition: none; }
+    .proc-body, .proc-p, .proc-head::after, .proc-collage img { transition: none; }
   }
 
   .review-item { display: inline-block; margin-top: .35rem; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: rgba(28,27,25,.6); }
   .review-item:hover { color: #1C1B19; }
 
   /* Contact: the text, the form under it, then direct messages */
-  .ct-lead { margin-top: 1.25rem; max-width: 40rem; font-size: 15px; line-height: 1.75; color: rgba(28,27,25,.8); }
+  .ct-lead { margin-top: 1.5rem; max-width: 30rem; font-size: 14px; line-height: 1.75; color: rgba(28,27,25,.82); }
   .ct-lead p + p { margin-top: .9rem; }
-  .ct-form { margin-top: 2.5rem; max-width: 46rem; }
-  .ct-direct { margin-top: 2.75rem; padding-top: 1.5rem; border-top: 1px solid rgba(28,27,25,.14); max-width: 46rem; }
+  .ct-direct { margin-top: 2.75rem; }
   .ct-direct-label { font-size: 12px; letter-spacing: .09em; text-transform: uppercase; color: #1C1B19; margin-bottom: .9rem; }
-  @media (min-width: 1700px) { .ct { max-width: 1640px; margin: 0 auto; } }
+  .ct-form { row-gap: 1.6rem; }
+  @media (min-width: 1000px) { .ct-form { margin-top: 2.6rem; } }
 
   /* Cart */
   .card-cart { position: absolute; right: .6rem; bottom: .6rem; z-index: 3; width: 40px; height: 40px; border-radius: 9999px;
@@ -717,16 +719,15 @@
 </section>
 
 <!-- ============================== PROCESS ============================== -->
-<section id="process" class="px-4 sm:px-7 py-16 sm:py-24 border-t border-line/60">
+<section id="process" class="py-16 sm:py-24 border-t border-line/60">
   <!-- How a piece is made: six steps as text, beside a small collage from the studio. -->
-  <div class="proc">
+  <div class="proc split">
     <div class="proc-text">
       <h2 class="sec-label">{{ t('process_title') }}</h2>
       <ol class="proc-steps">
         {% for i in range(1, 7) %}
           <li class="proc-step" data-step="{{ i }}">
             <button type="button" class="proc-head" aria-expanded="false">
-              <span class="proc-n">0{{ i }}</span>
               <span class="proc-t">{{ t('stage%d_title' % i) }}</span>
             </button>
             <div class="proc-body"><div><p class="proc-p">{{ t('stage%d_text' % i) }}</p></div></div>
@@ -825,31 +826,13 @@
 </section>
 
 <!-- ============================== CONTACT ============================== -->
-<section id="contact" class="px-4 sm:px-7 py-16 sm:py-24 border-t border-line/60">
-  <div class="ct">
+<section id="contact" class="py-16 sm:py-24 border-t border-line/60">
+  <div class="ct split">
+   <div class="ct-text">
     <h2 class="sec-label">{{ t('contact_title') }}</h2>
     <div class="ct-lead">
       {% for para in t('contact_lead').split('\n\n') %}<p>{{ para }}</p>{% endfor %}
     </div>
-    <form id="quote-form" class="ct-form grid sm:grid-cols-2 gap-x-6 gap-y-5">
-      <label class="ct-field"><span>{{ t('form_label_name') }}</span>
-        <input name="name" required autocomplete="name"></label>
-      <label class="ct-field"><span>{{ t('form_label_contact') }}</span>
-        <input name="contact" required autocomplete="tel"></label>
-      <label class="ct-field"><span>{{ t('form_label_interest') }}</span>
-        <select name="category">
-          <option value=""></option>
-          {% for cat in categories %}<option value="{{ cat.slug }}">{{ cat.name }}</option>{% endfor %}
-        </select></label>
-      <label class="ct-field"><span>{{ t('form_label_item') }}</span>
-        <select name="item_id" class="js-item-select"><option value=""></option></select></label>
-      <label class="ct-field sm:col-span-2"><span>{{ t('form_label_message') }}</span>
-        <textarea name="message" rows="3"></textarea></label>
-      <button type="submit" class="sm:col-span-2 justify-self-start bg-charcoal text-cream px-8 py-3.5 text-[13px] tracking-[.08em] uppercase hover:bg-charcoal/90 transition mt-2">
-        {{ t('form_send') }}
-      </button>
-      <p id="quote-status" class="sm:col-span-2 text-sm"></p>
-    </form>
     <div class="ct-direct">
       <p class="ct-direct-label">{{ t('contact_direct') }}</p>
       <div class="flex items-center flex-wrap gap-3">
@@ -865,6 +848,26 @@
         {% endif %}
       </div>
     </div>
+   </div>
+    <form id="quote-form" class="ct-form grid gap-y-6">
+      <label class="ct-field"><span>{{ t('form_label_name') }}</span>
+        <input name="name" required autocomplete="name"></label>
+      <label class="ct-field"><span>{{ t('form_label_contact') }}</span>
+        <input name="contact" required autocomplete="tel"></label>
+      <label class="ct-field"><span>{{ t('form_label_interest') }}</span>
+        <select name="category">
+          <option value=""></option>
+          {% for cat in categories %}<option value="{{ cat.slug }}">{{ cat.name }}</option>{% endfor %}
+        </select></label>
+      <label class="ct-field"><span>{{ t('form_label_item') }}</span>
+        <select name="item_id" class="js-item-select"><option value=""></option></select></label>
+      <label class="ct-field"><span>{{ t('form_label_message') }}</span>
+        <textarea name="message" rows="3"></textarea></label>
+      <button type="submit" class="justify-self-start bg-charcoal text-cream px-8 py-3.5 text-[13px] tracking-[.08em] uppercase hover:bg-charcoal/90 transition mt-2">
+        {{ t('form_send') }}
+      </button>
+      <p id="quote-status" class="text-sm"></p>
+    </form>
   </div>
 </section>
 
