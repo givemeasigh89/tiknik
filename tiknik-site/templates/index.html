@@ -437,11 +437,18 @@
   @media (min-width: 1000px) { .split { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 6rem; align-items: start; } }
   .proc-steps { margin-top: 1.5rem; border-bottom: 1px solid rgba(28,27,25,.14); }
   .proc-step { border-top: 1px solid rgba(28,27,25,.14); }
-  .proc-head { display: grid; grid-template-columns: minmax(0, 1fr) 12px; align-items: center; column-gap: 1.5rem; width: 100%;
+  .proc-head { display: grid; grid-template-columns: minmax(0, 1fr) 20px; align-items: center; column-gap: 1.5rem; width: 100%;
                padding: 1.1rem 0; text-align: left; cursor: pointer; }
-  .proc-head::after { content: ""; width: 12px; height: 12px; transition: transform .45s cubic-bezier(.22,1,.36,1);
-                      background: linear-gradient(#1C1B19, #1C1B19) center / 12px 1px no-repeat, linear-gradient(#1C1B19, #1C1B19) center / 1px 12px no-repeat; }
-  .proc-step.is-open .proc-head::after { transform: rotate(45deg); }
+  /* The step marker: a needle; opening a step draws a thread through its eye */
+  .proc-needle { width: 20px; height: 20px; overflow: visible; }
+  .proc-needle g { transform: rotate(40deg); transition: transform .6s cubic-bezier(.16,1,.3,1); transform-origin: 9px 9px; transform-box: view-box; }
+  .proc-needle .nd { fill: none; stroke: #1C1B19; stroke-width: .75; stroke-linejoin: round; }
+  .proc-needle .eye { stroke-width: .6; }
+  .proc-needle .th { fill: none; stroke: #A48F66; stroke-width: 1; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1;
+                     transition: stroke-dashoffset .3s cubic-bezier(.4,0,1,1); }
+  .proc-head:hover .proc-needle .th { stroke-dashoffset: .82; transition-duration: .45s; }
+  .proc-step.is-open .proc-needle .th { stroke-dashoffset: 0; transition: stroke-dashoffset .75s cubic-bezier(.16,1,.3,1) .05s; }
+  .proc-step.is-open .proc-needle g { transform: rotate(28deg); }
   .proc-t { font-family: 'Jost', 'Noto Sans Armenian', sans-serif; font-size: 13px; letter-spacing: .09em; text-transform: uppercase; color: #1C1B19; }
   .proc-head:hover .proc-t { opacity: .7; }
   .proc-body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .6s cubic-bezier(.22,1,.36,1); }
@@ -469,7 +476,8 @@
   @media (max-width: 999px) { .proc-collage img.is-focus { transform: scale(1.35); } }
   @media (min-width: 1000px) { .proc-collage { margin-top: 2.6rem; } }
   @media (prefers-reduced-motion: reduce) {
-    .proc-body, .proc-p, .proc-head::after, .proc-collage img { transition: none; }
+    .proc-body, .proc-p, .proc-needle g, .proc-needle .th, .proc-collage img { transition: none !important; }
+    .proc-step.is-open .proc-needle g { transform: rotate(40deg); }
   }
 
   .review-item { display: inline-block; margin-top: .35rem; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: rgba(28,27,25,.6); }
@@ -478,7 +486,7 @@
   /* Contact: the text, the form under it, then direct messages */
   .ct-lead { margin-top: 1.5rem; max-width: 30rem; font-size: 14px; line-height: 1.75; color: rgba(28,27,25,.82); }
   .ct-lead p + p { margin-top: .9rem; }
-  .ct-direct { margin-top: 2.75rem; }
+  .ct-direct { margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(28,27,25,.14); }
   .ct-direct-label { font-size: 12px; letter-spacing: .09em; text-transform: uppercase; color: #1C1B19; margin-bottom: .9rem; }
   .ct-form { row-gap: 1.6rem; }
   @media (min-width: 1000px) { .ct-form { margin-top: 2.6rem; } }
@@ -729,6 +737,13 @@
           <li class="proc-step" data-step="{{ i }}">
             <button type="button" class="proc-head" aria-expanded="false">
               <span class="proc-t">{{ t('stage%d_title' % i) }}</span>
+              <svg class="proc-needle" viewBox="0 0 18 18" aria-hidden="true">
+                <g>
+                  <path class="nd" d="M9 1.1c.4 0 .55.3.55.75V12.8L9 17.4l-.55-4.6V1.85c0-.45.15-.75.55-.75z"/>
+                  <path class="nd eye" d="M9 2.3v2.4"/>
+                  <path class="th" pathLength="1" d="M.8 6.4C4.6 5.6 7 4.2 9 4.2c3.2 0 6.1 1.5 6.6 5 .5 3.4-2.4 5.9-4.4 7.6"/>
+                </g>
+              </svg>
             </button>
             <div class="proc-body"><div><p class="proc-p">{{ t('stage%d_text' % i) }}</p></div></div>
           </li>
@@ -833,22 +848,8 @@
     <div class="ct-lead">
       {% for para in t('contact_lead').split('\n\n') %}<p>{{ para }}</p>{% endfor %}
     </div>
-    <div class="ct-direct">
-      <p class="ct-direct-label">{{ t('contact_direct') }}</p>
-      <div class="flex items-center flex-wrap gap-3">
-        <a href="https://ig.me/m/{{ instagram.rstrip('/').split('/')[-1] }}" target="_blank" rel="noopener" class="contact-link">
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".8" fill="currentColor"/></svg>
-          Instagram
-        </a>
-        {% if whatsapp %}
-          <a href="https://wa.me/{{ whatsapp }}?text={{ t('wa_text')|urlencode }}" target="_blank" rel="noopener" class="contact-link">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 20l1.3-4A8 8 0 1 1 8 18.7L4 20z"/><path d="M9.5 9c0 3 2.5 5.5 5.5 5.5l1-1.5-2-1-1 1c-1 0-2.5-1.5-2.5-2.5l1-1-1-2L9.5 9z" stroke-width="1.1"/></svg>
-            WhatsApp
-          </a>
-        {% endif %}
-      </div>
-    </div>
    </div>
+   <div class="ct-side">
     <form id="quote-form" class="ct-form grid gap-y-6">
       <label class="ct-field"><span>{{ t('form_label_name') }}</span>
         <input name="name" required autocomplete="name"></label>
@@ -868,6 +869,22 @@
       </button>
       <p id="quote-status" class="text-sm"></p>
     </form>
+    <div class="ct-direct">
+      <p class="ct-direct-label">{{ t('contact_direct') }}</p>
+      <div class="flex items-center flex-wrap gap-3">
+        <a href="https://ig.me/m/{{ instagram.rstrip('/').split('/')[-1] }}" target="_blank" rel="noopener" class="contact-link">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".8" fill="currentColor"/></svg>
+          Instagram
+        </a>
+        {% if whatsapp %}
+          <a href="https://wa.me/{{ whatsapp }}?text={{ t('wa_text')|urlencode }}" target="_blank" rel="noopener" class="contact-link">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 20l1.3-4A8 8 0 1 1 8 18.7L4 20z"/><path d="M9.5 9c0 3 2.5 5.5 5.5 5.5l1-1.5-2-1-1 1c-1 0-2.5-1.5-2.5-2.5l1-1-1-2L9.5 9z" stroke-width="1.1"/></svg>
+            WhatsApp
+          </a>
+        {% endif %}
+      </div>
+    </div>
+   </div>
   </div>
 </section>
 
