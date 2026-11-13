@@ -277,8 +277,6 @@
   @media (prefers-reduced-motion: reduce) { .dl-body { animation: none; } }
 
   /* Contact: words on the left, the form on the right with labels above the fields */
-  .ct { display: grid; gap: 2.5rem; }
-  @media (min-width: 900px) { .ct { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 5rem; } }
   .ct-field { display: flex; flex-direction: column; gap: .4rem; }
   .ct-field span { font-size: 13px; color: rgba(58,58,58,.8); }
   .ct-field input, .ct-field select, .ct-field textarea { border: 0; border-bottom: 1px solid rgba(28,27,25,.35); background: transparent;
@@ -431,21 +429,57 @@
   .ft-h { font-size: 12px; letter-spacing: .09em; text-transform: uppercase; margin-bottom: .6rem; }
   .ft-copy { margin-top: .75rem; color: rgba(28,27,25,.62); font-size: 12px; }
 
-  /* Process: six steps and a small studio collage */
+  /* Process: six titles; hovering one opens its text and brings its photo forward */
   .proc { display: grid; gap: 3rem; }
-  @media (min-width: 1000px) { .proc { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 5rem; align-items: start; } }
-  .proc-steps { margin-top: 1.75rem; display: grid; gap: 1.75rem 2.5rem; counter-reset: none; }
-  @media (min-width: 640px) { .proc-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-  .proc-steps li { border-top: 1px solid rgba(28,27,25,.14); padding-top: .9rem; }
-  .proc-n { display: block; font-size: 11px; letter-spacing: .1em; color: rgba(28,27,25,.55); margin-bottom: .35rem; }
-  .proc-t { font-family: 'Jost', 'Noto Sans Armenian', sans-serif; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: #1C1B19; margin-bottom: .4rem; }
-  .proc-p { font-size: 14px; line-height: 1.7; color: rgba(28,27,25,.78); }
-  .proc-remote { margin-top: 2.25rem; padding-top: .9rem; border-top: 1px solid rgba(28,27,25,.14); max-width: 34rem; }
-  .proc-collage { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5rem; align-items: start; }
-  .proc-collage img { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; display: block; }
-  .proc-collage img:nth-child(3n+2) { margin-top: 2.5rem; }
+  @media (min-width: 1000px) { .proc { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 5rem; align-items: center; } }
   @media (min-width: 1700px) { .proc { max-width: 1640px; margin: 0 auto; } }
-  @media (min-width: 1000px) { .proc-collage { position: sticky; top: 100px; max-width: 560px; justify-self: end; width: 100%; } }
+  .proc-steps { margin-top: 1.5rem; border-bottom: 1px solid rgba(28,27,25,.14); }
+  .proc-step { border-top: 1px solid rgba(28,27,25,.14); }
+  .proc-head { display: flex; align-items: baseline; gap: 1.25rem; width: 100%; padding: 1.15rem 0; text-align: left; cursor: pointer; }
+  .proc-n { font-size: 11px; letter-spacing: .1em; color: rgba(28,27,25,.5); min-width: 1.5rem; transition: color .4s ease; }
+  .proc-t { font-family: 'Jost', 'Noto Sans Armenian', sans-serif; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: #1C1B19;
+            transition: transform .55s cubic-bezier(.22,1,.36,1); }
+  .proc-step.is-open .proc-t { transform: translateX(.35rem); }
+  .proc-step.is-open .proc-n { color: #1C1B19; }
+  .proc-body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .6s cubic-bezier(.22,1,.36,1); }
+  .proc-body > div { overflow: hidden; }
+  .proc-step.is-open .proc-body { grid-template-rows: 1fr; }
+  .proc-p { font-size: 14px; line-height: 1.7; color: rgba(28,27,25,.78); padding: 0 0 1.2rem 2.75rem; max-width: 36rem;
+            opacity: 0; transform: translateY(-6px); transition: opacity .45s ease .05s, transform .6s cubic-bezier(.22,1,.36,1); }
+  .proc-step.is-open .proc-p { opacity: 1; transform: none; }
+  .proc-remote { margin-top: 2.25rem; max-width: 36rem; }
+  .proc-remote .proc-t { display: block; margin-bottom: .4rem; }
+  .proc-remote .proc-p { opacity: 1; transform: none; padding: 0; }
+  .proc-collage { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5rem; align-items: start; position: relative; }
+  .proc-collage img { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; display: block; position: relative; z-index: 1; cursor: pointer;
+                      transform-origin: center; transition: transform .7s cubic-bezier(.22,1,.36,1), filter .5s ease, box-shadow .7s ease; }
+  .proc-collage img:nth-child(3n+2) { margin-top: 2.5rem; }
+  .proc-collage img:nth-child(3n+1) { transform-origin: left center; }
+  .proc-collage img:nth-child(3n) { transform-origin: right center; }
+  .proc-collage img:nth-child(1) { transform-origin: left top; }
+  .proc-collage img:nth-child(2) { transform-origin: center top; }
+  .proc-collage img:nth-child(3) { transform-origin: right top; }
+  .proc-collage img:nth-child(4) { transform-origin: left bottom; }
+  .proc-collage img:nth-child(5) { transform-origin: center bottom; }
+  .proc-collage img:nth-child(6) { transform-origin: right bottom; }
+  .proc-collage.has-focus img { filter: saturate(.7) brightness(.92); }
+  .proc-collage img.is-focus { z-index: 5; transform: scale(1.75); filter: none; box-shadow: 0 30px 60px -25px rgba(28,27,25,.45); }
+  @media (max-width: 999px) { .proc-collage img.is-focus { transform: scale(1.35); } }
+  @media (min-width: 1000px) { .proc-collage { max-width: 560px; justify-self: end; width: 100%; } }
+  @media (prefers-reduced-motion: reduce) {
+    .proc-body, .proc-p, .proc-t, .proc-collage img { transition: none; }
+  }
+
+  .review-item { display: inline-block; margin-top: .35rem; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: rgba(28,27,25,.6); }
+  .review-item:hover { color: #1C1B19; }
+
+  /* Contact: the text, the form under it, then direct messages */
+  .ct-lead { margin-top: 1.25rem; max-width: 40rem; font-size: 15px; line-height: 1.75; color: rgba(28,27,25,.8); }
+  .ct-lead p + p { margin-top: .9rem; }
+  .ct-form { margin-top: 2.5rem; max-width: 46rem; }
+  .ct-direct { margin-top: 2.75rem; padding-top: 1.5rem; border-top: 1px solid rgba(28,27,25,.14); max-width: 46rem; }
+  .ct-direct-label { font-size: 12px; letter-spacing: .09em; text-transform: uppercase; color: #1C1B19; margin-bottom: .9rem; }
+  @media (min-width: 1700px) { .ct { max-width: 1640px; margin: 0 auto; } }
 
   /* Cart */
   .card-cart { position: absolute; right: .6rem; bottom: .6rem; z-index: 3; width: 40px; height: 40px; border-radius: 9999px;
@@ -624,6 +658,8 @@
           <button type="button" class="prefs-done js-prefs-close">{{ t('prefs_done') }}</button>
         </div>
       </div>
+      {% if has_reviews %}<a href="#reviews" class="hd-link hd-fitting">{{ t('nav_reviews') }}</a>
+      {% else %}<button type="button" class="hd-link hd-fitting js-review-open">{{ t('nav_reviews') }}</button>{% endif %}
       <a href="#contact" class="hd-link hd-fitting">{{ t('book_fitting') }}</a>
       <button type="button" id="cart-open" class="hd-link" aria-label="{{ t('cart') }}">{{ t('request_short') }} <span id="cart-count" class="hidden ml-1"></span></button>
     </div>
@@ -639,7 +675,8 @@
       </div>
       <a href="#process" class="py-2.5 border-t border-line/40">{{ t('nav_process') }}</a>
       <a href="#about" class="py-2.5 border-t border-line/40">{{ t('nav_about') }}</a>
-      {% if has_reviews %}<a href="#reviews" class="py-2.5 border-t border-line/40">{{ t('nav_reviews') }}</a>{% endif %}
+      {% if has_reviews %}<a href="#reviews" class="py-2.5 border-t border-line/40">{{ t('nav_reviews') }}</a>
+      {% else %}<button type="button" class="js-review-open text-left py-2.5 border-t border-line/40">{{ t('nav_reviews') }}</button>{% endif %}
       <a href="#delivery" class="py-2.5 border-t border-line/40">{{ t('nav_delivery') }}</a>
       <div class="flex flex-wrap gap-x-4 gap-y-1 pl-3 pb-2 text-sm text-ink/75">
         {% for k in ['local', 'intl', 'pack', 'cond'] %}
@@ -687,10 +724,12 @@
       <h2 class="sec-label">{{ t('process_title') }}</h2>
       <ol class="proc-steps">
         {% for i in range(1, 7) %}
-          <li>
-            <span class="proc-n">0{{ i }}</span>
-            <h3 class="proc-t">{{ t('stage%d_title' % i) }}</h3>
-            <p class="proc-p">{{ t('stage%d_text' % i) }}</p>
+          <li class="proc-step" data-step="{{ i }}">
+            <button type="button" class="proc-head" aria-expanded="false">
+              <span class="proc-n">0{{ i }}</span>
+              <span class="proc-t">{{ t('stage%d_title' % i) }}</span>
+            </button>
+            <div class="proc-body"><div><p class="proc-p">{{ t('stage%d_text' % i) }}</p></div></div>
           </li>
         {% endfor %}
       </ol>
@@ -700,8 +739,9 @@
       </div>
     </div>
     <div class="proc-collage" aria-hidden="true">
-      {% for n in [3, 2, 1, 6, 8, 10] %}
-        <img src="{{ url_for('static', filename='img/process/%02d.jpg' % n) }}" alt="" loading="lazy">
+      {# one photo per step: measurements, pattern, toile, fabric, sewing, the finished dress #}
+      {% for n in [4, 3, 8, 1, 6, 10] %}
+        <img src="{{ url_for('static', filename='img/process/%02d.jpg' % n) }}" alt="" loading="lazy" data-step="{{ loop.index }}">
       {% endfor %}
     </div>
   </div>
@@ -785,41 +825,46 @@
 </section>
 
 <!-- ============================== CONTACT ============================== -->
-<section id="contact" class="py-16 sm:py-24 border-t border-line/60">
-  <div class="max-w-[1180px] mx-auto px-5 sm:px-8 ct">
-    <div>
-      <h2 class="sec-label">{{ t('contact_title') }}</h2>
-      <p class="mt-5 text-[15px] leading-relaxed text-ink/80 max-w-md">{{ t('contact_lead') }}</p>
-      <div class="flex items-center flex-wrap gap-3 mt-7">
-        <a href="{{ instagram }}" target="_blank" rel="noopener" class="contact-link">
+<section id="contact" class="px-4 sm:px-7 py-16 sm:py-24 border-t border-line/60">
+  <div class="ct">
+    <h2 class="sec-label">{{ t('contact_title') }}</h2>
+    <div class="ct-lead">
+      {% for para in t('contact_lead').split('\n\n') %}<p>{{ para }}</p>{% endfor %}
+    </div>
+    <form id="quote-form" class="ct-form grid sm:grid-cols-2 gap-x-6 gap-y-5">
+      <label class="ct-field"><span>{{ t('form_label_name') }}</span>
+        <input name="name" required autocomplete="name"></label>
+      <label class="ct-field"><span>{{ t('form_label_contact') }}</span>
+        <input name="contact" required autocomplete="tel"></label>
+      <label class="ct-field"><span>{{ t('form_label_interest') }}</span>
+        <select name="category">
+          <option value=""></option>
+          {% for cat in categories %}<option value="{{ cat.slug }}">{{ cat.name }}</option>{% endfor %}
+        </select></label>
+      <label class="ct-field"><span>{{ t('form_label_item') }}</span>
+        <select name="item_id" class="js-item-select"><option value=""></option></select></label>
+      <label class="ct-field sm:col-span-2"><span>{{ t('form_label_message') }}</span>
+        <textarea name="message" rows="3"></textarea></label>
+      <button type="submit" class="sm:col-span-2 justify-self-start bg-charcoal text-cream px-8 py-3.5 text-[13px] tracking-[.08em] uppercase hover:bg-charcoal/90 transition mt-2">
+        {{ t('form_send') }}
+      </button>
+      <p id="quote-status" class="sm:col-span-2 text-sm"></p>
+    </form>
+    <div class="ct-direct">
+      <p class="ct-direct-label">{{ t('contact_direct') }}</p>
+      <div class="flex items-center flex-wrap gap-3">
+        <a href="https://ig.me/m/{{ instagram.rstrip('/').split('/')[-1] }}" target="_blank" rel="noopener" class="contact-link">
           <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".8" fill="currentColor"/></svg>
-          @{{ instagram.rstrip('/').split('/')[-1] }}
+          Instagram
         </a>
         {% if whatsapp %}
-          <a href="https://wa.me/{{ whatsapp }}" target="_blank" rel="noopener" class="contact-link">
+          <a href="https://wa.me/{{ whatsapp }}?text={{ t('wa_text')|urlencode }}" target="_blank" rel="noopener" class="contact-link">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 20l1.3-4A8 8 0 1 1 8 18.7L4 20z"/><path d="M9.5 9c0 3 2.5 5.5 5.5 5.5l1-1.5-2-1-1 1c-1 0-2.5-1.5-2.5-2.5l1-1-1-2L9.5 9z" stroke-width="1.1"/></svg>
             WhatsApp
           </a>
         {% endif %}
       </div>
     </div>
-    <form id="quote-form" class="grid sm:grid-cols-2 gap-x-6 gap-y-5">
-      <label class="ct-field"><span>{{ t('form_label_name') }}</span>
-        <input name="name" required autocomplete="name"></label>
-      <label class="ct-field"><span>{{ t('form_label_contact') }}</span>
-        <input name="contact" required autocomplete="tel"></label>
-      <label class="ct-field sm:col-span-2"><span>{{ t('form_label_interest') }}</span>
-        <select name="category">
-          <option value=""></option>
-          {% for cat in categories %}<option value="{{ cat.slug }}">{{ cat.name }}</option>{% endfor %}
-        </select></label>
-      <label class="ct-field sm:col-span-2"><span>{{ t('form_label_message') }}</span>
-        <textarea name="message" rows="3"></textarea></label>
-      <button type="submit" class="sm:col-span-2 justify-self-start bg-charcoal text-cream px-8 py-3.5 text-[15px] tracking-wide hover:bg-charcoal/90 transition mt-2">
-        {{ t('form_send') }}
-      </button>
-      <p id="quote-status" class="sm:col-span-2 text-sm"></p>
-    </form>
   </div>
 </section>
 
@@ -898,6 +943,9 @@
       <button type="button" class="js-review-close w-8 h-8 -mr-2 -mt-1 flex items-center justify-center text-ink/50 hover:text-charcoal text-2xl" aria-label="×">&times;</button>
     </div>
     <input name="name" required maxlength="80" placeholder="{{ t('form_name') }}" class="border border-charcoal/25 bg-transparent px-3 py-2.5 text-sm focus:outline-none focus:border-charcoal">
+    <select name="item_id" class="js-item-select border border-charcoal/25 bg-transparent px-3 py-2.5 text-sm focus:outline-none focus:border-charcoal" aria-label="{{ t('form_label_item') }}">
+      <option value="">{{ t('form_label_item') }}</option>
+    </select>
     <textarea name="text" required rows="4" maxlength="800" placeholder="{{ t('review_text') }}" class="border border-charcoal/25 bg-transparent px-3 py-2.5 text-sm focus:outline-none focus:border-charcoal"></textarea>
     <div id="review-previews" class="flex gap-2"></div>
     <label class="self-start inline-flex items-center gap-2 text-sm text-ink/70 hover:text-charcoal cursor-pointer">

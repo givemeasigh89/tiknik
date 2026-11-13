@@ -389,6 +389,7 @@
       items = data;
       itemsByLang[LANG] = data;
       render("load");
+      fillItemSelects();
       // A shared /item/<id> link: show that piece (the address becomes the usual #item-<id> one).
       if (window.TIKNIK_OPEN_ITEM && !location.hash) {
         history.replaceState(null, "", langUrl(LANG) + "#item-" + window.TIKNIK_OPEN_ITEM);
@@ -734,6 +735,8 @@
       reloadInCardLang("#contact");
       return;
     }
+    var pick = document.querySelector('#quote-form [name="item_id"]');
+    if (pick && currentOpenItem) pick.value = String(currentOpenItem.id);
     closeProduct(); // then the link scrolls to the form
   });
 
@@ -1401,6 +1404,91 @@
     },
     { passive: false }
   );
+
+  // The optional "which dress" choice in the fitting form and the review form.
+  function fillItemSelects() {
+    document.querySelectorAll(".js-item-select").forEach(function (sel) {
+      var keep = sel.value;
+      var first = sel.options[0].outerHTML;
+      sel.innerHTML = first + items
+        .map(function (it) {
+          return '<option value="' + it.id + '">' + esc(it.name) + "</option>";
+        })
+        .join("");
+      sel.value = keep;
+    });
+    document.dispatchEvent(new CustomEvent("tiknik:items-ready"));
+  }
+
+  // ------------------------------------------------------------------
+  // Process: hovering (or tapping) a step opens its text and brings its photo forward
+  // ------------------------------------------------------------------
+  (function () {
+    var list = document.querySelector(".proc-steps");
+    var collage = document.querySelector(".proc-collage");
+    if (!list || !collage) return;
+    var hoverable = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+    function photo(step) {
+      return collage.querySelector('img[data-step="' + step + '"]');
+    }
+    function setOpen(li, open) {
+      li.classList.toggle("is-open", open);
+      li.querySelector(".proc-head").setAttribute("aria-expanded", open ? "true" : "false");
+    }
+    function focusPhoto(step) {
+      collage.querySelectorAll("img").forEach(function (img) {
+        img.classList.toggle("is-focus", img.getAttribute("data-step") === String(step));
+      });
+      collage.classList.toggle("has-focus", !!step);
+    }
+    function stepEl(step) {
+      return list.querySelector('.proc-step[data-step="' + step + '"]');
+    }
+    list.querySelectorAll(".proc-step").forEach(function (li) {
+      var step = li.getAttribute("data-step");
+      if (hoverable) {
+        li.addEventListener("mouseenter", function () {
+          setOpen(li, true);
+          focusPhoto(step);
+        });
+        li.addEventListener("mouseleave", function () {
+          setOpen(li, false);
+          focusPhoto(null);
+        });
+      }
+      li.querySelector(".proc-head").addEventListener("click", function () {
+        if (hoverable) return; // on computers hovering already opens it
+        var open = !li.classList.contains("is-open");
+        list.querySelectorAll(".proc-step.is-open").forEach(function (o) {
+          setOpen(o, false);
+        });
+        setOpen(li, open);
+        focusPhoto(open ? step : null);
+      });
+      li.querySelector(".proc-head").addEventListener("focus", function () {
+        setOpen(li, true);
+        focusPhoto(step);
+      });
+      li.querySelector(".proc-head").addEventListener("blur", function () {
+        setOpen(li, false);
+        focusPhoto(null);
+      });
+    });
+    // Hovering a photo opens its step too
+    if (hoverable) {
+      collage.querySelectorAll("img").forEach(function (img) {
+        var step = img.getAttribute("data-step");
+        img.addEventListener("mouseenter", function () {
+          setOpen(stepEl(step), true);
+          focusPhoto(step);
+        });
+        img.addEventListener("mouseleave", function () {
+          setOpen(stepEl(step), false);
+          focusPhoto(null);
+        });
+      });
+    }
+  })();
 
   // ------------------------------------------------------------------
   // Quote / fitting request form

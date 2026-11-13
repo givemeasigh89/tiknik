@@ -235,6 +235,9 @@ def init_db():
 
     if "status" not in _table_columns(db, "inquiries"):
         db.execute("ALTER TABLE inquiries ADD COLUMN status TEXT NOT NULL DEFAULT 'new'")
+    # Optional: the piece a fitting request or a review is about.
+    if "item_id" not in _table_columns(db, "inquiries"):
+        db.execute("ALTER TABLE inquiries ADD COLUMN item_id INTEGER")
 
     # Cart orders: who, how to reach them, and a snapshot of what they asked for at what price.
     db.execute(
@@ -261,6 +264,9 @@ def init_db():
             created_at TEXT DEFAULT CURRENT_TIMESTAMP
         )"""
     )
+
+    if "item_id" not in _table_columns(db, "reviews"):
+        db.execute("ALTER TABLE reviews ADD COLUMN item_id INTEGER")
 
     db.execute(
         """CREATE TABLE IF NOT EXISTS settings (
@@ -608,6 +614,15 @@ def api_items():
     return jsonify(result)
 
 
+def existing_item_id(db, value):
+    """An item id from a form if that piece exists, else None (the choice is optional)."""
+    try:
+        item_id = int(value)
+    except (TypeError, ValueError):
+        return None
+    return item_id if db.execute("SELECT 1 FROM items WHERE id = ?", (item_id,)).fetchone() else None
+
+
 @app.route("/api/inquiry", methods=["POST"])
 def api_inquiry():
     data = request.get_json(silent=True) or {}
@@ -620,9 +635,10 @@ def api_inquiry():
         return jsonify({"ok": False, "error": "Please share your name and a way to reach you."}), 400
 
     db = get_db()
+    item_id = existing_item_id(db, data.get("item_id"))
     db.execute(
-        "INSERT INTO inquiries (name, contact, category, message) VALUES (?,?,?,?)",
-        (name, contact, category, message),
+        "INSERT INTO inquiries (name, contact, category, message, item_id) VALUES (?,?,?,?,?)",
+        (name, contact, category, message, item_id),
     )
     db.commit()
     return jsonify({"ok": True})
@@ -728,10 +744,12 @@ def image_kind(head):
 @app.route("/api/reviews")
 def api_reviews():
     db = get_db()
-    rows = db.execute("SELECT id, name, text, photos, created_at FROM reviews WHERE status = 'approved' "
-                      "ORDER BY created_at DESC, id DESC").fetchall()
+    rows = db.execute("SELECT r.id, r.name, r.text, r.photos, r.created_at, r.item_id, i.name AS item_name "
+                      "FROM reviews r LEFT JOIN items i ON i.id = r.item_id WHERE r.status = 'approved' "
+                      "ORDER BY r.created_at DESC, r.id DESC").fetchall()
     return jsonify([{"id": r["id"], "name": r["name"], "text": r["text"], "photos": json.loads(r["photos"] or "[]"),
-                     "date": (r["created_at"] or "")[:10]} for r in rows])
+                     "date": (r["created_at"] or "")[:10], "item_id": r["item_id"], "item": r["item_name"]}
+                    for r in rows])
 
 
 @app.route("/api/review", methods=["POST"])
@@ -758,7 +776,8 @@ def api_review():
         saved.append(filename)
 
     db = get_db()
-    db.execute("INSERT INTO reviews (name, text, photos) VALUES (?,?,?)", (name, text, json.dumps(saved)))
+    db.execute("INSERT INTO reviews (name, text, photos, item_id) VALUES (?,?,?,?)",
+               (name, text, json.dumps(saved), existing_item_id(db, request.form.get("item_id"))))
     db.commit()
     return jsonify({"ok": True})
 
@@ -862,6 +881,7 @@ def admin():
         hours=get_setting(db, "hours", ""),
         motion=get_setting(db, "motion", "1") == "1",
         items=item_list,
+        item_names={i["id"]: i["name"] for i in items},
         unsorted=unsorted,
         counts=counts,
         categories=categories,

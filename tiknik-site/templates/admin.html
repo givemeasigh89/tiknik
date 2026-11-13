@@ -153,7 +153,8 @@
               <span class="mt-1.5 w-2 h-2 rounded-full shrink-0 {{ 'bg-gold' if q.status == 'new' else 'bg-charcoal/15' }}"></span>
               <div class="flex-1 min-w-0 text-sm">
                 <p><span class="text-charcoal">{{ q.name }}</span> · <span class="select-all">{{ q.contact }}</span>
-                  {% if q.category %}<span class="text-ink/50">· {{ category_names.get(q.category, q.category) }}</span>{% endif %}</p>
+                  {% if q.category %}<span class="text-ink/50">· {{ category_names.get(q.category, q.category) }}</span>{% endif %}
+                  {% if q.item_id and q.item_id in item_names %}<span class="text-ink/50">· dress: <a href="/#item-{{ q.item_id }}" target="_blank" class="underline">{{ item_names[q.item_id] }}</a></span>{% endif %}</p>
                 {% if q.message %}<p class="text-ink/70 mt-1 whitespace-pre-line">{{ q.message }}</p>{% endif %}
                 <p class="text-[11px] text-ink/40 mt-1">{{ (q.created_at or '')[:16] }} UTC</p>
               </div>
@@ -527,6 +528,7 @@
                   <span class="text-charcoal">{{ r.name }}</span>
                   <span class="text-[10px] uppercase tracking-wider rounded-full px-2 py-0.5 {{ 'bg-gold text-cream' if r.status == 'pending' else 'bg-cream-dark text-ink/60' }}">{{ 'waiting' if r.status == 'pending' else 'on the site' }}</span>
                   <span class="text-[11px] text-ink/40">{{ (r.created_at or '')[:10] }}</span>
+                  {% if r.item_id and r.item_id in item_names %}<span class="text-[11px] text-ink/50">· {{ item_names[r.item_id] }}</span>{% endif %}
                 </p>
                 <p class="text-ink/75 mt-1 whitespace-pre-line">{{ r.text }}</p>
               </div>

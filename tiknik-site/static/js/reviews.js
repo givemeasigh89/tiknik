@@ -40,6 +40,7 @@
       '<span class="font-serif text-5xl leading-none text-gold/70 -mb-3 select-none" aria-hidden="true">“</span>' +
       '<p class="review-quote font-serif text-[17px] leading-relaxed text-charcoal/90 whitespace-pre-line flex-1">' + esc(r.text) + "</p>" +
       '<p class="mt-5 font-serif italic text-base text-ink/75">' + esc(r.name) + "</p>" +
+      (r.item ? '<a href="#item-' + r.item_id + '" class="review-item">' + esc(r.item) + "</a>" : "") +
       "</div></article>"
     );
   }
@@ -96,13 +97,26 @@
   var status = document.getElementById("review-status");
   var picked = []; // [{blob, url}]
 
+  function openDialog(itemId) {
+    status.classList.add("hidden");
+    if (itemId && form.elements.item_id) form.elements.item_id.value = String(itemId);
+    if (dialog.open) return;
+    if (dialog.showModal) dialog.showModal();
+    else dialog.setAttribute("open", "");
+  }
   document.querySelectorAll(".js-review-open").forEach(function (btn) {
     btn.addEventListener("click", function () {
-      status.classList.add("hidden");
-      if (dialog.showModal) dialog.showModal();
-      else dialog.setAttribute("open", "");
+      openDialog();
     });
   });
+  // A link to send clients: /#review opens the form, /#review-12 opens it about dress 12.
+  function openFromHash() {
+    var m = /^#review(?:-(\d+))?$/.exec(location.hash);
+    if (m) openDialog(m[1]);
+  }
+  openFromHash();
+  document.addEventListener("tiknik:items-ready", openFromHash);
+  window.addEventListener("hashchange", openFromHash);
   form.querySelector(".js-review-close").addEventListener("click", function () {
     dialog.close();
   });
@@ -170,6 +184,7 @@
     var data = new FormData();
     data.append("name", form.elements.name.value);
     data.append("text", form.elements.text.value);
+    data.append("item_id", form.elements.item_id ? form.elements.item_id.value : "");
     data.append("website", form.elements.website.value);
     picked.forEach(function (p, i) {
       data.append("photos", p.blob, "photo-" + (i + 1) + ".jpg");
