@@ -632,6 +632,43 @@
   }
   @media (min-width: 768px) { .hero-bg { background-image: url('{{ url_for("static", filename="img/hero-1600.jpg") }}'); } }
   @media (min-width: 1700px) { .hero-bg { background-image: url('{{ url_for("static", filename="img/hero-bride.jpg") }}'); } }
+
+  /* ---------- Phones ---------- */
+  .mt-x { display: none; width: 15px; height: 15px; }
+  #menu-toggle[aria-expanded="true"] .mt-x { display: block; }
+  #menu-toggle[aria-expanded="true"] .mt-label { display: none; }
+  .proc-inline { display: none; }
+  /* the needle always carries a short tail of thread, so it reads as a needle, not a pencil */
+  .proc-needle .th { stroke-dashoffset: .8; }
+  .proc-head:hover .proc-needle .th { stroke-dashoffset: .7; }
+  @media (max-width: 767px) {
+    /* menu: the whole screen under the header, as on the reference */
+    .site-menu { position: fixed; top: 64px; left: 0; right: 0; bottom: 0; width: auto; max-height: none; border: 0;
+                 display: flex; flex-direction: column; overscroll-behavior: contain; }
+    .site-menu.hidden { display: none; }
+    .site-menu nav { flex: 1; display: flex; flex-direction: column; width: 100%; max-width: none; margin: 0; padding: 2.25rem 1.25rem 1.5rem !important; }
+    .site-menu .menu-main { border: 0 !important; padding: .7rem 0; font-size: 15px; letter-spacing: .1em; text-transform: uppercase; }
+    .site-menu .menu-sub { display: none; }
+    .site-menu .menu-cta { margin-top: auto; font-size: 13px; letter-spacing: .09em; text-transform: uppercase; padding: 1rem; }
+    html.menu-open { overflow: hidden; }
+
+    /* catalog cards: name, one price line, then the buttons level across the row */
+    .pcard { display: flex; flex-direction: column; }
+    .pcard-info { padding-top: .55rem; }
+    .pcard-name { font-family: 'Jost', 'Noto Sans Armenian', sans-serif; font-size: 14px; font-weight: 400; line-height: 1.35;
+                  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pcard-price-line { font-size: 13px; line-height: 1.4; }
+    .pcard-price-line span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pcard-price-line span + span { margin-left: 0 !important; font-size: 12px; }
+    .pcard-attrs { display: none; }
+    .quick-add { margin-top: auto; padding-top: .6rem; gap: .35rem; }
+    .quick-add button { padding: .5rem .2rem; font-size: 10.5px; letter-spacing: .08em; }
+
+    /* process: the photo opens with its step; the collage below goes */
+    .proc-collage { display: none; }
+    .proc-inline { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; margin-bottom: 1rem; }
+    .proc-p { padding-right: 0; }
+  }
 </style>
 </head>
 <body class="bg-cream text-ink antialiased">
@@ -640,7 +677,7 @@
 <header class="site-header fixed top-0 inset-x-0 z-50 bg-cream">
   <div class="hd">
     <div class="hd-left">
-      <button type="button" id="menu-toggle" class="hd-link" aria-expanded="false" aria-controls="mobile-menu">{{ t('nav_menu') }}</button>
+      <button type="button" id="menu-toggle" class="hd-link" aria-expanded="false" aria-controls="mobile-menu" aria-label="{{ t('nav_menu') }}"><span class="mt-label">{{ t('nav_menu') }}</span><svg class="mt-x" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 2l12 12M14 2L2 14" stroke="currentColor" stroke-width="1.1" fill="none"/></svg></button>
     </div>
     <a href="#top" class="hd-logo"><img src="{{ url_for('static', filename='img/logo-nav.png') }}" alt="Tiknik"></a>
     <div class="hd-right">
@@ -677,24 +714,24 @@
   <!-- The menu: everything lives here, on computers and phones -->
   <div id="mobile-menu" class="site-menu hidden">
     <nav class="max-w-6xl mx-auto px-5 py-4 flex flex-col text-[15px] text-charcoal">
-      <a href="#catalog" data-cat="all" class="js-cat-link py-2.5">{{ t('nav_catalog') }}</a>
-      <div class="flex flex-wrap gap-x-4 gap-y-1 pl-3 pb-2 text-sm text-ink/60">
+      <a href="#catalog" data-cat="all" class="js-cat-link py-2.5 menu-main">{{ t('nav_catalog') }}</a>
+      <div class="menu-sub flex flex-wrap gap-x-4 gap-y-1 pl-3 pb-2 text-sm text-ink/60">
         {% for cat in categories %}
           <a href="#catalog" data-cat="{{ cat.slug }}" class="js-cat-link py-1">{{ cat.name }}</a>
         {% endfor %}
       </div>
-      <a href="#process" class="py-2.5 border-t border-line/40">{{ t('nav_process') }}</a>
-      <a href="#about" class="py-2.5 border-t border-line/40">{{ t('nav_about') }}</a>
-      {% if has_reviews %}<a href="#reviews" class="py-2.5 border-t border-line/40">{{ t('nav_reviews') }}</a>
-      {% else %}<button type="button" class="js-review-open text-left py-2.5 border-t border-line/40">{{ t('nav_reviews') }}</button>{% endif %}
-      <a href="#delivery" class="py-2.5 border-t border-line/40">{{ t('nav_delivery') }}</a>
-      <div class="flex flex-wrap gap-x-4 gap-y-1 pl-3 pb-2 text-sm text-ink/75">
+      <a href="#process" class="py-2.5 border-t border-line/40 menu-main">{{ t('nav_process') }}</a>
+      <a href="#about" class="py-2.5 border-t border-line/40 menu-main">{{ t('nav_about') }}</a>
+      {% if has_reviews %}<a href="#reviews" class="py-2.5 border-t border-line/40 menu-main">{{ t('nav_reviews') }}</a>
+      {% else %}<button type="button" class="js-review-open text-left py-2.5 border-t border-line/40 menu-main">{{ t('nav_reviews') }}</button>{% endif %}
+      <a href="#delivery" class="py-2.5 border-t border-line/40 menu-main">{{ t('nav_delivery') }}</a>
+      <div class="menu-sub flex flex-wrap gap-x-4 gap-y-1 pl-3 pb-2 text-sm text-ink/75">
         {% for k in ['local', 'intl', 'pack', 'cond'] %}
           <a href="#dl-{{ k }}" data-dl="{{ k }}" class="js-dl-link py-1">{{ t('dl_%s_title' % k) }}</a>
         {% endfor %}
       </div>
-      <a href="#contact" class="py-2.5 border-t border-line/40">{{ t('nav_contact') }}</a>
-      <a href="#contact" class="sm:hidden mt-3 text-center text-sm tracking-wide bg-charcoal text-cream px-4 py-3">{{ t('book_fitting') }}</a>
+      <a href="#contact" class="py-2.5 border-t border-line/40 menu-main">{{ t('nav_contact') }}</a>
+      <a href="#contact" class="menu-cta sm:hidden mt-3 text-center text-sm tracking-wide bg-charcoal text-cream px-4 py-3">{{ t('book_fitting') }}</a>
     </nav>
   </div>
 </header>
@@ -745,7 +782,10 @@
                 </g>
               </svg>
             </button>
-            <div class="proc-body"><div><p class="proc-p">{{ t('stage%d_text' % i) }}</p></div></div>
+            <div class="proc-body"><div>
+              <img class="proc-inline" src="{{ url_for('static', filename='img/process/%02d.jpg' % [4, 3, 8, 1, 6, 10][i - 1]) }}" alt="" loading="lazy">
+              <p class="proc-p">{{ t('stage%d_text' % i) }}</p>
+            </div></div>
           </li>
         {% endfor %}
       </ol>

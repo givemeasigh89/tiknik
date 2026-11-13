@@ -1543,6 +1543,7 @@
     if (!mobileMenu) return;
     mobileMenu.classList.toggle("hidden", !open);
     menuToggle.setAttribute("aria-expanded", open ? "true" : "false");
+    document.documentElement.classList.toggle("menu-open", open);
   }
   if (menuToggle) {
     menuToggle.addEventListener("click", function () {
