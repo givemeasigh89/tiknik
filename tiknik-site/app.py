@@ -267,6 +267,11 @@ def init_db():
 
     if "item_id" not in _table_columns(db, "reviews"):
         db.execute("ALTER TABLE reviews ADD COLUMN item_id INTEGER")
+    # The order reviews are shown in, set with the arrows in /admin; starts as newest first.
+    if "position" not in _table_columns(db, "reviews"):
+        db.execute("ALTER TABLE reviews ADD COLUMN position INTEGER")
+        for n, row in enumerate(db.execute("SELECT id FROM reviews ORDER BY created_at DESC, id DESC").fetchall()):
+            db.execute("UPDATE reviews SET position = ? WHERE id = ?", (n, row["id"]))
 
     db.execute(
         """CREATE TABLE IF NOT EXISTS settings (
@@ -746,7 +751,7 @@ def api_reviews():
     db = get_db()
     rows = db.execute("SELECT r.id, r.name, r.text, r.photos, r.created_at, r.item_id, i.name AS item_name "
                       "FROM reviews r LEFT JOIN items i ON i.id = r.item_id WHERE r.status = 'approved' "
-                      "ORDER BY r.created_at DESC, r.id DESC").fetchall()
+                      "ORDER BY r.position, r.id DESC").fetchall()
     return jsonify([{"id": r["id"], "name": r["name"], "text": r["text"], "photos": json.loads(r["photos"] or "[]"),
                      "date": (r["created_at"] or "")[:10], "item_id": r["item_id"], "item": r["item_name"]}
                     for r in rows])
@@ -776,8 +781,10 @@ def api_review():
         saved.append(filename)
 
     db = get_db()
-    db.execute("INSERT INTO reviews (name, text, photos, item_id) VALUES (?,?,?,?)",
-               (name, text, json.dumps(saved), existing_item_id(db, request.form.get("item_id"))))
+    first = db.execute("SELECT MIN(position) FROM reviews").fetchone()[0]
+    db.execute("INSERT INTO reviews (name, text, photos, item_id, position) VALUES (?,?,?,?,?)",
+               (name, text, json.dumps(saved), existing_item_id(db, request.form.get("item_id")),
+                (first if first is not None else 1) - 1))
     db.commit()
     return jsonify({"ok": True})
 
@@ -864,7 +871,7 @@ def admin():
     inquiries = [dict(r) for r in db.execute("SELECT * FROM inquiries ORDER BY id DESC LIMIT 200")]
     category_names = {c["slug"]: c["name"] for c in categories}
     reviews = []
-    for r in db.execute("SELECT * FROM reviews ORDER BY status = 'approved', id DESC"):
+    for r in db.execute("SELECT * FROM reviews ORDER BY status = 'approved', position, id DESC"):
         d = dict(r)
         d["photos"] = json.loads(r["photos"] or "[]")
         reviews.append(d)
@@ -1311,6 +1318,16 @@ def admin_review(review_id, action):
         if action in ("approved", "pending"):
             db.execute("UPDATE reviews SET status = ? WHERE id = ?", (action, review_id))
             flash("Review published." if action == "approved" else "Review hidden from the site.", "ok")
+        elif action in ("up", "down"):
+            # Swap with the neighbouring published review (the order visitors see).
+            ids = [row["id"] for row in db.execute(
+                "SELECT id FROM reviews WHERE status = ? ORDER BY position, id DESC", (review["status"],))]
+            k = ids.index(review_id)
+            j = k - 1 if action == "up" else k + 1
+            if 0 <= j < len(ids):
+                ids[k], ids[j] = ids[j], ids[k]
+                for n, rid in enumerate(ids):
+                    db.execute("UPDATE reviews SET position = ? WHERE id = ?", (n, rid))
         elif action == "delete":
             for filename in json.loads(review["photos"] or "[]"):
                 path = os.path.join(REVIEWS_DIR, os.path.basename(filename))

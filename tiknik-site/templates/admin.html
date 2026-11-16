@@ -511,7 +511,7 @@
       <h2 class="font-serif text-3xl text-charcoal">Reviews
         {% if pending %}<span class="text-base align-middle ml-1 rounded-full bg-gold text-cream px-2.5 py-0.5">{{ pending|length }} to check</span>{% endif %}
       </h2>
-      <p class="text-sm text-ink/55 mt-1 mb-5">Clients send reviews from the site. They appear there only after you publish them.</p>
+      <p class="text-sm text-ink/55 mt-1 mb-5">Clients send reviews from the site. They appear there only after you publish them. Published reviews show on the site in this order; move them with ↑ ↓.</p>
       {% if reviews %}
         <ul class="flex flex-col divide-y divide-charcoal/10 border-y border-charcoal/10">
           {% for r in reviews %}
@@ -533,6 +533,12 @@
                 <p class="text-ink/75 mt-1 whitespace-pre-line">{{ r.text }}</p>
               </div>
               <div class="flex flex-col gap-1.5 shrink-0">
+                {% if r.status == 'approved' %}
+                  <div class="flex gap-1.5" title="Order on the site">
+                    <form method="POST" action="{{ url_for('admin_review', review_id=r.id, action='up') }}" class="flex-1"><button class="btn btn-ghost !py-1.5 w-full" aria-label="Move up">↑</button></form>
+                    <form method="POST" action="{{ url_for('admin_review', review_id=r.id, action='down') }}" class="flex-1"><button class="btn btn-ghost !py-1.5 w-full" aria-label="Move down">↓</button></form>
+                  </div>
+                {% endif %}
                 <form method="POST" action="{{ url_for('admin_review', review_id=r.id, action='pending' if r.status == 'approved' else 'approved') }}">
                   <button class="btn {{ 'btn-ghost' if r.status == 'approved' else 'btn-dark' }} !py-1.5 w-full">{{ 'Hide' if r.status == 'approved' else 'Publish' }}</button>
                 </form>

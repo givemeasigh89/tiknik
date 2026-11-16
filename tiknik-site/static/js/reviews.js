@@ -26,53 +26,164 @@
   }
 
   // ---- Cards ----
+  // Each review is a spread: its photo large, the words beside it. Long words end with "Read more";
+  // the photo or "Read more" opens the review whole (all photos, the full text, the dress it's about).
   var reviews = [];
 
   function cardHtml(r, i) {
     var photo = r.photos.length
-      ? '<div class="review-photo" data-i="' + i + '" data-p="0"><img src="' + photoUrl(r.photos[0]) + '" alt="" loading="lazy">' +
-        (r.photos.length > 1 ? '<span class="count">1 / ' + r.photos.length + "</span>" : "") + "</div>"
+      ? '<button type="button" class="rv-photo js-rv-open" data-i="' + i + '" aria-label="' + esc(r.name) + '">' +
+        '<img src="' + photoUrl(r.photos[0]) + '" alt="" loading="lazy">' +
+        (r.photos.length > 1 ? '<span class="rv-dots">' + new Array(r.photos.length + 1).join("<i></i>") + "</span>" : "") +
+        "</button>"
       : "";
     return (
-      '<article class="review-card' + (r.photos.length ? "" : " text-only") + '">' +
+      '<article class="rv' + (r.photos.length ? "" : " rv--text") + (r.text.length < 150 ? " rv--short" : "") + '">' +
       photo +
-      '<div class="px-6 py-6 flex-1 flex flex-col">' +
-      '<span class="font-serif text-5xl leading-none text-gold/70 -mb-3 select-none" aria-hidden="true">“</span>' +
-      '<p class="review-quote font-serif text-[17px] leading-relaxed text-charcoal/90 whitespace-pre-line flex-1">' + esc(r.text) + "</p>" +
-      '<p class="mt-5 font-serif italic text-base text-ink/75">' + esc(r.name) + "</p>" +
-      (r.item ? '<a href="#item-' + r.item_id + '" class="review-item">' + esc(r.item) + "</a>" : "") +
-      "</div></article>"
+      '<div class="rv-body">' +
+      '<p class="rv-quote">' + esc(r.text) + "</p>" +
+      '<button type="button" class="rv-more js-rv-open" data-i="' + i + '" hidden>' + esc(t("review_more", "Read more")) + "</button>" +
+      '<div class="rv-sign"><p class="rv-name">' + esc(r.name) + "</p>" +
+      (r.item ? '<a href="#item-' + r.item_id + '" class="rv-item">' + esc(r.item) + "</a>" : "") +
+      "</div></div></article>"
     );
+  }
+
+  var nav = document.getElementById("rv-nav");
+  var count = document.getElementById("rv-count");
+
+  function pad(n) {
+    return (n < 10 ? "0" : "") + n;
+  }
+
+  // Which card is at the start of the row, for the counter and the arrows.
+  function currentIndex() {
+    var cards = track.children;
+    var start = track.getBoundingClientRect().left + parseFloat(getComputedStyle(track).paddingLeft);
+    var best = 0;
+    var bestDist = Infinity;
+    for (var k = 0; k < cards.length; k++) {
+      var d = Math.abs(cards[k].getBoundingClientRect().left - start);
+      if (d < bestDist) {
+        bestDist = d;
+        best = k;
+      }
+    }
+    return best;
+  }
+
+  function updateNav() {
+    if (!nav) return;
+    var scrollable = track.scrollWidth > track.clientWidth + 2;
+    nav.hidden = !scrollable;
+    if (!scrollable) return;
+    var k = currentIndex();
+    count.textContent = pad(k + 1) + " / " + pad(reviews.length);
+    nav.querySelector('[data-dir="-1"]').disabled = track.scrollLeft < 4;
+    nav.querySelector('[data-dir="1"]').disabled = track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
+  }
+
+  // "Read more" only where the words don't fit.
+  function markLong() {
+    track.querySelectorAll(".rv").forEach(function (card) {
+      var q = card.querySelector(".rv-quote");
+      card.querySelector(".rv-more").hidden = q.scrollHeight <= q.clientHeight + 2;
+    });
   }
 
   function render() {
     document.getElementById("reviews-empty").classList.toggle("hidden", reviews.length > 0);
     track.classList.toggle("hidden", !reviews.length);
     track.innerHTML = reviews.map(cardHtml).join("");
-    // Few cards: centre them instead of leaving them against the left edge.
     requestAnimationFrame(function () {
-      track.classList.toggle("centered", track.scrollWidth <= track.clientWidth + 1);
+      markLong();
+      updateNav();
     });
   }
 
-  // Tapping a photo shows the review's next photo.
-  if (track) track.addEventListener("click", function (e) {
-    var box = e.target.closest(".review-photo");
-    if (!box) return;
-    var r = reviews[parseInt(box.getAttribute("data-i"), 10)];
-    if (r.photos.length < 2) return;
-    var p = (parseInt(box.getAttribute("data-p"), 10) + 1) % r.photos.length;
-    box.setAttribute("data-p", p);
-    var img = box.querySelector("img");
-    img.style.opacity = "0";
-    setTimeout(function () {
-      img.src = photoUrl(r.photos[p]);
-      img.onload = function () {
-        img.style.opacity = "1";
-      };
-    }, 180);
-    box.querySelector(".count").textContent = p + 1 + " / " + r.photos.length;
+  if (nav) nav.addEventListener("click", function (e) {
+    var btn = e.target.closest("[data-dir]");
+    if (!btn) return;
+    var cards = track.children;
+    var k = Math.max(0, Math.min(cards.length - 1, currentIndex() + parseInt(btn.getAttribute("data-dir"), 10)));
+    track.scrollTo({ left: cards[k].offsetLeft - parseFloat(getComputedStyle(track).paddingLeft) });
   });
+  if (track) {
+    var navTimer;
+    track.addEventListener("scroll", function () {
+      clearTimeout(navTimer);
+      navTimer = setTimeout(updateNav, 80);
+    });
+  }
+
+  // ---- One review, opened ----
+  var view = document.getElementById("review-view");
+  var viewImg = document.getElementById("rv-view-img");
+  var viewCount = document.getElementById("rv-view-count");
+  var openR = null;
+  var openP = 0;
+
+  function showPhoto(p) {
+    openP = (p + openR.photos.length) % openR.photos.length;
+    viewImg.style.opacity = "0";
+    var src = photoUrl(openR.photos[openP]);
+    var pre = new Image();
+    pre.onload = pre.onerror = function () {
+      viewImg.src = src;
+      viewImg.style.opacity = "1";
+    };
+    pre.src = src;
+    viewCount.textContent = openP + 1 + " / " + openR.photos.length;
+  }
+
+  function openReview(i) {
+    openR = reviews[i];
+    if (!openR || !view) return;
+    view.classList.toggle("no-photo", !openR.photos.length);
+    view.classList.toggle("one-photo", openR.photos.length < 2);
+    if (openR.photos.length) showPhoto(0);
+    document.getElementById("rv-view-quote").textContent = openR.text;
+    document.getElementById("rv-view-name").textContent = openR.name;
+    var dress = document.getElementById("rv-view-dress");
+    dress.hidden = !openR.item;
+    if (openR.item) {
+      dress.setAttribute("href", "#item-" + openR.item_id);
+      document.getElementById("rv-view-dress-name").textContent = openR.item;
+    }
+    if (view.showModal) view.showModal();
+    else view.setAttribute("open", "");
+  }
+
+  function closeReview() {
+    if (view.close) view.close();
+    else view.removeAttribute("open");
+  }
+
+  if (track) track.addEventListener("click", function (e) {
+    var opener = e.target.closest(".js-rv-open");
+    if (opener) openReview(parseInt(opener.getAttribute("data-i"), 10));
+  });
+  if (view) {
+    view.querySelector(".rv-close").addEventListener("click", closeReview);
+    view.querySelector(".rv-view-prev").addEventListener("click", function () { showPhoto(openP - 1); });
+    view.querySelector(".rv-view-next").addEventListener("click", function () { showPhoto(openP + 1); });
+    view.addEventListener("keydown", function (e) {
+      if (!openR || openR.photos.length < 2) return;
+      if (e.key === "ArrowLeft") showPhoto(openP - 1);
+      if (e.key === "ArrowRight") showPhoto(openP + 1);
+    });
+    // Swipe between photos on phones.
+    var x0 = null;
+    viewImg.addEventListener("touchstart", function (e) { x0 = e.touches[0].clientX; }, { passive: true });
+    viewImg.addEventListener("touchend", function (e) {
+      if (x0 === null || !openR || openR.photos.length < 2) return;
+      var dx = e.changedTouches[0].clientX - x0;
+      if (Math.abs(dx) > 40) showPhoto(openP + (dx < 0 ? 1 : -1));
+      x0 = null;
+    });
+    // "View the dress": close the review; the link itself opens the piece.
+    document.getElementById("rv-view-dress").addEventListener("click", closeReview);
+  }
 
   if (track) fetch("/api/reviews")
     .then(function (res) {
@@ -86,7 +197,8 @@
       render();
     });
   if (track) window.addEventListener("resize", function () {
-    track.classList.toggle("centered", track.scrollWidth <= track.clientWidth + 1);
+    markLong();
+    updateNav();
   });
 
   // ---- Form ----
