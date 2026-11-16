@@ -91,10 +91,47 @@
     });
   }
 
+  // Computers: a wall of reviews in columns, read left to right (the order set in /admin), the first
+  // eight and then "All reviews". Phones: a row to swipe, two in view.
+  var WALL_LIMIT = 8;
+  var showAll = false;
+  var wallCols = -1;
+  var allBtn = null;
+
+  function columnsFor(w) {
+    return w >= 1100 ? 4 : w >= 768 ? 3 : 0;
+  }
+
   function render() {
     document.getElementById("reviews-empty").classList.toggle("hidden", reviews.length > 0);
     track.classList.toggle("hidden", !reviews.length);
-    track.innerHTML = reviews.map(cardHtml).join("");
+    var cols = columnsFor(window.innerWidth);
+    wallCols = cols;
+    track.classList.toggle("rv-wall", cols > 0);
+    if (!cols) {
+      track.innerHTML = reviews.map(cardHtml).join("");
+    } else {
+      var shown = showAll ? reviews.length : Math.min(WALL_LIMIT, reviews.length);
+      var html = [];
+      for (var c = 0; c < cols; c++) {
+        var cards = "";
+        for (var i = c; i < shown; i += cols) cards += cardHtml(reviews[i], i);
+        html.push('<div class="rv-col">' + cards + "</div>");
+      }
+      track.innerHTML = html.join("");
+    }
+    if (!allBtn) {
+      allBtn = document.createElement("button");
+      allBtn.type = "button";
+      allBtn.className = "rv-all";
+      allBtn.addEventListener("click", function () {
+        showAll = true;
+        render();
+      });
+      track.parentNode.insertBefore(allBtn, track.nextSibling);
+    }
+    allBtn.textContent = t("review_all", "All reviews") + " · " + reviews.length;
+    allBtn.hidden = !cols || showAll || reviews.length <= WALL_LIMIT;
     requestAnimationFrame(function () {
       markLong();
       updateNav();
@@ -197,6 +234,7 @@
       render();
     });
   if (track) window.addEventListener("resize", function () {
+    if (reviews.length && columnsFor(window.innerWidth) !== wallCols) render();
     markLong();
     updateNav();
   });

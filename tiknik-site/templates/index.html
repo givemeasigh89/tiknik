@@ -548,29 +548,43 @@
   .rv--text .rv-quote { font-size: 21px; -webkit-line-clamp: 9; }
   .rv--short .rv-quote { font-size: 22px; line-height: 1.45; }
   .rv--text .rv-quote, .rv--text.rv--short .rv-quote { font-size: 24px; }
-  /* Reviews read like a row of the catalog: the photo, then the words under it.
-     Phones: two-thirds of the screen, the next one peeking; tablets: three in view; laptops: four. */
-  @media (min-width: 0px) {
-    .rv { width: 68vw; }
-    .rv-body { justify-content: flex-start; padding: 1.15rem .1rem 0; background: #F6F5F1; }
-    .rv { background: transparent; }
-    .rv-quote { font-size: 17px; line-height: 1.5; -webkit-line-clamp: 5; }
-    .rv--short .rv-quote { font-size: 19px; line-height: 1.45; }
-    .rv-sign { padding-top: .9rem; }
+  /* Phones: a row to swipe, two reviews in view */
+  .rv { width: calc((100vw - 2.5rem - .75rem) / 2.1); }
+  .reviews-track { gap: .75rem; }
+  .rv { background: transparent; }
+  .rv-body { justify-content: flex-start; padding: .8rem 0 0; }
+  .rv-quote { font-size: 15px; line-height: 1.45; -webkit-line-clamp: 6; }
+  .rv--short .rv-quote { font-size: 16px; }
+  .rv-sign { padding-top: .6rem; flex-wrap: wrap; gap: .2rem .75rem; }
+  .rv-name { font-size: 14px; }
+  .rv-item { font-size: 10px; }
+  .rv-more { font-size: 10.5px; margin-top: .45rem; }
+  .rv--text { background: #EFEDE7; }
+  .rv--text .rv-body { justify-content: center; padding: 1.1rem .9rem; }
+  .rv--text .rv-quote, .rv--text.rv--short .rv-quote { font-size: 17px; -webkit-line-clamp: 11; }
+
+  /* Computers: a wall, four columns read left to right; the 2nd and 4th sit a little lower */
+  .rv-all { display: block; margin: 2.5rem auto 0; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: #1C1B19;
+            border: 1px solid rgba(28,27,25,.3); padding: .9rem 2.2rem; transition: background .2s ease, color .2s ease; }
+  .rv-all:hover { background: #1C1B19; color: #F6F5F1; }
+  .rv-all[hidden] { display: none; }
+  @media (min-width: 768px) {
+    .reviews-track.rv-wall { display: flex; align-items: flex-start; gap: 1.5rem; overflow: visible; scroll-snap-type: none;
+                             max-width: 1180px; margin: 0 auto; padding: 0 2rem; }
+    .rv-col { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 2.5rem; }
+    .rv-col:nth-child(even) { padding-top: 3.5rem; }
+    .rv-wall .rv { width: auto; }
+    .rv-wall .rv-photo { aspect-ratio: auto; }
+    .rv-wall .rv-photo img { height: auto; display: block; }
+    .rv-body { padding-top: 1.05rem; }
+    .rv-quote { font-size: 17px; line-height: 1.55; -webkit-line-clamp: 7; }
+    .rv--short .rv-quote { font-size: 20px; line-height: 1.45; }
     .rv-name { font-size: 15px; }
     .rv-item { font-size: 10.5px; }
-    .rv-more { font-size: 11px; margin-top: .55rem; }
-    .rv--text { background: #EFEDE7; }
-    .rv--text .rv-body { justify-content: center; background: transparent; padding: 1.75rem 1.5rem; }
-    .rv--text .rv-quote { font-size: 20px; line-height: 1.5; -webkit-line-clamp: 13; }
-    .rv--text.rv--short .rv-quote { font-size: 23px; }
-  }
-  @media (min-width: 768px) {
-    .reviews-track { gap: 1.25rem; }
-    .rv { width: calc((100vw - 4rem - 2.5rem) / 3); }
-  }
-  @media (min-width: 1100px) {
-    .rv { width: calc((min(100vw, 1180px) - 4rem - 3.75rem) / 4); }
+    .rv-more { font-size: 11px; }
+    .rv--text .rv-body { padding: 2rem 1.6rem; }
+    .rv--text .rv-quote { font-size: 20px; line-height: 1.5; -webkit-line-clamp: 12; }
+    .rv--text.rv--short .rv-quote { font-size: 24px; }
   }
   .rv-nav { display: none; align-items: center; gap: .9rem; }
   @media (min-width: 768px) { .rv-nav:not([hidden]) { display: flex; } }
