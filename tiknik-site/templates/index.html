@@ -520,73 +520,64 @@
   .qty-btn:hover { border-color: #1C1B19; }
 
   /* Reviews */
-  /* Reviews: one at a time. The photo and her words side by side, the row of everyone below. */
-  .reviews-track { max-width: 1180px; margin: 0 auto; padding: 0 1.25rem; outline: none; }
+  /* Reviews: the brides. Portraits signed with her name and the dress; her words open from them. */
+  .reviews-track { max-width: 1180px; margin: 0 auto; padding: 0 1.25rem; }
   @media (min-width: 640px) { .reviews-track { padding: 0 2rem; } }
-  .rvx-stage { display: grid; gap: 1.5rem; }
-  @media (min-width: 900px) {
-    .rvx-stage { grid-template-columns: auto minmax(0, 1fr); column-gap: clamp(3rem, 6vw, 6rem); align-items: center; }
+  .rb-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .6rem; }
+  @media (min-width: 768px) { .rb-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.25rem; } }
+  .rb-tile { position: relative; display: block; width: 100%; aspect-ratio: 4 / 5; overflow: hidden; background: #E4E1D8; text-align: left; cursor: pointer; }
+  .rb-tile img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 1.4s cubic-bezier(.16,1,.3,1); }
+  .rb-shade { position: absolute; inset: 0; background: linear-gradient(to top, rgba(20,19,17,.62) 0%, rgba(20,19,17,.18) 34%, rgba(20,19,17,0) 55%);
+              transition: background .6s ease; }
+  .rb-cap { position: absolute; left: 0; right: 0; bottom: 0; padding: .8rem .85rem .9rem; display: flex; flex-direction: column; gap: .2rem; color: #F6F5F1; }
+  .rb-name { font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-size: 17px; line-height: 1.15; }
+  .rb-dress { font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase; opacity: .85; }
+  .rb-ex { display: none; }
+  @media (min-width: 768px) {
+    .rb-cap { padding: 1.25rem 1.4rem 1.35rem; gap: .3rem; }
+    .rb-name { font-size: 24px; }
+    .rb-dress { font-size: 11px; }
   }
-  .rvx-photo { position: relative; display: block; overflow: hidden; background: #E4E1D8; cursor: zoom-in;
-               width: 100%; aspect-ratio: 4 / 5; }
-  @media (max-width: 899px) { .rvx-photo { max-height: 46svh; width: auto; margin: 0 auto; max-width: 100%; } }
-  @media (min-width: 900px) { .rvx-photo { height: clamp(360px, 52vh, 540px); width: auto; } }
-  .rvx-photo img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 1.2s cubic-bezier(.16,1,.3,1); }
-  .rvx-photo:hover img { transform: scale(1.03); }
-  .rvx-caption { position: absolute; left: .75rem; bottom: .75rem; font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
-                 color: #1C1B19; background: rgba(246,245,241,.92); padding: .3rem .55rem; }
-  .rvx-caption:empty { display: none; }
-  .rvx-dots { position: absolute; left: 0; right: 0; bottom: .8rem; display: flex; justify-content: center; gap: .35rem; }
-  .rvx-dots i { width: 5px; height: 5px; border-radius: 50%; background: rgba(246,245,241,.6); }
-  .rvx-dots i:first-child { background: #F6F5F1; }
-  .rvx-stage.no-pic { grid-template-columns: minmax(0, 1fr); }
-  .rvx-stage.no-pic .rvx-photo { display: none; }
-  .rvx-stage.no-pic .rvx-text { max-width: 44rem; margin: 0 auto; text-align: center; align-items: center; min-height: clamp(260px, 40vh, 420px); justify-content: center; }
-
-  .rvx-text { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; }
-  .rvx-quote { font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-size: 20px; line-height: 1.55; color: #1C1B19;
-               white-space: pre-line; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 8; overflow: hidden; max-width: 34em; }
-  .rvx-quote.is-short { font-size: 26px; line-height: 1.4; }
-  @media (min-width: 900px) {
-    .rvx-quote { font-size: 23px; -webkit-line-clamp: 10; }
-    .rvx-quote.is-short { font-size: 34px; line-height: 1.3; }
+  /* computers: hovering a portrait brings up the start of her words */
+  @media (hover: hover) and (pointer: fine) and (min-width: 768px) {
+    .rb-ex { display: block; position: absolute; left: 1.4rem; right: 1.4rem; bottom: 5.4rem; color: #F6F5F1;
+             font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-size: 18px; line-height: 1.45;
+             opacity: 0; transform: translateY(10px); transition: opacity .45s ease, transform .7s cubic-bezier(.16,1,.3,1); }
+    .rb-tile:hover img, .rb-tile:focus-visible img { transform: scale(1.045); }
+    .rb-tile:hover .rb-shade, .rb-tile:focus-visible .rb-shade { background: linear-gradient(to top, rgba(20,19,17,.78) 0%, rgba(20,19,17,.45) 55%, rgba(20,19,17,.1) 100%); }
+    .rb-tile:hover .rb-ex, .rb-tile:focus-visible .rb-ex { opacity: 1; transform: none; }
   }
-  .rvx-more { margin-top: .9rem; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: #1C1B19;
-              border-bottom: 1px solid rgba(28,27,25,.35); padding-bottom: 1px; }
-  .rvx-more:hover { border-color: #1C1B19; }
-  .rvx-name { margin-top: 1.5rem; font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-style: italic; font-size: 18px; color: rgba(28,27,25,.75); }
-  .rvx-dress { margin-top: .5rem; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: rgba(28,27,25,.7); }
-  .rvx-dress b { font-weight: 400; color: #1C1B19; border-bottom: 1px solid rgba(28,27,25,.35); padding-bottom: 1px; margin-left: .35rem; }
-  .rvx-dress:hover b { border-color: #1C1B19; }
-  .rvx-dress[hidden] { display: none; }
-  .rvx-nav { display: flex; align-items: center; gap: .9rem; margin-top: 2rem; }
-  .rvx-count { font-size: 12px; letter-spacing: .1em; color: rgba(28,27,25,.7); font-variant-numeric: tabular-nums; min-width: 3.6rem; text-align: center; }
-  .single .rvx-nav, .single .rvx-strip { display: none; }
-
-  /* changing review: the old one fades, the new one settles in from the side it came from */
-  .rvx-photo img, .rvx-text > * { transition: opacity .22s ease, transform .22s ease; }
-  .rvx-stage:not(.is-in) .rvx-photo img { opacity: 0; }
-  .rvx-stage:not(.is-in) .rvx-text > :not(.rvx-nav) { opacity: 0; transform: translateX(calc(var(--dir, 1) * 14px)); }
-  .rvx-stage.is-in .rvx-photo img { opacity: 1; transition: opacity .5s ease, transform 1.2s cubic-bezier(.16,1,.3,1); }
-  .rvx-stage.is-in .rvx-text > * { opacity: 1; transform: none; transition: opacity .5s ease .06s, transform .7s cubic-bezier(.16,1,.3,1) .06s; }
-
-  /* everyone who wrote */
-  .rvx-strip { display: flex; gap: 1rem; margin: -.5rem 0 2rem; padding: .25rem 0 1.5rem; border-bottom: 1px solid rgba(28,27,25,.14);
-               overflow-x: auto; scrollbar-width: none; scroll-snap-type: x proximity; }
-  .rvx-strip::-webkit-scrollbar { display: none; }
-  .rvx-thumb { flex: 0 0 auto; width: 64px; display: flex; flex-direction: column; align-items: center; gap: .45rem; scroll-snap-align: center;
-               opacity: .5; transition: opacity .3s ease; }
-  .rvx-thumb:hover, .rvx-thumb.is-active { opacity: 1; }
-  .rvx-thumb img, .rvx-initial { width: 64px; height: 80px; object-fit: cover; display: block; background: #E4E1D8; outline: 1px solid transparent; outline-offset: 3px;
-                                 transition: outline-color .3s ease; }
-  .rvx-initial { display: flex; align-items: center; justify-content: center; font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-size: 28px; color: #1C1B19; }
-  .rvx-thumb.is-active img, .rvx-thumb.is-active .rvx-initial { outline-color: #1C1B19; }
-  .rvx-thumb-name { max-width: 100%; font-size: 10.5px; letter-spacing: .06em; color: #1C1B19; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  @media (min-width: 900px) { .rvx-strip { gap: 1.25rem; } }
-  @media (max-width: 899px) { .rvx-text { align-items: flex-start; } .rvx-nav { margin-top: 1.5rem; } }
-  @media (prefers-reduced-motion: reduce) {
-    .rvx-photo img, .rvx-text > *, .rvx-stage.is-in .rvx-photo img, .rvx-stage.is-in .rvx-text > * { transition: none; transform: none; }
+  /* reviews without photos: her words, set like a page of quotes under the portraits */
+  .rb-words { display: grid; gap: 0 3.5rem; margin-top: 2.75rem; }
+  @media (min-width: 768px) { .rb-words { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 3.5rem; } }
+  .rb-word { display: flex; flex-direction: column; gap: 1rem; text-align: left; padding: 1.75rem 0; border-top: 1px solid rgba(28,27,25,.14); cursor: pointer; }
+  .rb-wq { font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-size: 19px; line-height: 1.5; color: #1C1B19;
+           display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; overflow: hidden; }
+  @media (min-width: 768px) { .rb-wq { font-size: 22px; } }
+  .rb-wsign { display: flex; align-items: baseline; gap: .9rem; }
+  .rb-wname { font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-style: italic; font-size: 17px; color: rgba(28,27,25,.75); }
+  .rb-wdress { font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: rgba(28,27,25,.7); }
+  .rb-word:hover .rb-wq { color: rgba(28,27,25,.75); }
+  .rb-word:focus-visible { outline: 1px solid #1C1B19; outline-offset: 4px; }
+  /* (older) a review without photos as a tile */
+  .rb-tile--text { background: #EFEDE7; display: flex; flex-direction: column; justify-content: center; padding: 1rem .9rem 3.6rem; }
+  .rb-q { font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-size: 15px; line-height: 1.45; color: #1C1B19;
+          display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 7; overflow: hidden; }
+  .rb-tile--text .rb-cap { color: #1C1B19; }
+  .rb-tile--text .rb-name { font-style: italic; color: rgba(28,27,25,.75); }
+  @media (min-width: 768px) {
+    .rb-tile--text { padding: 2rem 1.75rem 5rem; }
+    .rb-q { font-size: 21px; line-height: 1.5; -webkit-line-clamp: 9; }
+    .rb-tile--text .rb-cap { padding: 0 1.75rem 1.6rem; }
+    .rb-tile--text .rb-name { font-size: 20px; }
   }
+  .rb-tile--text:hover { background: #E9E6DF; }
+  .rb-tile:focus-visible { outline: 1px solid #1C1B19; outline-offset: 3px; }
+  .rb-more { display: block; margin: 2.25rem auto 0; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: #1C1B19;
+             border: 1px solid rgba(28,27,25,.3); padding: .9rem 2.2rem; transition: background .2s ease, color .2s ease; }
+  .rb-more:hover { background: #1C1B19; color: #F6F5F1; }
+  .rb-more[hidden] { display: none; }
+  @media (prefers-reduced-motion: reduce) { .rb-tile img, .rb-ex, .rb-shade { transition: none; } }
 
   .rv-name { font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-style: italic; font-size: 17px; color: rgba(28,27,25,.75); }
   .rv-arrow { width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; color: #1C1B19; border: 1px solid rgba(28,27,25,.2);
@@ -955,7 +946,7 @@
     </div>
   </div>
   <p id="reviews-empty" class="hidden"></p>
-  <div id="reviews-track" class="reviews-track" tabindex="-1"></div>
+  <div id="reviews-track" class="reviews-track"></div>
 </section>
 {% endif %}
 
