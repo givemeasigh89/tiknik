@@ -352,6 +352,7 @@
 
   .hd-fitting { display: none; }
   @media (min-width: 768px) { .hd-fitting { display: inline-flex; } }
+  @media (max-width: 1199px) { .hd-wide { display: none; } }
   .hd-left, .hd-right { min-width: 0; }
   @media (max-width: 639px) {
     .hd-logo img { height: 36px; }
@@ -547,15 +548,29 @@
   .rv--text .rv-quote { font-size: 21px; -webkit-line-clamp: 9; }
   .rv--short .rv-quote { font-size: 22px; line-height: 1.45; }
   .rv--text .rv-quote, .rv--text.rv--short .rv-quote { font-size: 24px; }
+  /* Reviews read like a row of the catalog: the photo, then the words under it.
+     Phones: two-thirds of the screen, the next one peeking; tablets: three in view; laptops: four. */
+  @media (min-width: 0px) {
+    .rv { width: 68vw; }
+    .rv-body { justify-content: flex-start; padding: 1.15rem .1rem 0; background: #F6F5F1; }
+    .rv { background: transparent; }
+    .rv-quote { font-size: 17px; line-height: 1.5; -webkit-line-clamp: 5; }
+    .rv--short .rv-quote { font-size: 19px; line-height: 1.45; }
+    .rv-sign { padding-top: .9rem; }
+    .rv-name { font-size: 15px; }
+    .rv-item { font-size: 10.5px; }
+    .rv-more { font-size: 11px; margin-top: .55rem; }
+    .rv--text { background: #EFEDE7; }
+    .rv--text .rv-body { justify-content: center; background: transparent; padding: 1.75rem 1.5rem; }
+    .rv--text .rv-quote { font-size: 20px; line-height: 1.5; -webkit-line-clamp: 13; }
+    .rv--text.rv--short .rv-quote { font-size: 23px; }
+  }
   @media (min-width: 768px) {
-    .rv { flex-direction: row; height: 470px; width: auto; }
-    .rv-photo { width: 376px; height: 100%; aspect-ratio: auto; flex: 0 0 auto; }
-    .rv-body { width: 400px; padding: 2.5rem 2.5rem 2.25rem; }
-    .rv-quote { font-size: 21px; line-height: 1.55; -webkit-line-clamp: 10; }
-    .rv--text .rv-body { width: 470px; padding: 3rem; }
-    .rv--short .rv-quote { font-size: 28px; line-height: 1.4; }
-    .rv--text .rv-quote { font-size: 25px; line-height: 1.5; -webkit-line-clamp: 10; }
-    .rv--text.rv--short .rv-quote { font-size: 30px; }
+    .reviews-track { gap: 1.25rem; }
+    .rv { width: calc((100vw - 4rem - 2.5rem) / 3); }
+  }
+  @media (min-width: 1100px) {
+    .rv { width: calc((min(100vw, 1180px) - 4rem - 3.75rem) / 4); }
   }
   .rv-nav { display: none; align-items: center; gap: .9rem; }
   @media (min-width: 768px) { .rv-nav:not([hidden]) { display: flex; } }
@@ -777,8 +792,8 @@
           <button type="button" class="prefs-done js-prefs-close">{{ t('prefs_done') }}</button>
         </div>
       </div>
-      {% if has_reviews %}<a href="#reviews" class="hd-link hd-fitting">{{ t('nav_reviews') }}</a>
-      {% else %}<button type="button" class="hd-link hd-fitting js-review-open">{{ t('nav_reviews') }}</button>{% endif %}
+      {% if has_reviews %}<a href="#reviews" class="hd-link hd-fitting hd-wide">{{ t('nav_reviews') }}</a>
+      {% else %}<button type="button" class="hd-link hd-fitting hd-wide js-review-open">{{ t('nav_reviews') }}</button>{% endif %}
       <a href="#contact" class="hd-link hd-fitting">{{ t('book_fitting') }}</a>
       <button type="button" id="cart-open" class="hd-link" aria-label="{{ t('cart') }}">{{ t('request_short') }} <span id="cart-count" class="hidden ml-1"></span></button>
     </div>
