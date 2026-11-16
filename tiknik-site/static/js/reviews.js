@@ -25,131 +25,147 @@
     return "/static/img/reviews/" + encodeURIComponent(file);
   }
 
-  // ---- Cards ----
-  // Each review is a spread: its photo large, the words beside it. Long words end with "Read more";
-  // the photo or "Read more" opens the review whole (all photos, the full text, the dress it's about).
+  // ---- Reviews: one at a time ----
+  // A spread: the client's photo large, her words beside it, the dress she wore. Under it, a row of
+  // everyone who wrote (their photo or the dress's), so it's clear there are more and any can be opened.
+  // Arrows, the row, keys and a swipe on the photo move between reviews; the photo opens the review whole.
   var reviews = [];
+  var cur = 0;
+  var curPhoto = 0;
 
-  function cardHtml(r, i) {
-    var photo = r.photos.length
-      ? '<button type="button" class="rv-photo js-rv-open" data-i="' + i + '" aria-label="' + esc(r.name) + '">' +
-        '<img src="' + photoUrl(r.photos[0]) + '" alt="" loading="lazy">' +
-        (r.photos.length > 1 ? '<span class="rv-dots">' + new Array(r.photos.length + 1).join("<i></i>") + "</span>" : "") +
-        "</button>"
-      : "";
-    return (
-      '<article class="rv' + (r.photos.length ? "" : " rv--text") + (r.text.length < 150 ? " rv--short" : "") + '">' +
-      photo +
-      '<div class="rv-body">' +
-      '<p class="rv-quote">' + esc(r.text) + "</p>" +
-      '<button type="button" class="rv-more js-rv-open" data-i="' + i + '" hidden>' + esc(t("review_more", "Read more")) + "</button>" +
-      '<div class="rv-sign"><p class="rv-name">' + esc(r.name) + "</p>" +
-      (r.item ? '<a href="#item-' + r.item_id + '" class="rv-item">' + esc(r.item) + "</a>" : "") +
-      "</div></div></article>"
-    );
+  function initial(name) {
+    return (String(name).trim()[0] || "·").toUpperCase();
   }
 
-  var nav = document.getElementById("rv-nav");
-  var count = document.getElementById("rv-count");
+  // The picture for a review: her own photo, else the dress she's writing about.
+  function pictureOf(r) {
+    if (r.photos.length) return { src: photoUrl(r.photos[0]), dress: false };
+    if (r.item_photo) return { src: "/static/img/products/" + encodeURIComponent(r.item_photo), dress: true };
+    return null;
+  }
+
+  var L_ARROW = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>';
+  var R_ARROW = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>';
 
   function pad(n) {
     return (n < 10 ? "0" : "") + n;
   }
 
-  // Which card is at the start of the row, for the counter and the arrows.
-  function currentIndex() {
-    var cards = track.children;
-    var start = track.getBoundingClientRect().left + parseFloat(getComputedStyle(track).paddingLeft);
-    var best = 0;
-    var bestDist = Infinity;
-    for (var k = 0; k < cards.length; k++) {
-      var d = Math.abs(cards[k].getBoundingClientRect().left - start);
-      if (d < bestDist) {
-        bestDist = d;
-        best = k;
+  function build() {
+    track.innerHTML =
+      '<div class="rvx-strip" role="tablist">' +
+      reviews
+        .map(function (r, i) {
+          var pic = pictureOf(r);
+          return '<button type="button" class="rvx-thumb" role="tab" data-i="' + i + '" aria-label="' + esc(r.name) + '">' +
+            (pic ? '<img src="' + pic.src + '" alt="" loading="lazy">' : '<span class="rvx-initial">' + esc(initial(r.name)) + "</span>") +
+            '<span class="rvx-thumb-name">' + esc(r.name) + "</span></button>";
+        })
+        .join("") +
+      "</div>" +
+      '<div class="rvx-stage">' +
+      '<button type="button" class="rvx-photo" aria-label="' + esc(t("review_more", "Read more")) + '"><img alt=""><span class="rvx-caption"></span><span class="rvx-dots"></span></button>' +
+      '<div class="rvx-text" aria-live="polite">' +
+      '<p class="rvx-quote"></p>' +
+      '<button type="button" class="rvx-more" hidden>' + esc(t("review_more", "Read more")) + "</button>" +
+      '<p class="rvx-name"></p>' +
+      '<a class="rvx-dress" href="#"></a>' +
+      '<div class="rvx-nav">' +
+      '<button type="button" class="rv-arrow rvx-prev" aria-label="' + esc(t("prev", "Previous")) + '">' + L_ARROW + "</button>" +
+      '<span class="rvx-count"></span>' +
+      '<button type="button" class="rv-arrow rvx-next" aria-label="' + esc(t("next", "Next")) + '">' + R_ARROW + "</button>" +
+      "</div></div></div>";
+  }
+
+  function show(i, dir) {
+    cur = (i + reviews.length) % reviews.length;
+    curPhoto = 0;
+    var r = reviews[cur];
+    var stage = track.querySelector(".rvx-stage");
+    var pic = pictureOf(r);
+    stage.classList.toggle("no-pic", !pic);
+    stage.classList.remove("is-in");
+    stage.style.setProperty("--dir", dir || 1);
+    var img = stage.querySelector(".rvx-photo img");
+    var apply = function () {
+      if (pic) img.src = pic.src;
+      stage.querySelector(".rvx-caption").textContent = pic && pic.dress && r.item ? t("review_dress_photo", "Dress: {name}").replace("{name}", r.item) : "";
+      stage.querySelector(".rvx-dots").innerHTML = r.photos.length > 1 ? new Array(r.photos.length + 1).join("<i></i>") : "";
+      var q = stage.querySelector(".rvx-quote");
+      q.textContent = r.text;
+      q.classList.toggle("is-short", r.text.length < 160);
+      stage.querySelector(".rvx-name").textContent = r.name;
+      var dress = stage.querySelector(".rvx-dress");
+      dress.hidden = !r.item;
+      if (r.item) {
+        dress.setAttribute("href", "#item-" + r.item_id);
+        dress.innerHTML = "<span>" + esc(t("review_dress", "View the dress")) + "</span> <b>" + esc(r.item) + "</b>";
       }
+      stage.querySelector(".rvx-count").textContent = pad(cur + 1) + " / " + pad(reviews.length);
+      requestAnimationFrame(function () {
+        stage.querySelector(".rvx-more").hidden = q.scrollHeight <= q.clientHeight + 2;
+        stage.classList.add("is-in");
+      });
+    };
+    // Let the old one fade before the new one comes in (the first time, straight away).
+    if (stage.dataset.ready) {
+      setTimeout(apply, reducedMotion ? 0 : 220);
+    } else {
+      stage.dataset.ready = "1";
+      apply();
     }
-    return best;
-  }
-
-  function updateNav() {
-    if (!nav) return;
-    var scrollable = track.scrollWidth > track.clientWidth + 2;
-    nav.hidden = !scrollable;
-    if (!scrollable) return;
-    var k = currentIndex();
-    count.textContent = pad(k + 1) + " / " + pad(reviews.length);
-    nav.querySelector('[data-dir="-1"]').disabled = track.scrollLeft < 4;
-    nav.querySelector('[data-dir="1"]').disabled = track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
-  }
-
-  // "Read more" only where the words don't fit.
-  function markLong() {
-    track.querySelectorAll(".rv").forEach(function (card) {
-      var q = card.querySelector(".rv-quote");
-      card.querySelector(".rv-more").hidden = q.scrollHeight <= q.clientHeight + 2;
+    track.querySelectorAll(".rvx-thumb").forEach(function (b, k) {
+      b.classList.toggle("is-active", k === cur);
+      b.setAttribute("aria-selected", k === cur ? "true" : "false");
     });
+    var active = track.querySelector(".rvx-thumb.is-active");
+    var strip = track.querySelector(".rvx-strip");
+    if (active && strip.scrollWidth > strip.clientWidth) {
+      strip.scrollTo({ left: active.offsetLeft - strip.clientWidth / 2 + active.offsetWidth / 2, behavior: reducedMotion ? "auto" : "smooth" });
+    }
   }
 
-  // Computers: a wall of reviews in columns, read left to right (the order set in /admin), the first
-  // eight and then "All reviews". Phones: a row to swipe, two in view.
-  var WALL_LIMIT = 8;
-  var showAll = false;
-  var wallCols = -1;
-  var allBtn = null;
-
-  function columnsFor(w) {
-    return w >= 1100 ? 4 : w >= 768 ? 3 : 0;
-  }
+  var reducedMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   function render() {
     document.getElementById("reviews-empty").classList.toggle("hidden", reviews.length > 0);
     track.classList.toggle("hidden", !reviews.length);
-    var cols = columnsFor(window.innerWidth);
-    wallCols = cols;
-    track.classList.toggle("rv-wall", cols > 0);
-    if (!cols) {
-      track.innerHTML = reviews.map(cardHtml).join("");
-    } else {
-      var shown = showAll ? reviews.length : Math.min(WALL_LIMIT, reviews.length);
-      var html = [];
-      for (var c = 0; c < cols; c++) {
-        var cards = "";
-        for (var i = c; i < shown; i += cols) cards += cardHtml(reviews[i], i);
-        html.push('<div class="rv-col">' + cards + "</div>");
-      }
-      track.innerHTML = html.join("");
-    }
-    if (!allBtn) {
-      allBtn = document.createElement("button");
-      allBtn.type = "button";
-      allBtn.className = "rv-all";
-      allBtn.addEventListener("click", function () {
-        showAll = true;
-        render();
-      });
-      track.parentNode.insertBefore(allBtn, track.nextSibling);
-    }
-    allBtn.textContent = t("review_all", "All reviews") + " · " + reviews.length;
-    allBtn.hidden = !cols || showAll || reviews.length <= WALL_LIMIT;
-    requestAnimationFrame(function () {
-      markLong();
-      updateNav();
-    });
+    if (!reviews.length) return;
+    build();
+    track.classList.toggle("single", reviews.length < 2);
+    show(0);
   }
 
-  if (nav) nav.addEventListener("click", function (e) {
-    var btn = e.target.closest("[data-dir]");
-    if (!btn) return;
-    var cards = track.children;
-    var k = Math.max(0, Math.min(cards.length - 1, currentIndex() + parseInt(btn.getAttribute("data-dir"), 10)));
-    track.scrollTo({ left: cards[k].offsetLeft - parseFloat(getComputedStyle(track).paddingLeft) });
-  });
   if (track) {
-    var navTimer;
-    track.addEventListener("scroll", function () {
-      clearTimeout(navTimer);
-      navTimer = setTimeout(updateNav, 80);
+    track.addEventListener("click", function (e) {
+      if (e.target.closest(".rvx-prev")) return show(cur - 1, -1);
+      if (e.target.closest(".rvx-next")) return show(cur + 1, 1);
+      var thumb = e.target.closest(".rvx-thumb");
+      if (thumb) {
+        var k = parseInt(thumb.getAttribute("data-i"), 10);
+        if (k !== cur) show(k, k > cur ? 1 : -1);
+        return;
+      }
+      if (e.target.closest(".rvx-photo, .rvx-more")) openReview(cur);
+    });
+    track.addEventListener("keydown", function (e) {
+      if (e.key === "ArrowLeft") show(cur - 1, -1);
+      if (e.key === "ArrowRight") show(cur + 1, 1);
+    });
+    // Swipe across the review on phones.
+    var sx = null;
+    var sy = null;
+    track.addEventListener("touchstart", function (e) {
+      if (!e.target.closest(".rvx-stage")) return;
+      sx = e.touches[0].clientX;
+      sy = e.touches[0].clientY;
+    }, { passive: true });
+    track.addEventListener("touchend", function (e) {
+      if (sx === null) return;
+      var dx = e.changedTouches[0].clientX - sx;
+      var dy = e.changedTouches[0].clientY - sy;
+      sx = null;
+      if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.3) show(cur + (dx < 0 ? 1 : -1), dx < 0 ? 1 : -1);
     });
   }
 
@@ -196,10 +212,7 @@
     else view.removeAttribute("open");
   }
 
-  if (track) track.addEventListener("click", function (e) {
-    var opener = e.target.closest(".js-rv-open");
-    if (opener) openReview(parseInt(opener.getAttribute("data-i"), 10));
-  });
+
   if (view) {
     view.querySelector(".rv-close").addEventListener("click", closeReview);
     view.querySelector(".rv-view-prev").addEventListener("click", function () { showPhoto(openP - 1); });
@@ -233,11 +246,7 @@
     .catch(function () {
       render();
     });
-  if (track) window.addEventListener("resize", function () {
-    if (reviews.length && columnsFor(window.innerWidth) !== wallCols) render();
-    markLong();
-    updateNav();
-  });
+
 
   // ---- Form ----
   var dialog = document.getElementById("review-dialog");

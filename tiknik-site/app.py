@@ -752,8 +752,13 @@ def api_reviews():
     rows = db.execute("SELECT r.id, r.name, r.text, r.photos, r.created_at, r.item_id, i.name AS item_name "
                       "FROM reviews r LEFT JOIN items i ON i.id = r.item_id WHERE r.status = 'approved' "
                       "ORDER BY r.position, r.id DESC").fetchall()
+    # For a review without photos, the dress it's about stands in (its first photo).
+    first_photo = {}
+    for p in db.execute("SELECT item_id, filename FROM item_photos WHERE kind = 'photo' ORDER BY item_id, position"):
+        first_photo.setdefault(p["item_id"], p["filename"])
     return jsonify([{"id": r["id"], "name": r["name"], "text": r["text"], "photos": json.loads(r["photos"] or "[]"),
-                     "date": (r["created_at"] or "")[:10], "item_id": r["item_id"], "item": r["item_name"]}
+                     "date": (r["created_at"] or "")[:10], "item_id": r["item_id"], "item": r["item_name"],
+                     "item_photo": first_photo.get(r["item_id"]) if r["item_name"] else None}
                     for r in rows])
 
 

@@ -520,80 +520,79 @@
   .qty-btn:hover { border-color: #1C1B19; }
 
   /* Reviews */
-  .reviews-track { display: flex; align-items: stretch; gap: 1rem; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none;
-                   scroll-behavior: smooth; padding: 0 max(1.25rem, calc((100vw - 1180px) / 2 + 2rem)) .5rem;
-                   scroll-padding: 0 max(1.25rem, calc((100vw - 1180px) / 2 + 2rem)); }
-  .reviews-track::-webkit-scrollbar { display: none; }
-
-  /* A review: a spread, the photo large on the left and the words on a near-square page beside it */
-  .rv { scroll-snap-align: start; flex: 0 0 auto; display: flex; flex-direction: column; background: #EFEDE7; width: min(84vw, 360px); }
-  .rv-photo { position: relative; display: block; width: 100%; aspect-ratio: 4 / 5; overflow: hidden; background: #E4E1D8; cursor: zoom-in; }
-  .rv-photo img { width: 100%; height: 100%; object-fit: cover; transition: transform 1.2s cubic-bezier(.16,1,.3,1); }
-  .rv-photo:hover img { transform: scale(1.03); }
-  .rv-dots { position: absolute; left: 0; right: 0; bottom: .8rem; display: flex; justify-content: center; gap: .35rem; }
-  .rv-dots i { width: 5px; height: 5px; border-radius: 50%; background: rgba(246,245,241,.55); }
-  .rv-dots i:first-child { background: #F6F5F1; }
-  .rv-body { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 1.6rem 1.4rem; min-height: 0; }
-  .rv-quote { font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-size: 18px; line-height: 1.5; color: #1C1B19;
-              white-space: pre-line; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 7; overflow: hidden; }
-  .rv-more { align-self: flex-start; margin-top: .7rem; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: #1C1B19;
-             border-bottom: 1px solid rgba(28,27,25,.35); padding-bottom: 1px; }
-  .rv-more:hover { border-color: #1C1B19; }
-  .rv-sign { padding-top: 1.25rem; display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
-  .rv-name { font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-style: italic; font-size: 17px; color: rgba(28,27,25,.75); }
-  .rv-item { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: #1C1B19; white-space: nowrap;
-             border-bottom: 1px solid rgba(28,27,25,.3); padding-bottom: 1px; }
-  .rv-item:hover { border-color: #1C1B19; }
-  .rv--text .rv-body { justify-content: center; padding: 2rem 1.6rem; }
-  .rv--text .rv-quote { font-size: 21px; -webkit-line-clamp: 9; }
-  .rv--short .rv-quote { font-size: 22px; line-height: 1.45; }
-  .rv--text .rv-quote, .rv--text.rv--short .rv-quote { font-size: 24px; }
-  /* Phones: a row to swipe, two reviews in view */
-  .rv { width: calc((100vw - 2.5rem - .75rem) / 2.1); }
-  .reviews-track { gap: .75rem; }
-  .rv { background: transparent; }
-  .rv-body { justify-content: flex-start; padding: .8rem 0 0; }
-  .rv-quote { font-size: 15px; line-height: 1.45; -webkit-line-clamp: 6; }
-  .rv--short .rv-quote { font-size: 16px; }
-  .rv-sign { padding-top: .6rem; flex-wrap: wrap; gap: .2rem .75rem; }
-  .rv-name { font-size: 14px; }
-  .rv-item { font-size: 10px; }
-  .rv-more { font-size: 10.5px; margin-top: .45rem; }
-  .rv--text { background: #EFEDE7; }
-  .rv--text .rv-body { justify-content: center; padding: 1.1rem .9rem; }
-  .rv--text .rv-quote, .rv--text.rv--short .rv-quote { font-size: 17px; -webkit-line-clamp: 11; }
-
-  /* Computers: a wall, four columns read left to right; the 2nd and 4th sit a little lower */
-  .rv-all { display: block; margin: 2.5rem auto 0; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: #1C1B19;
-            border: 1px solid rgba(28,27,25,.3); padding: .9rem 2.2rem; transition: background .2s ease, color .2s ease; }
-  .rv-all:hover { background: #1C1B19; color: #F6F5F1; }
-  .rv-all[hidden] { display: none; }
-  @media (min-width: 768px) {
-    .reviews-track.rv-wall { display: flex; align-items: flex-start; gap: 1.5rem; overflow: visible; scroll-snap-type: none;
-                             max-width: 1180px; margin: 0 auto; padding: 0 2rem; }
-    .rv-col { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 2.5rem; }
-    .rv-col:nth-child(even) { padding-top: 3.5rem; }
-    .rv-wall .rv { width: auto; }
-    .rv-wall .rv-photo { aspect-ratio: auto; }
-    .rv-wall .rv-photo img { height: auto; display: block; }
-    .rv-body { padding-top: 1.05rem; }
-    .rv-quote { font-size: 17px; line-height: 1.55; -webkit-line-clamp: 7; }
-    .rv--short .rv-quote { font-size: 20px; line-height: 1.45; }
-    .rv-name { font-size: 15px; }
-    .rv-item { font-size: 10.5px; }
-    .rv-more { font-size: 11px; }
-    .rv--text .rv-body { padding: 2rem 1.6rem; }
-    .rv--text .rv-quote { font-size: 20px; line-height: 1.5; -webkit-line-clamp: 12; }
-    .rv--text.rv--short .rv-quote { font-size: 24px; }
+  /* Reviews: one at a time. The photo and her words side by side, the row of everyone below. */
+  .reviews-track { max-width: 1180px; margin: 0 auto; padding: 0 1.25rem; outline: none; }
+  @media (min-width: 640px) { .reviews-track { padding: 0 2rem; } }
+  .rvx-stage { display: grid; gap: 1.5rem; }
+  @media (min-width: 900px) {
+    .rvx-stage { grid-template-columns: auto minmax(0, 1fr); column-gap: clamp(3rem, 6vw, 6rem); align-items: center; }
   }
-  .rv-nav { display: none; align-items: center; gap: .9rem; }
-  @media (min-width: 768px) { .rv-nav:not([hidden]) { display: flex; } }
-  .rv-count { font-size: 12px; letter-spacing: .1em; color: rgba(28,27,25,.7); font-variant-numeric: tabular-nums; min-width: 3.6rem; text-align: center; }
-  .rv-arrow { width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; color: #1C1B19; border: 1px solid rgba(28,27,25,.2);
-              transition: border-color .2s ease, opacity .2s ease; }
+  .rvx-photo { position: relative; display: block; overflow: hidden; background: #E4E1D8; cursor: zoom-in;
+               width: 100%; aspect-ratio: 4 / 5; }
+  @media (max-width: 899px) { .rvx-photo { max-height: 46svh; width: auto; margin: 0 auto; max-width: 100%; } }
+  @media (min-width: 900px) { .rvx-photo { height: clamp(360px, 52vh, 540px); width: auto; } }
+  .rvx-photo img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 1.2s cubic-bezier(.16,1,.3,1); }
+  .rvx-photo:hover img { transform: scale(1.03); }
+  .rvx-caption { position: absolute; left: .75rem; bottom: .75rem; font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
+                 color: #1C1B19; background: rgba(246,245,241,.92); padding: .3rem .55rem; }
+  .rvx-caption:empty { display: none; }
+  .rvx-dots { position: absolute; left: 0; right: 0; bottom: .8rem; display: flex; justify-content: center; gap: .35rem; }
+  .rvx-dots i { width: 5px; height: 5px; border-radius: 50%; background: rgba(246,245,241,.6); }
+  .rvx-dots i:first-child { background: #F6F5F1; }
+  .rvx-stage.no-pic { grid-template-columns: minmax(0, 1fr); }
+  .rvx-stage.no-pic .rvx-photo { display: none; }
+  .rvx-stage.no-pic .rvx-text { max-width: 44rem; margin: 0 auto; text-align: center; align-items: center; min-height: clamp(260px, 40vh, 420px); justify-content: center; }
+
+  .rvx-text { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; }
+  .rvx-quote { font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-size: 20px; line-height: 1.55; color: #1C1B19;
+               white-space: pre-line; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 8; overflow: hidden; max-width: 34em; }
+  .rvx-quote.is-short { font-size: 26px; line-height: 1.4; }
+  @media (min-width: 900px) {
+    .rvx-quote { font-size: 23px; -webkit-line-clamp: 10; }
+    .rvx-quote.is-short { font-size: 34px; line-height: 1.3; }
+  }
+  .rvx-more { margin-top: .9rem; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: #1C1B19;
+              border-bottom: 1px solid rgba(28,27,25,.35); padding-bottom: 1px; }
+  .rvx-more:hover { border-color: #1C1B19; }
+  .rvx-name { margin-top: 1.5rem; font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-style: italic; font-size: 18px; color: rgba(28,27,25,.75); }
+  .rvx-dress { margin-top: .5rem; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: rgba(28,27,25,.7); }
+  .rvx-dress b { font-weight: 400; color: #1C1B19; border-bottom: 1px solid rgba(28,27,25,.35); padding-bottom: 1px; margin-left: .35rem; }
+  .rvx-dress:hover b { border-color: #1C1B19; }
+  .rvx-dress[hidden] { display: none; }
+  .rvx-nav { display: flex; align-items: center; gap: .9rem; margin-top: 2rem; }
+  .rvx-count { font-size: 12px; letter-spacing: .1em; color: rgba(28,27,25,.7); font-variant-numeric: tabular-nums; min-width: 3.6rem; text-align: center; }
+  .single .rvx-nav, .single .rvx-strip { display: none; }
+
+  /* changing review: the old one fades, the new one settles in from the side it came from */
+  .rvx-photo img, .rvx-text > * { transition: opacity .22s ease, transform .22s ease; }
+  .rvx-stage:not(.is-in) .rvx-photo img { opacity: 0; }
+  .rvx-stage:not(.is-in) .rvx-text > :not(.rvx-nav) { opacity: 0; transform: translateX(calc(var(--dir, 1) * 14px)); }
+  .rvx-stage.is-in .rvx-photo img { opacity: 1; transition: opacity .5s ease, transform 1.2s cubic-bezier(.16,1,.3,1); }
+  .rvx-stage.is-in .rvx-text > * { opacity: 1; transform: none; transition: opacity .5s ease .06s, transform .7s cubic-bezier(.16,1,.3,1) .06s; }
+
+  /* everyone who wrote */
+  .rvx-strip { display: flex; gap: 1rem; margin: -.5rem 0 2rem; padding: .25rem 0 1.5rem; border-bottom: 1px solid rgba(28,27,25,.14);
+               overflow-x: auto; scrollbar-width: none; scroll-snap-type: x proximity; }
+  .rvx-strip::-webkit-scrollbar { display: none; }
+  .rvx-thumb { flex: 0 0 auto; width: 64px; display: flex; flex-direction: column; align-items: center; gap: .45rem; scroll-snap-align: center;
+               opacity: .5; transition: opacity .3s ease; }
+  .rvx-thumb:hover, .rvx-thumb.is-active { opacity: 1; }
+  .rvx-thumb img, .rvx-initial { width: 64px; height: 80px; object-fit: cover; display: block; background: #E4E1D8; outline: 1px solid transparent; outline-offset: 3px;
+                                 transition: outline-color .3s ease; }
+  .rvx-initial { display: flex; align-items: center; justify-content: center; font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-size: 28px; color: #1C1B19; }
+  .rvx-thumb.is-active img, .rvx-thumb.is-active .rvx-initial { outline-color: #1C1B19; }
+  .rvx-thumb-name { max-width: 100%; font-size: 10.5px; letter-spacing: .06em; color: #1C1B19; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  @media (min-width: 900px) { .rvx-strip { gap: 1.25rem; } }
+  @media (max-width: 899px) { .rvx-text { align-items: flex-start; } .rvx-nav { margin-top: 1.5rem; } }
+  @media (prefers-reduced-motion: reduce) {
+    .rvx-photo img, .rvx-text > *, .rvx-stage.is-in .rvx-photo img, .rvx-stage.is-in .rvx-text > * { transition: none; transform: none; }
+  }
+
+  .rv-name { font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-style: italic; font-size: 17px; color: rgba(28,27,25,.75); }
+  .rv-arrow { width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; color: #1C1B19; border: 1px solid rgba(28,27,25,.2);
+              transition: border-color .2s ease; }
   .rv-arrow svg { width: 16px; height: 16px; }
   .rv-arrow:hover { border-color: #1C1B19; }
-  .rv-arrow:disabled { opacity: .3; cursor: default; }
 
   /* One review opened: its photos large, the whole text, the dress */
   .rv-view { border: 0; padding: 0; margin: 0; max-width: none; max-height: none; width: 100vw; height: 100dvh; background: #F6F5F1; color: #1C1B19; }
@@ -952,16 +951,11 @@
   <div class="max-w-[1180px] mx-auto px-5 sm:px-8 mb-8 sm:mb-10 flex items-end justify-between gap-6 flex-wrap">
     <h2 class="sec-label">{{ t('reviews_title') }}</h2>
     <div class="flex items-center gap-8">
-      <div class="rv-nav" id="rv-nav" hidden>
-        <button type="button" class="rv-arrow" data-dir="-1" aria-label="{{ t('prev') }}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="1.2"/></svg></button>
-        <span class="rv-count" id="rv-count"></span>
-        <button type="button" class="rv-arrow" data-dir="1" aria-label="{{ t('next') }}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="1.2"/></svg></button>
-      </div>
       <button type="button" class="js-review-open pdp-link text-[15px]">{{ t('review_add') }}</button>
     </div>
   </div>
   <p id="reviews-empty" class="hidden"></p>
-  <div id="reviews-track" class="reviews-track"></div>
+  <div id="reviews-track" class="reviews-track" tabindex="-1"></div>
 </section>
 {% endif %}
 
