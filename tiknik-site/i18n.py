@@ -257,6 +257,7 @@ UI = {
     "review_send": {"en": "Send", "ru": "Отправить", "hy": "Ուղարկել"},
     "review_more": {"en": "Read more", "ru": "Читать полностью", "hy": "Կարդալ ամբողջությամբ"},
     "review_all": {"en": "All reviews", "ru": "Все отзывы", "hy": "Բոլոր կարծիքները"},
+    "review_read": {"en": "Read the review", "ru": "Читать отзыв", "hy": "Կարդալ կարծիքը"},
     "review_dress_photo": {"en": "Dress: {name}", "ru": "Платье {name}", "hy": "Զգեստ՝ {name}"},
     "review_dress": {"en": "View the dress", "ru": "Посмотреть платье", "hy": "Դիտել զգեստը"},
     "prev": {"en": "Previous", "ru": "Назад", "hy": "Նախորդը"},
@@ -475,7 +476,7 @@ UI = {
 JS_KEYS = (
     "back_to_catalog", "prev_item", "next_item", "cta_book_quote", "dial_hint",
     "add_to_cart", "add_buy", "add_rent", "in_cart", "sold_out", "cart_buy_label", "cart_rent_label", "cart_day", "cart_days",
-    "cart_sent", "cart_remove", "busy_error", "review_thanks", "review_more", "review_dress", "review_all", "review_dress_photo", "prev", "next",
+    "cart_sent", "cart_remove", "busy_error", "review_thanks", "review_more", "review_dress", "review_all", "review_dress_photo", "review_read", "prev", "next",
     "card_or_rent", "card_rental", "collection", "pdp_piece", "pdp_details", "pdp_delivery", "toast_added", "toast_view", "cart_size", "size_error", "made_to_order", "vintage_lace", "pdp_note", "prices_in", "prefs_change", "dial_lang", "dial_cur",
     "delivery_f1_title", "delivery_f1_text", "delivery_f2_title", "delivery_f2_text", "delivery_f3_title", "delivery_f3_text",
     "handmade_hours", "edition_one", "edition_n", "share", "link_copied",

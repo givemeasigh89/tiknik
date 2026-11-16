@@ -520,64 +520,47 @@
   .qty-btn:hover { border-color: #1C1B19; }
 
   /* Reviews */
-  /* Reviews: the brides. Portraits signed with her name and the dress; her words open from them. */
+  /* Reviews: one grid of equal tiles — her photo or her words on the page, and under it, always,
+     the start of her words, her name and the dress */
   .reviews-track { max-width: 1180px; margin: 0 auto; padding: 0 1.25rem; }
   @media (min-width: 640px) { .reviews-track { padding: 0 2rem; } }
-  .rb-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .6rem; }
-  @media (min-width: 768px) { .rb-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.25rem; } }
-  .rb-tile { position: relative; display: block; width: 100%; aspect-ratio: 4 / 5; overflow: hidden; background: #E4E1D8; text-align: left; cursor: pointer; }
-  .rb-tile img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 1.4s cubic-bezier(.16,1,.3,1); }
-  .rb-shade { position: absolute; inset: 0; background: linear-gradient(to top, rgba(20,19,17,.62) 0%, rgba(20,19,17,.18) 34%, rgba(20,19,17,0) 55%);
-              transition: background .6s ease; }
-  .rb-cap { position: absolute; left: 0; right: 0; bottom: 0; padding: .8rem .85rem .9rem; display: flex; flex-direction: column; gap: .2rem; color: #F6F5F1; }
-  .rb-name { font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-size: 17px; line-height: 1.15; }
-  .rb-dress { font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase; opacity: .85; }
-  .rb-ex { display: none; }
-  @media (min-width: 768px) {
-    .rb-cap { padding: 1.25rem 1.4rem 1.35rem; gap: .3rem; }
-    .rb-name { font-size: 24px; }
-    .rb-dress { font-size: 11px; }
-  }
-  /* computers: hovering a portrait brings up the start of her words */
-  @media (hover: hover) and (pointer: fine) and (min-width: 768px) {
-    .rb-ex { display: block; position: absolute; left: 1.4rem; right: 1.4rem; bottom: 5.4rem; color: #F6F5F1;
-             font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-size: 18px; line-height: 1.45;
-             opacity: 0; transform: translateY(10px); transition: opacity .45s ease, transform .7s cubic-bezier(.16,1,.3,1); }
-    .rb-tile:hover img, .rb-tile:focus-visible img { transform: scale(1.045); }
-    .rb-tile:hover .rb-shade, .rb-tile:focus-visible .rb-shade { background: linear-gradient(to top, rgba(20,19,17,.78) 0%, rgba(20,19,17,.45) 55%, rgba(20,19,17,.1) 100%); }
-    .rb-tile:hover .rb-ex, .rb-tile:focus-visible .rb-ex { opacity: 1; transform: none; }
-  }
-  /* reviews without photos: her words, set like a page of quotes under the portraits */
-  .rb-words { display: grid; gap: 0 3.5rem; margin-top: 2.75rem; }
-  @media (min-width: 768px) { .rb-words { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 3.5rem; } }
-  .rb-word { display: flex; flex-direction: column; gap: 1rem; text-align: left; padding: 1.75rem 0; border-top: 1px solid rgba(28,27,25,.14); cursor: pointer; }
-  .rb-wq { font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-size: 19px; line-height: 1.5; color: #1C1B19;
-           display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; overflow: hidden; }
-  @media (min-width: 768px) { .rb-wq { font-size: 22px; } }
-  .rb-wsign { display: flex; align-items: baseline; gap: .9rem; }
-  .rb-wname { font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-style: italic; font-size: 17px; color: rgba(28,27,25,.75); }
-  .rb-wdress { font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: rgba(28,27,25,.7); }
-  .rb-word:hover .rb-wq { color: rgba(28,27,25,.75); }
-  .rb-word:focus-visible { outline: 1px solid #1C1B19; outline-offset: 4px; }
-  /* (older) a review without photos as a tile */
-  .rb-tile--text { background: #EFEDE7; display: flex; flex-direction: column; justify-content: center; padding: 1rem .9rem 3.6rem; }
+  .rb-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.75rem .75rem; }
+  @media (min-width: 768px) { .rb-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2.75rem 1.25rem; } }
+  .rb-tile { display: flex; flex-direction: column; text-align: left; cursor: pointer; min-width: 0; }
+  .rb-media { position: relative; display: block; width: 100%; aspect-ratio: 4 / 5; overflow: hidden; background: #E4E1D8; }
+  .rb-media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 1.4s cubic-bezier(.16,1,.3,1); }
+  .rb-media--words { background: #EFEDE7; display: flex; align-items: center; padding: 1rem .9rem; }
   .rb-q { font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-size: 15px; line-height: 1.45; color: #1C1B19;
-          display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 7; overflow: hidden; }
-  .rb-tile--text .rb-cap { color: #1C1B19; }
-  .rb-tile--text .rb-name { font-style: italic; color: rgba(28,27,25,.75); }
+          display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 8; overflow: hidden; }
+  .rb-q::before { content: "“"; display: block; font-size: 2.2em; line-height: .6; margin-bottom: .35rem; color: #A48F66; }
   @media (min-width: 768px) {
-    .rb-tile--text { padding: 2rem 1.75rem 5rem; }
-    .rb-q { font-size: 21px; line-height: 1.5; -webkit-line-clamp: 9; }
-    .rb-tile--text .rb-cap { padding: 0 1.75rem 1.6rem; }
-    .rb-tile--text .rb-name { font-size: 20px; }
+    .rb-media--words { padding: 1.75rem 1.6rem; }
+    .rb-q { font-size: 20px; line-height: 1.45; -webkit-line-clamp: 9; }
   }
-  .rb-tile--text:hover { background: #E9E6DF; }
-  .rb-tile:focus-visible { outline: 1px solid #1C1B19; outline-offset: 3px; }
-  .rb-more { display: block; margin: 2.25rem auto 0; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: #1C1B19;
+  .rb-quote { margin-top: .75rem; font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-style: italic; font-size: 15px; line-height: 1.4;
+              color: #1C1B19; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+  @media (min-width: 768px) { .rb-quote { font-size: 17px; margin-top: .9rem; } }
+  .rb-sign { margin-top: .5rem; display: flex; align-items: baseline; flex-wrap: wrap; gap: .1rem .35rem; }
+  .rb-media--words + .rb-sign { margin-top: .9rem; }
+  .rb-name { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #1C1B19; }
+  .rb-dress { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: rgba(28,27,25,.55); }
+  .rb-dress::before { content: "· "; }
+  /* hover (computers): the picture leans in and says what's inside */
+  .rb-read { position: absolute; left: .75rem; bottom: .75rem; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #1C1B19;
+             background: rgba(246,245,241,.94); padding: .45rem .7rem; opacity: 0; transform: translateY(6px);
+             transition: opacity .35s ease, transform .6s cubic-bezier(.16,1,.3,1); }
+  @media (hover: hover) and (pointer: fine) {
+    .rb-tile:hover .rb-media img, .rb-tile:focus-visible .rb-media img { transform: scale(1.045); }
+    .rb-tile:hover .rb-read, .rb-tile:focus-visible .rb-read { opacity: 1; transform: none; }
+    .rb-tile:hover .rb-media--words { background: #E9E6DF; }
+  }
+  .rb-tile:focus-visible { outline: none; }
+  .rb-tile:focus-visible .rb-media { outline: 1px solid #1C1B19; outline-offset: 3px; }
+  .rb-more { display: block; margin: 2.75rem auto 0; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: #1C1B19;
              border: 1px solid rgba(28,27,25,.3); padding: .9rem 2.2rem; transition: background .2s ease, color .2s ease; }
   .rb-more:hover { background: #1C1B19; color: #F6F5F1; }
   .rb-more[hidden] { display: none; }
-  @media (prefers-reduced-motion: reduce) { .rb-tile img, .rb-ex, .rb-shade { transition: none; } }
+  @media (prefers-reduced-motion: reduce) { .rb-media img, .rb-read { transition: none; } }
 
   .rv-name { font-family: 'Cormorant Garamond', 'Noto Serif Armenian', serif; font-style: italic; font-size: 17px; color: rgba(28,27,25,.75); }
   .rv-arrow { width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; color: #1C1B19; border: 1px solid rgba(28,27,25,.2);

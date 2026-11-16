@@ -26,54 +26,40 @@
   }
 
   // ---- Reviews: the brides ----
-  // As premium bridal houses show their real brides: a grid of portraits, each signed with her name and
-  // the dress. Hovering a portrait brings up the start of her words; a tap opens the review whole
-  // (all photos, the full text, the dress). A review without photos is a tile of her words.
+  // One grid of equal tiles, in the order set in /admin. A tile is her photo (or, without photos, her
+  // words set large on the page) and, under it, always the start of her words in quotes, her name and
+  // the dress — so it's plain each tile is a review. A tap opens it whole (all photos, full text, the dress).
   var reviews = [];
   var showAll = false;
   var moreBtn = null;
 
-  // Collapsed: one row of four portraits on computers (two rows of two on phones), and two quotes.
   function limit() {
-    return 4;
+    return window.innerWidth >= 768 ? 8 : 4;
   }
-  var QUOTES = 2;
 
   function excerpt(text, n) {
     var s = String(text).replace(/\s+/g, " ").trim();
-    return s.length > n ? s.slice(0, n).replace(/\s+\S*$/, "") + "…" : s;
+    return s.length > n ? s.slice(0, n).replace(/[\s,.;:!?)(-]+\S*$/, "") + "…" : s;
   }
 
   function tileHtml(r, i) {
-    var sign = '<span class="rb-cap"><span class="rb-name">' + esc(r.name) + "</span>" +
-      (r.item ? '<span class="rb-dress">' + esc(r.item) + "</span>" : "") + "</span>";
-    return '<button type="button" class="rb-tile" data-i="' + i + '">' +
-      '<img src="' + photoUrl(r.photos[0]) + '" alt="" loading="lazy">' +
-      '<span class="rb-shade" aria-hidden="true"></span>' +
-      '<span class="rb-ex" aria-hidden="true">' + esc(excerpt(r.text, 150)) + "</span>" +
-      sign + "</button>";
+    var media = r.photos.length
+      ? '<span class="rb-media"><img src="' + photoUrl(r.photos[0]) + '" alt="" loading="lazy">' +
+        '<span class="rb-read">' + esc(t("review_read", "Read the review")) + "</span></span>"
+      : '<span class="rb-media rb-media--words"><span class="rb-q">' + esc(excerpt(r.text, 230)) + "</span>" +
+        '<span class="rb-read">' + esc(t("review_read", "Read the review")) + "</span></span>";
+    return '<button type="button" class="rb-tile" data-i="' + i + '">' + media +
+      (r.photos.length ? '<span class="rb-quote">«' + esc(excerpt(r.text, 90)) + "»</span>" : "") +
+      '<span class="rb-sign"><span class="rb-name">' + esc(r.name) + "</span>" +
+      (r.item ? '<span class="rb-dress">' + esc(r.item) + "</span>" : "") + "</span></button>";
   }
 
   function render() {
     document.getElementById("reviews-empty").classList.toggle("hidden", reviews.length > 0);
     track.classList.toggle("hidden", !reviews.length);
     if (!reviews.length) return;
-    var brides = [];
-    var words = [];
-    reviews.forEach(function (r, i) {
-      (r.photos.length ? brides : words).push(i);
-    });
-    var b = showAll ? brides : brides.slice(0, limit());
-    var w = showAll ? words : words.slice(0, QUOTES);
-    track.innerHTML =
-      (b.length ? '<div class="rb-grid">' + b.map(function (i) { return tileHtml(reviews[i], i); }).join("") + "</div>" : "") +
-      (w.length ? '<div class="rb-words">' + w.map(function (i) {
-        var r = reviews[i];
-        return '<button type="button" class="rb-word" data-i="' + i + '"><span class="rb-wq">' + esc(r.text) + "</span>" +
-          '<span class="rb-wsign"><span class="rb-wname">' + esc(r.name) + "</span>" +
-          (r.item ? '<span class="rb-wdress">' + esc(r.item) + "</span>" : "") + "</span></button>";
-      }).join("") + "</div>" : "");
-    var hiddenCount = brides.length - b.length + words.length - w.length;
+    var shown = showAll ? reviews.length : Math.min(limit(), reviews.length);
+    track.innerHTML = '<div class="rb-grid">' + reviews.slice(0, shown).map(tileHtml).join("") + "</div>";
     if (!moreBtn) {
       moreBtn = document.createElement("button");
       moreBtn.type = "button";
@@ -85,12 +71,12 @@
       track.parentNode.insertBefore(moreBtn, track.nextSibling);
     }
     moreBtn.textContent = t("review_all", "All reviews") + " · " + reviews.length;
-    moreBtn.hidden = showAll || hiddenCount <= 0;
+    moreBtn.hidden = showAll || reviews.length <= limit();
   }
 
   if (track) {
     track.addEventListener("click", function (e) {
-      var tile = e.target.closest(".rb-tile, .rb-word");
+      var tile = e.target.closest(".rb-tile");
       if (tile) openReview(parseInt(tile.getAttribute("data-i"), 10));
     });
     var lastLimit = limit();
