@@ -431,9 +431,8 @@
   .ft-copy { margin-top: .75rem; color: rgba(28,27,25,.62); font-size: 12px; }
   /* who made the site: opens a direct message on Instagram */
   .ft-cols .ft-credit { font-size: 12px; line-height: 1.6; color: rgba(28,27,25,.62); }
-  .ft-credit span { color: #1C1B19; border-bottom: 1px solid rgba(28,27,25,.3); }
-  .ft-cols .ft-credit:hover { opacity: 1; }
-  .ft-credit:hover span { border-color: #1C1B19; }
+  .ft-cols .ft-credit a { display: inline; color: #1C1B19; border-bottom: 1px solid rgba(28,27,25,.3); }
+  .ft-cols .ft-credit a:hover { opacity: 1; border-color: #1C1B19; }
 
   /* Process: six titles; hovering one opens its text and brings its photo forward */
   /* Shared two-column layout (as on the reference): text on the left, the form or photos from the middle;
@@ -1029,7 +1028,9 @@
         {% if hours %}<p>{{ t('hours_label') }}: {{ hours }}</p>{% endif %}
         <button type="button" class="js-review-open">{{ t('review_add') }}</button>
         <p class="ft-copy">&copy; Tiknik</p>
-        <a class="ft-credit" href="https://ig.me/m/so_givemeasigh" target="_blank" rel="noopener">{{ t('site_by') }} <span>so_givemeasigh</span></a>
+        <p class="ft-credit">{{ t('site_by') }}
+          <a href="https://t.me/givemeasigh" target="_blank" rel="noopener">Telegram</a> ·
+          <a href="mailto:givemeasigh@gmail.com">givemeasigh@gmail.com</a></p>
       </div>
     </div>
   </div>
