@@ -255,6 +255,7 @@ UI = {
     "review_text": {"en": "A few words about your piece", "ru": "Пара слов о вашем наряде", "hy": "Մի քանի խոսք ձեր զգեստի մասին"},
     "review_photos": {"en": "Add photos · up to 3", "ru": "Добавить фото · до 3", "hy": "Ավելացնել լուսանկար · մինչև 3"},
     "review_send": {"en": "Send", "ru": "Отправить", "hy": "Ուղարկել"},
+    "site_by": {"en": "Design & development:", "ru": "Дизайн и разработка:", "hy": "Դիզայն և մշակում՝"},
     "review_more": {"en": "Read more", "ru": "Читать полностью", "hy": "Կարդալ ամբողջությամբ"},
     "review_all": {"en": "All reviews", "ru": "Все отзывы", "hy": "Բոլոր կարծիքները"},
     "review_read": {"en": "Read the review", "ru": "Читать отзыв", "hy": "Կարդալ կարծիքը"},
