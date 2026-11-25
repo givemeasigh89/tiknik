@@ -116,6 +116,11 @@
 
   /* The header stays over the product view (logo, menu, cart, language) */
   .site-header { z-index: 75; }
+  /* Tablets (touch, 768px and wider): Safari on iPad slides its toolbar while scrolling and a fixed
+     header jumps with it; a sticky header scrolls with the page itself and stays put. */
+  @media (hover: none) and (pointer: coarse) and (min-width: 768px) {
+    .site-header { position: sticky; }
+  }
   #product-overlay { top: 64px; }
   @media (min-width: 640px) { #product-overlay { top: 76px; } }
 
