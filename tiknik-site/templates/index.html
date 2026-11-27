@@ -21,10 +21,44 @@
 <link rel="preload" as="image" href="{{ url_for('static', filename='img/hero-900.jpg') }}" media="(max-width: 767px)" fetchpriority="high">
 <link rel="preload" as="image" href="{{ url_for('static', filename='img/hero-1600.jpg') }}" media="(min-width: 768px) and (max-width: 1699px)" fetchpriority="high">
 <link rel="preload" as="image" href="{{ url_for('static', filename='img/hero-bride.jpg') }}" media="(min-width: 1700px)" fetchpriority="high">
+<link rel="canonical" href="{{ preview.canonical }}">
 {% for l in langs %}
-<link rel="alternate" hreflang="{{ l }}" href="{{ url_for('index', lang=None if l == 'en' else l, _external=True) }}">
+<link rel="alternate" hreflang="{{ l }}" href="{{ preview.alternates[l] }}">
 {% endfor %}
-<link rel="alternate" hreflang="x-default" href="{{ url_for('index', _external=True) }}">
+<link rel="alternate" hreflang="x-default" href="{{ preview.alternates['en'] }}">
+<!-- For search engines: who Tiknik is, and on a piece's page, the piece -->
+<script type="application/ld+json">{{ {
+  "@context": "https://schema.org",
+  "@type": "ClothingStore",
+  "name": "Tiknik",
+  "alternateName": ["Տիկնիկ", "Тикник", "Tiknik Bridal"],
+  "description": t('meta_description'),
+  "url": url_for('index', _external=True),
+  "logo": url_for('static', filename='img/icon-512.png', _external=True),
+  "image": url_for('static', filename='img/og.jpg', _external=True),
+  "address": {"@type": "PostalAddress", "addressLocality": "Yerevan", "addressCountry": "AM"},
+  "areaServed": "Worldwide",
+  "sameAs": [instagram],
+}|tojson }}</script>
+{% if preview.item %}
+<script type="application/ld+json">{{ {
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": preview.item.name,
+  "description": preview.description,
+  "image": [preview.image],
+  "url": preview.canonical,
+  "brand": {"@type": "Brand", "name": "Tiknik"},
+  "offers": {
+    "@type": "Offer",
+    "url": preview.canonical,
+    "priceCurrency": "AMD",
+    "price": preview.item.price or preview.item.rent_price or 0,
+    "availability": "https://schema.org/SoldOut" if preview.item.sold else "https://schema.org/InStock",
+    "seller": {"@type": "Organization", "name": "Tiknik"},
+  },
+}|tojson }}</script>
+{% endif %}
 
 <link rel="stylesheet" href="{{ url_for('static', filename='css/site.css') }}">
 <link rel="preconnect" href="https://fonts.googleapis.com">

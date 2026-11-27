@@ -492,7 +492,34 @@ def favicon():
 
 @app.route("/robots.txt")
 def robots():
-    return "User-agent: *\nDisallow: /admin\n", 200, {"Content-Type": "text/plain; charset=utf-8"}
+    body = "User-agent: *\nDisallow: /admin\n\nSitemap: " + url_for("sitemap", _external=True) + "\n"
+    return body, 200, {"Content-Type": "text/plain; charset=utf-8"}
+
+
+def page_url(lang, item_id=None):
+    """The address of a page in a language: "/" or "/ru/", and "/item/12" or "/ru/item/12"."""
+    if item_id is None:
+        return url_for("index", lang=None if lang == "en" else lang, _external=True)
+    return url_for("item_page", item_id=item_id, lang=lang, _external=True) if lang != "en" \
+        else url_for("item_page", item_id=item_id, _external=True)
+
+
+@app.route("/sitemap.xml")
+def sitemap():
+    """Every page for search engines: the home page and each piece, in all three languages."""
+    db = get_db()
+    pages = [None] + [row["id"] for row in db.execute("SELECT id FROM items ORDER BY id")]
+    out = ['<?xml version="1.0" encoding="UTF-8"?>',
+           '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">']
+    for item_id in pages:
+        for lang in LANGS:
+            out.append("<url><loc>%s</loc>" % page_url(lang, item_id))
+            for alt in LANGS:
+                out.append('<xhtml:link rel="alternate" hreflang="%s" href="%s"/>' % (alt, page_url(alt, item_id)))
+            out.append('<xhtml:link rel="alternate" hreflang="x-default" href="%s"/>' % page_url("en", item_id))
+            out.append("</url>")
+    out.append("</urlset>")
+    return "\n".join(out), 200, {"Content-Type": "application/xml; charset=utf-8"}
 
 
 @app.route("/item/<int:item_id>")
@@ -533,11 +560,16 @@ def index(lang=None, item_id=None):
         photo = db.execute("SELECT filename FROM item_photos WHERE item_id = ? AND kind = 'photo' "
                            "ORDER BY position LIMIT 1", (item_id,)).fetchone()
         preview["title"] = f"{localized(it, 'name', lang)} — Tiknik"
+        preview["item"] = {"name": localized(it, "name", lang), "price": it["price"], "rent_price": it["rent_price"],
+                           "mode": it["mode"], "sold": bool(it["sold"])}
         desc = (localized(it, "description", lang) or "").strip()
         preview["description"] = (desc[:180] + "…") if len(desc) > 180 else (desc or t("meta_description"))
         if photo:
             preview["image"] = url_for("static", filename="img/products/" + photo["filename"], _external=True)
     preview["url"] = request.url
+    # The one address of this page (no ?lang=…), and the same page in each language.
+    preview["canonical"] = page_url(lang, item_id)
+    preview["alternates"] = {l: page_url(l, item_id) for l in LANGS}
 
     resp = make_response(render_template(
         "index.html",
