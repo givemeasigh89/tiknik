@@ -496,6 +496,12 @@ def robots():
     return body, 200, {"Content-Type": "text/plain; charset=utf-8"}
 
 
+@app.route("/googlebbfb4ceb7e414ab6.html")
+def google_site_verification():
+    # Google Search Console's proof that the site is ours; keep it, or the verification lapses.
+    return "google-site-verification: googlebbfb4ceb7e414ab6.html", 200, {"Content-Type": "text/html; charset=utf-8"}
+
+
 def page_url(lang, item_id=None):
     """The address of a page in a language: "/" or "/ru/", and "/item/12" or "/ru/item/12"."""
     if item_id is None:
